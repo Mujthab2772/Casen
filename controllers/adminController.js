@@ -1,4 +1,5 @@
 import admincollection from "../models/adminModel.js"
+import userCollection from "../models/userModel.js"
 import { v4 as uuidv4 } from "uuid"
 
 export const adminLoginGet = async (req, res) => {
@@ -39,5 +40,29 @@ export const adminLoginPost = async (req, res) => {
         req.session.error1 = "User Not Found"
         console.log(`Error from adminloginpost : ${error}`)
         res.redirect("/admin/adminLogin")
+    }
+}
+
+export const customersGet = async (req, res) => {
+    try {
+        let userDetails = await userCollection.find({}, {userId: 1, firstName: 1, lastName: 1, email: 1, phoneNumber: 1, profilePic: 1, isActive: 1, createdAt: 1, updatedAt: 1})
+        res.render("coustomersPage", {customers: userDetails})
+    } catch (error) {
+        console.log(`error from customerGet: ${error}`)
+    }
+}
+
+export const customerBlocking = async (req, res) => {
+    try {
+        let userDetail = await userCollection.findById({_id: req.params.customerId})
+        if(userDetail.isActive) {            
+            await userCollection.updateOne({_id: req.params.customerId}, {$set: {isActive: false}})
+        }else {
+            await userCollection.updateOne({_id: req.params.customerId}, {$set: {isActive: true}})
+        }
+        
+        res.redirect("/admin/customers")
+    } catch (error) {
+        console.log(`error from customerBlocking ${error}`)
     }
 }
