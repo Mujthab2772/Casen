@@ -1,0 +1,22 @@
+{
+  "name": "casen",
+  "version": "1.0.0",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "type": "module",
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "ejs": "^3.1.10",
+    "express": "^5.1.0",
+    "express-router": "^0.0.1",
+    "express-session": "^1.18.2",
+    "mongoose": "^8.19.2",
+    "uuid": "^13.0.0"
+  }
+}
