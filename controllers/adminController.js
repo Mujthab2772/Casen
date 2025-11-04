@@ -45,8 +45,18 @@ export const adminLoginPost = async (req, res) => {
 
 export const customersGet = async (req, res) => {
     try {
-        let userDetails = await userCollection.find({}, {userId: 1, firstName: 1, lastName: 1, email: 1, phoneNumber: 1, profilePic: 1, isActive: 1, createdAt: 1, updatedAt: 1})
-        res.render("coustomersPage", {customers: userDetails})
+        let  userDetails = []
+        let searchData = []
+        if(!req.session.searchedUser) {
+            userDetails = await userCollection.find({}, {_id: 1, userId: 1, firstName: 1, lastName: 1, email: 1, phoneNumber: 1, profilePic: 1, isActive: 1, createdAt: 1, updatedAt: 1}).sort({createdAt: -1})
+        }else {
+            for (let key of req.session.searchedUser) {
+                searchData = [...searchData, await userCollection.find({userId: key.userId})]
+            }
+            userDetails = searchData.flat()
+        }
+        let countCustomers = await userCollection.countDocuments({})
+        res.render("coustomersPage", {customers: userDetails, countCustomers: countCustomers})
     } catch (error) {
         console.log(`error from customerGet: ${error}`)
     }
@@ -54,15 +64,43 @@ export const customersGet = async (req, res) => {
 
 export const customerBlocking = async (req, res) => {
     try {
-        let userDetail = await userCollection.findById({_id: req.params.customerId})
+        let userDetail = await userCollection.findById({_id: req.params.Id})
         if(userDetail.isActive) {            
-            await userCollection.updateOne({_id: req.params.customerId}, {$set: {isActive: false}})
+            await userCollection.updateOne({_id: req.params.Id}, {$set: {isActive: false}})
         }else {
-            await userCollection.updateOne({_id: req.params.customerId}, {$set: {isActive: true}})
+            await userCollection.updateOne({_id: req.params.Id}, {$set: {isActive: true}})
         }
         
         res.redirect("/admin/customers")
     } catch (error) {
         console.log(`error from customerBlocking ${error}`)
+    }
+}
+
+export const customerSearch = async (req, res) => {
+    try {
+        const {searchBar} = req.body
+        let searchUsers = await userCollection.find({
+            $or: [
+                { firstName: { $regex: searchBar, $options: "i" } },
+                { lastName: { $regex: searchBar, $options: "i" } },
+                { email: { $regex: searchBar, $options: "i" } },
+                { phoneNumber: { $regex: searchBar, $options: "i" } }
+            ]
+        })
+
+        req.session.searchedUser = searchUsers
+        res.redirect("/admin/customers")
+    } catch (error) {
+        console.log(`error from customerSearch ${error}`)
+    }
+}
+
+export const customerResetSearch = (req, res) => {
+    try {
+        req.session.searchedUser = null
+        res.redirect("/admin/customers")
+    } catch (error) {
+        console.log(`error from customerResetSearch: ${error}`);        
     }
 }

@@ -109,33 +109,37 @@
         </div>
 
         <div class="content-area">
+          <form action="/admin/customers" method="post">
           <div class="toolbar">
             <div class="search-wrapper">
               <svg class="search-icon" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M9 17C13.4183 17 17 13.4183 17 9C17 4.58172 13.4183 1 9 1C4.58172 1 1 4.58172 1 9C1 13.4183 4.58172 17 9 17Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 <path d="M19 19L14.65 14.65" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
-              <input type="text" class="search-input" placeholder="Search customers..." />
+              <input type="search" name="searchBar" class="search-input" placeholder="Search customers..." />
             </div>
 
             <div class="toolbar-actions">
-              <button class="filter-btn">
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-                  <path d="M5.5 13a3.5 3.5 0 01-.369-6.98 4 4 0 117.753-1.977A4.5 4.5 0 1113.5 13H11V9.413l1.293 1.293a1 1 0 001.414-1.414l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13H5.5z"/>
-                </svg>
-                Filter by Status
-              </button>
+                  <button class="filter-btn">
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M5.5 13a3.5 3.5 0 01-.369-6.98 4 4 0 117.753-1.977A4.5 4.5 0 1113.5 13H11V9.413l1.293 1.293a1 1 0 001.414-1.414l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13H5.5z"/>
+                  </svg>
+                  Filter by Status
+                </button>
+              </form>
+              <form action="/admin/customer/reset" method="post">
               <button class="sort-btn">
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
   <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4C7.58 4 4 7.58 4 12C4 16.42 7.58 20 12 20C15.73 20 18.84 17.45 19.73 14H17.65C16.83 16.33 14.61 18 12 18C8.69 18 6 15.31 6 12C6 8.69 8.69 6 12 6C13.66 6 15.14 6.69 16.22 7.78L13 11H20V4L17.65 6.35Z"/>
 </svg>
                 Reset
               </button>
+              </form>
             </div>
           </div>
 
-          <div class="table-wrapper">
-            <table class="customers-table">
+          <div class="table-wrapper">       
+            <table class="customers-table">                   
               <thead>
                 <tr>
                   <th>Customer</th>
@@ -188,7 +192,7 @@
           </div>
 
           <div class="pagination">
-            <div class="pagination-info">Showing 1 to 5 of 124 customers</div>
+            <div class="pagination-info">Showing 1 to 5 of <%= countCustomers %> customers</div>
             <div class="pagination-controls">
               <button class="pagination-btn" title="Previous">
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">

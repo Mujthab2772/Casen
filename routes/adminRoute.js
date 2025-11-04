@@ -1,5 +1,5 @@
 import express from "express"
-import { adminLoginGet, adminLoginPost, customerBlocking, customersGet } from "../controllers/adminController.js"
+import { adminLoginGet, adminLoginPost, customerBlocking, customerResetSearch, customerSearch, customersGet } from "../controllers/adminController.js"
 
 const router = express.Router()
 
@@ -9,7 +9,11 @@ router.post("/adminLogin", adminLoginPost)
 
 router.get("/customers", customersGet)
 
-router.post("/customers/:customerId", customerBlocking)
+router.post("/customers/:Id", customerBlocking)
+
+router.post("/customers", customerSearch)
+
+router.post("/customer/reset", customerResetSearch)
 
 
 export default router
