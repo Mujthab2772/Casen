@@ -47,16 +47,21 @@ export const customersGet = async (req, res) => {
     try {
         let  userDetails = []
         let searchData = []
+        let page = (req.session.page) || 1
+        const limit = 5
+        const skip = (page - 1) * limit
+        let countCustomers = await userCollection.countDocuments({})
+
         if(!req.session.searchedUser) {
-            userDetails = await userCollection.find({}, {_id: 1, userId: 1, firstName: 1, lastName: 1, email: 1, phoneNumber: 1, profilePic: 1, isActive: 1, createdAt: 1, updatedAt: 1}).sort({createdAt: -1})
+            userDetails = await userCollection.find({}, {_id: 1, userId: 1, firstName: 1, lastName: 1, email: 1, phoneNumber: 1, profilePic: 1, isActive: 1, createdAt: 1, updatedAt: 1}).sort({createdAt: -1}).skip(skip).limit(limit)
         }else {
             for (let key of req.session.searchedUser) {
-                searchData = [...searchData, await userCollection.find({userId: key.userId})]
+                searchData = [...searchData, await userCollection.find({userId: key.userId}).sort({createdAt: -1}).skip(skip).limit(limit)]
             }
             userDetails = searchData.flat()
         }
-        let countCustomers = await userCollection.countDocuments({})
-        res.render("coustomersPage", {customers: userDetails, countCustomers: countCustomers})
+        
+        res.render("coustomersPage", {customers: userDetails, countCustomers: countCustomers, page: page, start: skip, end: Math.min(skip + limit, countCustomers)})
     } catch (error) {
         console.log(`error from customerGet: ${error}`)
     }
@@ -84,10 +89,10 @@ export const customerSearch = async (req, res) => {
             $or: [
                 { firstName: { $regex: searchBar, $options: "i" } },
                 { lastName: { $regex: searchBar, $options: "i" } },
-                { email: { $regex: searchBar, $options: "i" } },
+                { email: { $regex: `${searchBar}.*@`, $options: "i" } },
                 { phoneNumber: { $regex: searchBar, $options: "i" } }
             ]
-        })
+        }).sort({createdAt: -1})
 
         req.session.searchedUser = searchUsers
         res.redirect("/admin/customers")
@@ -102,5 +107,16 @@ export const customerResetSearch = (req, res) => {
         res.redirect("/admin/customers")
     } catch (error) {
         console.log(`error from customerResetSearch: ${error}`);        
+    }
+}
+
+export const customerPagination = (req, res) => {
+    try {
+        req.session.page = parseInt(req.query.page)
+        res.redirect("/admin/customers")
+        
+    } catch (error) {
+        console.log(`error form customerPagination ${error}`);
+        
     }
 }
