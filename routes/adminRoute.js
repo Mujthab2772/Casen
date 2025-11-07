@@ -1,7 +1,8 @@
 import express from "express"
 import { adminLoginGet, adminLoginPost } from "../controllers/admin/adminController.js"
 import { customerBlocking, customerPagination, customerResetSearch, customerSearch, customersGet } from "../controllers/admin/customerController.js"
-import { addCategory, categoryGet } from "../controllers/admin/categoryController.js"
+import { addCategory, addCategoryPost, categoryGet } from "../controllers/admin/categoryController.js"
+import upload from "../middlewares/multer.js"
 
 const router = express.Router()
 
@@ -21,7 +22,9 @@ router.post("/customer", customerPagination)
 
 router.get("/category", categoryGet)
 
-router.get("/addcategory", addCategory)
+router.get("/addcategoryPage", addCategory)
+
+router.post("/addCategory",upload.single("fileUpload"), addCategoryPost)
 
 
 export default router
