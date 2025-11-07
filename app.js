@@ -45,7 +45,7 @@ app.use("/admin", (req, res, next) => {
 
 
 
-
+app.use("/", (req, res) => res.send("Not Found"))
 
 
 app.listen(PORT, () => {
