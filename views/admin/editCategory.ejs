@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add New Category</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for the toggle switch */
+        /* This styles the hidden checkbox's sibling (the div) */
+        input:checked + .toggle-bg {
+            background-color: #1a202c; /* Equivalent to dark-bg or theme color */
+        }
+        
+        /* This styles the circle inside the toggle */
+        input:checked + .toggle-bg .toggle-dot {
+            transform: translateX(100%);
+        }
+
+
+        #loaderModal {
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+        #loaderModal:not(.hidden) {
+            opacity: 1;
+        }
+
+
+    </style>
+</head>
+<body class="bg-gray-100 font-sans antialiased">
+
+    <!-- Main Content Area -->
+    <div class="container mx-auto max-w-4xl p-4 md:p-8">
+        
+        <!-- Back Link -->
+        <a href="/admin/category" class="inline-flex items-center text-gray-600 hover:text-gray-900 mb-4 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+            <!-- Back arrow icon (inline SVG) -->
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Back to Category Management
+        </a>
+
+        <!-- Page Header -->
+        <div class="mb-6">
+            <h1 class="text-3xl font-bold text-gray-900">Edit Category</h1>
+            <p class="text-gray-600 mt-1">edit category for your products.</p>
+        </div>
+
+        <!-- Form Card -->
+        <div class="bg-white rounded-lg shadow-md p-6 md:p-8">
+            <form id="addCategoryForm" action="/admin/updateCategory/<%= categoryDetail._id %>?_method=PATCH" method="POST" enctype="multipart/form-data">
+                <div class="space-y-6">
+                    
+                    <!-- Category Name -->
+                    <div>
+                        <label for="category-name" class="block text-sm font-medium text-gray-700 mb-1">
+                            Category Name
+                        </label>
+                        <input 
+                            type="text" 
+                            id="category-name" 
+                            name="categoryName"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-800 focus:border-gray-800"
+                            value="<%= categoryDetail.categoryName %>"
+                        >
+                        <p style="color: red;"><%= error %></p>
+                    </div>
+                    
+                    <!-- Description -->
+                    <div>
+                        <label for="description" class="block text-sm font-medium text-gray-700 mb-1">
+                            Description
+                        </label>
+                        <textarea 
+                            id="description" 
+                            name="description" 
+                            rows="4"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-800 focus:border-gray-800"
+                        > <%=categoryDetail.description %></textarea>
+                    </div>
+
+                    <!-- Category Image -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Category Image
+                        </label>
+                        <div id="drop-area" class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg">
+                            <div class="space-y-1 text-center">
+                                <!-- Cloud upload icon (inline SVG) -->
+                                <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                                </svg>
+                                <div class="flex text-sm text-gray-600">
+                                    <label for="file-upload" class="relative cursor-pointer bg-white rounded-md font-medium text-gray-800 hover:text-gray-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-gray-500">
+                                        <span>Upload a file</span>
+                                        <input id="file-upload" name="fileUpload" type="file" class="sr-only" value="<%= categoryDetail.image %>">
+                                    </label>
+                                    <p class="pl-1">or drag and drop</p>
+                                </div>
+                                <p class="text-xs text-gray-500">
+                                    PNG, JPG, GIF
+                                </p>
+
+                                <div id="preview-container" class="mt-4 <%= categoryDetail && categoryDetail.image ? '' : 'hidden' %>">
+                                    <img id="preview-image" class="mx-auto rounded-lg shadow-md max-h-48 object-contain" src="<%= categoryDetail && categoryDetail.image ? categoryDetail.image : '' %>" alt="Category Image Preview"   />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Status Toggle
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Status
+                        </label>
+                        <div class="flex items-center space-x-3">
+                            <span class="text-sm text-gray-500">Inactive</span>
+                            
+                            Toggle Switch
+                            <label for="status-toggle" class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="status-toggle" class="sr-only peer" checked>
+                                <div class="toggle-bg w-11 h-6 bg-gray-200 rounded-full peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-offset-2 peer-focus:ring-gray-500 transition-colors duration-200 ease-in-out">
+                                    <div class="toggle-dot w-5 h-5 bg-white rounded-full shadow-md transform transition-transform duration-200 ease-in-out m-0.5"></div>
+                                </div>
+                            </label>
+                            
+                            <span class="text-sm font-medium text-gray-900">Active</span>
+                        </div>
+                    </div> -->
+
+                </div>
+
+                <!-- Form Actions -->
+                <div class="flex justify-end items-center gap-4 mt-8 pt-6 border-t border-gray-200">
+                    <button 
+                        type="button"
+                        onclick="window.location.href='/admin/category'"
+                        class="px-6 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors"
+                    >
+                        Cancel
+                    </button>
+                    <button 
+                        type="submit"
+                        class="px-6 py-2 bg-gray-900 border border-transparent rounded-lg text-sm font-medium text-white hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 transition-colors"
+                    >
+                        Edit Category
+                    </button>
+                </div>
+
+            </form>
+        </div>
+        
+    </div>
+
+<!-- Loader Modal -->
+<div id="loaderModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden z-50">
+  <div class="bg-white rounded-lg p-6 text-center">
+    <svg class="animate-spin h-8 w-8 text-gray-900 mx-auto mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+    </svg>
+    <p class="text-gray-700">Uploading category...</p>
+  </div>
+</div>
+
+
+
+
+   <script>
+
+    const form = document.getElementById("addCategoryForm");
+  const loader = document.getElementById("loaderModal");
+
+  form.addEventListener("submit", () => {
+    loader.classList.remove("hidden");
+  });
+
+
+
+
+  const fileInput = document.getElementById("file-upload");
+  const dropArea = document.getElementById("drop-area");
+  const previewContainer = document.getElementById("preview-container");
+  const previewImage = document.getElementById("preview-image");
+
+  // 🔹 Function to display preview
+  const showPreview = (file) => {
+    if (file && file.type.startsWith("image/")) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        previewImage.src = e.target.result;
+        previewContainer.classList.remove("hidden");
+      };
+      reader.readAsDataURL(file);
+    } else {
+      previewContainer.classList.add("hidden");
+    }
+  };
+
+  // 🔹 Handle manual file selection
+  fileInput.addEventListener("change", (event) => {
+    const file = event.target.files[0];
+    showPreview(file);
+  });
+
+  // 🔹 Prevent default drag behaviors
+  ["dragenter", "dragover", "dragleave", "drop"].forEach((eventName) => {
+    dropArea.addEventListener(eventName, (e) => e.preventDefault());
+    dropArea.addEventListener(eventName, (e) => e.stopPropagation());
+  });
+
+  // 🔹 Highlight drop area on dragover
+  ["dragenter", "dragover"].forEach((eventName) => {
+    dropArea.addEventListener(eventName, () => dropArea.classList.add("border-blue-400"));
+  });
+
+  // 🔹 Remove highlight when leaving or dropping
+  ["dragleave", "drop"].forEach((eventName) => {
+    dropArea.addEventListener(eventName, () => dropArea.classList.remove("border-blue-400"));
+  });
+
+  // 🔹 Handle dropped files
+  dropArea.addEventListener("drop", (event) => {
+    const file = event.dataTransfer.files[0];
+    if (file) {
+      showPreview(file);
+    }
+  });
+
+
+  
+</script>
+</body>
+</html>

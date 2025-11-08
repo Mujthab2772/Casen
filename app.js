@@ -5,6 +5,7 @@ import session from "express-session";
 import dotenv from "dotenv";
 import { connectDB } from "./config/dataBase.js";
 import adminRouter from "./routes/adminRoute.js"
+import methodOverride from 'method-override'
 
 dotenv.config();
 const app = express()
@@ -19,6 +20,7 @@ app.set('view engine', "ejs")
 
 app.use(express.static(path.join(__dirname, 'public/admin')))
 app.use(express.static(path.join(__dirname, 'public/user')))
+app.use(methodOverride('_method'))
 
 app.use(session({
     secret: "loginPageAndSignUp460",
