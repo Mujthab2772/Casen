@@ -18,14 +18,24 @@ export const categoryAddToDb = async (categoryName, description, fileUrl) => {
     return {status: "Success", categoryDatas}
 }
 
-export const categoryFetch = async (searchCategory) => {
-    let fetchData
+export const categoryFetch = async (searchCategory = null, page, limit = 5) => {
+    const categorySkip = (page - 1) * limit
+    let countCategory = await categoryCollection.countDocuments({})
+
+    let categories
+
     if (!searchCategory) {
-        fetchData = await categoryCollection.find({}).sort({createdAt: -1})
+        categories = await categoryCollection.find({})
+        .sort({createdAt: -1})
+        .skip(categorySkip)
+        .limit(limit)
     } else {
-        fetchData = await categoryCollection.find({categoryId: {$in: searchCategory}})
+        categories = await categoryCollection.find({categoryId: {$in: searchCategory}})
+        .sort({createdAt: -1})
+        .skip(categorySkip)
+        .limit(limit)
     }
-    return fetchData
+    return {categories, countCategory, categorySkip, end: Math.min(categorySkip + limit, countCategory)}
 }
 
 export const categorySearch = async (searchWord) => {

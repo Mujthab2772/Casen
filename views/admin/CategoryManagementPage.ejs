@@ -207,17 +207,17 @@
           </div>
 
           <div class="pagination">
-            <div class="pagination-info">Showing 1 to 5 of 8 customers</div>
+            <div class="pagination-info">Showing <%= categorySkip + 1 %> to <%= end %> of <%= countCategory %> customers</div>
             <div class="pagination-controls">
-              <form action="" method="post">
+              <form action="/admin/categorie/?categoryPage=<%= page - 1 %>" method="post">
                 <button class="pagination-btn" title="Previous">
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
                   <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"/>
                 </svg>
               </button>
               </form>
-              <div class="pagination-number">1/2</div>
-              <form action="" method="post">
+              <div class="pagination-number"><%= page %>/<%= Math.ceil(countCategory/5) || 1 %></div>
+              <form action="/admin/categorie/?categoryPage=<%= page + 1 %>" method="post">
                 <button class="pagination-btn" title="Next">
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
                   <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/>

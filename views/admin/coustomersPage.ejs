@@ -201,7 +201,7 @@
                 </svg>
               </button>
               </form>
-              <div class="pagination-number"><%= page %> / <%= Math.round(countCustomers/5) || 1 %> </div>
+              <div class="pagination-number"><%= page %> / <%= Math.ceil(countCustomers/5) || 1 %> </div>
               <form action="/admin/customer/?page=<%= page + 1 %>" method="post">
                 <button class="pagination-btn" title="Next">
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">

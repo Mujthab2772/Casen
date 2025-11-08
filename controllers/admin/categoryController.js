@@ -4,8 +4,9 @@ import { uploadToCloudinary } from "../../util/cloudinaryUpload.js";
 
 export const categoryGet = async (req, res) => {
     try {
-        let categories = await categoryFetch(req.session.categorieSearched)
-        return res.status(STATUS_CODE.OK).render("CategoryManagementPage", {categories})
+        let page = (req.session.categoryPage) || 1
+        let {categories, countCategory, categorySkip, end} = await categoryFetch(req.session.categorieSearched, page)
+        return res.status(STATUS_CODE.OK).render("CategoryManagementPage", {categories, page, countCategory, categorySkip, end})
     } catch (error) {
         console.log(`Error from categoryGet: ${error}`);
         res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).redirect('/admin/category')
@@ -128,5 +129,15 @@ export const editCategoryPatch = async (req, res) => {
     } catch (error) {
         console.log(`error from editCategoryPatch ${error}`);
         res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).redirect('/admin/editCategory')        
+    }
+}
+
+export const categoryPagination = (req, res) => {
+    try {
+        req.session.categoryPage = parseInt(req.query.categoryPage)
+        return res.status(STATUS_CODE.OK).redirect('/admin/category')
+    } catch (error) {
+        console.log(`error from categoryPagination ${error}`);
+        res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).send("internal server error")
     }
 }

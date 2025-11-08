@@ -1,7 +1,7 @@
 import express from "express"
 import { adminLoginGet, adminLoginPost } from "../controllers/admin/adminController.js"
 import { customerBlocking, customerPagination, customerResetSearch, customerSearch, customersGet } from "../controllers/admin/customerController.js"
-import { addCategory, addCategoryPost, categoryGet, editCategory, editCategoryGet, editCategoryPatch, searchCategory, validCategory } from "../controllers/admin/categoryController.js"
+import { addCategory, addCategoryPost, categoryGet, categoryPagination, editCategory, editCategoryGet, editCategoryPatch, searchCategory, validCategory } from "../controllers/admin/categoryController.js"
 import upload from "../middlewares/multer.js"
 
 const router = express.Router()
@@ -36,5 +36,6 @@ router.post("/editCategory/:id", editCategory)
 
 router.patch('/updateCategory/:id',upload.single("fileUpload"), editCategoryPatch)
 
+router.post('/categorie', categoryPagination)
 
 export default router
