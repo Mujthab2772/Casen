@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OTP Verification</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+  <div class="min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-md p-6 sm:p-8 rounded-lg shadow-md">
+      <div class="flex justify-center mb-6">
+        <div class="bg-gray-100 p-3 rounded-full">
+          <span class="text-3xl text-gray-700">&#x1F512;</span>
+        </div>
+      </div>
+      <h2 class="text-2xl font-semibold text-gray-800 text-center">Enter Verification Code</h2>
+      <p class="text-gray-600 text-center mt-2">We've sent a 6-digit code to your Email.</p>
+      <form id="otp-form" action="/user/otpverify" method="post">
+        <div class="flex justify-center space-x-2 sm:space-x-3 mt-6 mb-4">
+          <input type="text" name="box1" maxlength="1" pattern="[0-9]*" inputmode="numeric"
+                 class="w-10 h-12 sm:w-12 sm:h-14 text-center text-2xl font-medium text-gray-900 bg-gray-100 border border-gray-300 rounded outline-none focus:border-black focus:ring-2 focus:ring-black/20"
+          />
+          <input type="text" name="box2" maxlength="1" pattern="[0-9]*" inputmode="numeric"
+                 class="w-10 h-12 sm:w-12 sm:h-14 text-center text-2xl font-medium text-gray-900 bg-gray-100 border border-gray-300 rounded outline-none focus:border-black focus:ring-2 focus:ring-black/20"
+          />
+          <input type="text" name="box3" maxlength="1" pattern="[0-9]*" inputmode="numeric"
+                 class="w-10 h-12 sm:w-12 sm:h-14 text-center text-2xl font-medium text-gray-900 bg-gray-100 border border-gray-300 rounded outline-none focus:border-black focus:ring-2 focus:ring-black/20"
+          />
+          <input type="text" name="box4" maxlength="1" pattern="[0-9]*" inputmode="numeric"
+                 class="w-10 h-12 sm:w-12 sm:h-14 text-center text-2xl font-medium text-gray-900 bg-gray-100 border border-gray-300 rounded outline-none focus:border-black focus:ring-2 focus:ring-black/20"
+          />
+          <input type="text" name="box5" maxlength="1" pattern="[0-9]*" inputmode="numeric"
+                 class="w-10 h-12 sm:w-12 sm:h-14 text-center text-2xl font-medium text-gray-900 bg-gray-100 border border-gray-300 rounded outline-none focus:border-black focus:ring-2 focus:ring-black/20"
+          />
+          <input type="text" name="box6" maxlength="1" pattern="[0-9]*" inputmode="numeric"
+                 class="w-10 h-12 sm:w-12 sm:h-14 text-center text-2xl font-medium text-gray-900 bg-gray-100 border border-gray-300 rounded outline-none focus:border-black focus:ring-2 focus:ring-black/20"
+          />
+        </div>
+        <p style="color: red;"><%= otpErr %></p>
+        <div class="mt-4">
+            <button type="submit" class="w-full py-2 bg-black text-white font-medium rounded-md hover:bg-gray-900 focus:outline-none">
+                Verify
+            </button>
+        </form>
+      </div>
+      <p class="text-sm text-gray-600 text-center mt-4">
+        Didn't receive the code? <span id="resend-text" class="font-medium">Resend OTP in <span id="timer">00:30</span></span>
+      </p>
+    </div>
+  </div>
+  <script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const inputs = Array.from(document.querySelectorAll('#otp-form input'));
+    const timerEl = document.getElementById('timer');
+    const resendText = document.getElementById('resend-text');
+    let timeLeft = 30;
+    let countdown;
+
+    // OTP input behavior (unchanged)
+    inputs.forEach((input, index) => {
+      input.addEventListener('keydown', function (e) {
+        if (
+          !e.key.match(/^[0-9]$/) &&
+          !['Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight'].includes(e.key)
+        ) e.preventDefault();
+
+        if (['Backspace', 'Delete'].includes(e.key)) {
+          const prev = inputs[index - 1];
+          if (prev) {
+            prev.value = '';
+            prev.focus();
+          }
+        }
+      });
+
+      input.addEventListener('input', function (e) {
+        if (e.target.value) {
+          const next = inputs[index + 1];
+          if (next) next.focus();
+        }
+      });
+
+      input.addEventListener('paste', function (e) {
+        e.preventDefault();
+        const paste = (e.clipboardData || window.clipboardData).getData('text');
+        if (!/^[0-9]+$/.test(paste)) return;
+        const digits = paste.split('').slice(0, inputs.length);
+        inputs.forEach((input, idx) => input.value = digits[idx] || '');
+        const last = digits.length - 1;
+        if (last >= 0 && last < inputs.length) inputs[last].focus();
+      });
+    });
+
+    // 🕒 Start countdown timer
+    function startTimer() {
+      timeLeft = 30;
+      // resendText.innerHTML = 'Resend OTP in <span id="timer">00:30</span>';
+      const newTimerEl = document.getElementById('timer');
+
+      countdown = setInterval(() => {
+        if (timeLeft <= 0) {
+          clearInterval(countdown);
+          newTimerEl.textContent = '00:00';
+          resendText.innerHTML = '<button id="resend-btn" class="text-blue-600 font-medium hover:underline">Resend OTP</button>';
+          enableResend();
+        } else {
+          timeLeft--;
+          const minutes = Math.floor(timeLeft / 60);
+          const seconds = timeLeft % 60;
+          newTimerEl.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+      }, 1000);
+    }
+
+    // 📤 Handle resend click
+    function enableResend() {
+      const resendBtn = document.getElementById('resend-btn');
+      if (resendBtn) {
+        resendBtn.addEventListener('click', async () => {
+          try {
+            resendBtn.textContent = 'Sending...';
+            resendBtn.disabled = true;
+
+            // Send request to backend
+            const res = await fetch('/user/resendOtp', { method: 'POST' });
+            const data = await res.json();
+
+            if (data.success) {              
+              resendText.innerHTML = 'OTP resent! Please check your email. <span id="timer">00:30</span>';
+              startTimer(); // restart countdown
+            } else {
+              resendText.innerHTML = '<span class="text-red-600">Failed to resend OTP</span>';
+            }
+          } catch (err) {
+            resendText.innerHTML = '<span class="text-red-600">Error resending OTP</span>';
+          }
+        });
+      }
+    }
+
+    // start initial timer
+    startTimer();
+  });
+</script>
+</body>
+</html>

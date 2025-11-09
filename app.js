@@ -5,6 +5,7 @@ import session from "express-session";
 import dotenv from "dotenv";
 import { connectDB } from "./config/dataBase.js";
 import adminRouter from "./routes/adminRoute.js"
+import userRouter from "./routes/userRoute.js";
 import methodOverride from 'method-override'
 
 dotenv.config();
@@ -44,6 +45,11 @@ app.use("/admin", (req, res, next) => {
     app.set("views", path.join(__dirname, "views/admin"))
     next()
 }, adminRouter)
+
+app.use("/user", (req, res, next) => {
+    app.set("views", path.join(__dirname, "views/user"))
+    next()
+}, userRouter)
 
 
 

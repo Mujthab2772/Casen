@@ -11,6 +11,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "bcrypt": "^6.0.0",
     "cloudinary": "^2.8.0",
     "dotenv": "^17.2.3",
     "ejs": "^3.1.10",
@@ -20,6 +21,7 @@
     "method-override": "^3.0.0",
     "mongoose": "^8.19.2",
     "multer": "^2.0.2",
+    "nodemailer": "^7.0.10",
     "uuid": "^13.0.0"
   }
 }

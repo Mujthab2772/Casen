@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Create an Account</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+  <div class="min-h-screen flex items-center justify-center py-8 px-4">
+    <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
+      <div class="flex flex-col items-center">
+        <div class="flex items-center justify-center h-12 w-12 rounded-full bg-indigo-600">
+          <span class="text-xl text-white">📱</span>
+        </div>
+        <h2 class="mt-6 text-2xl font-bold text-gray-900">Casen</h2>
+        <h2 class="mt-6 text-2xl font-bold text-gray-900">Create an Account</h2>
+        <p class="mt-2 text-sm text-gray-600">Start your journey with us.</p>
+      </div>
+      <form class="mt-8 space-y-4" action="/user/signup" method="post">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label for="first_name" class="block text-sm font-medium text-gray-700">First name</label>
+            <input id="first_name" name="firstName" type="text" placeholder="First name" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+          </div>
+          <div>
+            <label for="last_name" class="block text-sm font-medium text-gray-700">Last name</label>
+            <input id="last_name" name="lastName" type="text" placeholder="Last name" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+          </div>
+        </div>
+        <div>
+          <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+          <input id="email" name="email" type="email" placeholder="you@example.com" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+          <p style="color: red;"> <%= errorEmail %> </p>
+        </div>
+        <div>
+          <label for="phone" class="block text-sm font-medium text-gray-700">Phone number</label>
+          <input id="phone" name="phone" type="tel" placeholder="123-456-7890" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+        </div>
+        <!-- Password Field -->
+<div class="relative">
+  <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+  <input id="password" name="password" type="password" placeholder="Enter your password"
+    class="mt-1 block w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+  <button type="button" class="absolute right-3 top-9 text-gray-500" onclick="togglePassword('password', this)">
+    <!-- Eye open (visible only when password is shown) -->
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 eye-open hidden" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" stroke-width="2">
+      <path stroke-linecap="round" stroke-linejoin="round"
+        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+      <path stroke-linecap="round" stroke-linejoin="round"
+        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+    </svg>
+    <!-- Eye off (default state) -->
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 eye-off" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" stroke-width="2">
+      <path stroke-linecap="round" stroke-linejoin="round"
+        d="M13.875 18.825A10.05 10.05 0 0112 19c-4.477 0-8.268-2.943-9.542-7a10.054 10.054 0 013.01-4.423m3.76-1.999A9.958 9.958 0 0112 5c4.477 0 8.268 2.943 9.542 7a9.96 9.96 0 01-1.492 2.568M15 12a3 3 0 00-3-3m0 0a3 3 0 00-3 3m3 3a3 3 0 01-3-3m0 0a3 3 0 013-3" />
+      <path stroke-linecap="round" stroke-linejoin="round" d="M3 3l18 18" />
+    </svg>
+  </button>
+</div>
+
+<!-- Confirm Password Field -->
+<div class="relative mt-4">
+  <label for="confirm_password" class="block text-sm font-medium text-gray-700">Confirm Password</label>
+  <input id="confirm_password" name="confirmPassword" type="password" placeholder="Confirm your password"
+    class="mt-1 block w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+  <button type="button" class="absolute right-3 top-9 text-gray-500" onclick="togglePassword('confirm_password', this)">
+    <!-- Eye open -->
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 eye-open hidden" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" stroke-width="2">
+      <path stroke-linecap="round" stroke-linejoin="round"
+        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+      <path stroke-linecap="round" stroke-linejoin="round"
+        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+    </svg>
+    <!-- Eye off -->
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 eye-off" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" stroke-width="2">
+      <path stroke-linecap="round" stroke-linejoin="round"
+        d="M13.875 18.825A10.05 10.05 0 0112 19c-4.477 0-8.268-2.943-9.542-7a10.054 10.054 0 013.01-4.423m3.76-1.999A9.958 9.958 0 0112 5c4.477 0 8.268 2.943 9.542 7a9.96 9.96 0 01-1.492 2.568M15 12a3 3 0 00-3-3m0 0a3 3 0 00-3 3m3 3a3 3 0 01-3-3m0 0a3 3 0 013-3" />
+      <path stroke-linecap="round" stroke-linejoin="round" d="M3 3l18 18" />
+    </svg>
+  </button>
+  <p style="color: red;"> <%= errorPass %> </p>
+</div>
+
+        <div>
+          <label for="referral" class="block text-sm font-medium text-gray-700">Referral Code <span class="text-gray-500">(Optional)</span></label>
+          <div class="mt-1 flex">
+            <input id="referral" name="referral" type="text" placeholder="Referral code" class="flex-grow block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+            <button type="button" class="ml-2 px-4 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200">Apply</button>
+          </div>
+        </div>
+        <div>
+          
+            <button type="submit" class="w-full py-2 px-4 bg-black text-white font-medium rounded-md hover:bg-gray-900">Create Account</button>
+      </form>
+        </div>
+        <div class="flex items-center my-4">
+          <hr class="flex-grow border-t border-gray-300"/>
+          <span class="px-2 text-gray-500">Or continue with</span>
+          <hr class="flex-grow border-t border-gray-300"/>
+        </div>
+        <div>
+          <button type="button" class="w-full py-2 px-4 border border-gray-300 rounded-md flex items-center justify-center hover:bg-gray-100">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/240px-Google_%22G%22_logo.svg.png" alt="Google" class="h-5 w-5 mr-2">
+            Sign up with Google
+          </button>
+        </div>
+        <p class="text-center text-sm">Already have an account? <a href="#" class="text-blue-600 hover:underline">Log in</a></p>
+        <p class="mt-6 text-xs text-center text-gray-500">By creating an account, you agree to our <a href="#" class="underline">Terms of Service</a> and <a href="#" class="underline">Privacy Policy</a>.</p>
+      
+    </div>
+  </div>
+<script>
+  function togglePassword(id, btn) {
+    const input = document.getElementById(id);
+    const eyeOpen = btn.querySelector('.eye-open'); // open eye (👁️)
+    const eyeOff = btn.querySelector('.eye-off');   // closed eye (🙈)
+
+    if (input.type === 'password') {
+      input.type = 'text';              // show password
+      eyeOff.classList.add('hidden');   // hide eye-off
+      eyeOpen.classList.remove('hidden'); // show eye-open
+    } else {
+      input.type = 'password';          // hide password
+      eyeOff.classList.remove('hidden'); // show eye-off
+      eyeOpen.classList.add('hidden');   // hide eye-open
+    }
+  }
+</script>
+
+</body>
+</html>
