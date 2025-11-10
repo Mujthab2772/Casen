@@ -10,15 +10,11 @@ export const signupVerify = async (userData) => {
     try {
         const {firstName, lastName, password, confirmPassword, email, phone} = userData
 
-        const existingUser = await userCollection.findOne({
-            $or: [{ email }, { phoneNumber: phone }]
-        });
+        const existingUser = await userCollection.findOne({email});
 
         if (existingUser) {
             if (existingUser.email === email) {
                 return { status: "Email already exists" };
-            } else if (existingUser.phoneNumber === phone) {
-                return { status: "Phone number already exists" };
             }
         }
 

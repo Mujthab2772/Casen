@@ -7,6 +7,7 @@ import { connectDB } from "./config/dataBase.js";
 import adminRouter from "./routes/adminRoute.js"
 import userRouter from "./routes/userRoute.js";
 import methodOverride from 'method-override'
+import passport from './config/passport.js';
 
 dotenv.config();
 const app = express()
@@ -24,13 +25,16 @@ app.use(express.static(path.join(__dirname, 'public/user')))
 app.use(methodOverride('_method'))
 
 app.use(session({
-    secret: "loginPageAndSignUp460",
+    secret: "Casen@2772",
     resave: false,
     saveUninitialized: false,
     // cookie: {
     //     maxAge: 1000 * 60 * 60 * 24
     // }
 }))
+
+app.use(passport.initialize())
+app.use(passport.session())
 
 app.use((req, res, next) => {
     res.set('Cache-Control', 'no-store, no-cache, must-revalidate, must-revalidate');

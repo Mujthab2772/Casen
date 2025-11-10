@@ -27,13 +27,16 @@ const userSchema = new mongoose.Schema(
     },
     phoneNumber: {
       type: String,
-      required: true,
-      unique: true,
-      trim: true,
+      required: function() {
+        return this.authProvider === "local"
+      },
+      trim: true
     },
     password: {
       type: String,
-      required: true,
+      required: function() {
+        return this.authProvider === "local"
+      },
       minlength: 6,
     },
     profilePic: {
@@ -43,6 +46,11 @@ const userSchema = new mongoose.Schema(
     isVerified: {
       type: Boolean, // true only after OTP verification
       default: false,
+    },
+    authProvider: {
+      type: String,
+      enum: ["local", "google"],
+      default: "local",
     },
     isActive: {
       type: Boolean,

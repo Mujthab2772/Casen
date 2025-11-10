@@ -131,6 +131,7 @@
               startTimer(); // restart countdown
             } else {
               resendText.innerHTML = '<span class="text-red-600">Failed to resend OTP</span>';
+              startTimer()
             }
           } catch (err) {
             resendText.innerHTML = '<span class="text-red-600">Error resending OTP</span>';

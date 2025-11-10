@@ -3,7 +3,7 @@ import { STATUS_CODE } from "../../util/statusCodes.js";
 
 export const signUpPageGet = (req, res) => {
     try {
-        res.render('signupPage', {errorEmail: req.session.signUpErr, errorPass: req.session.signUpErrPass})
+        res.render('signupPage', {errorFirstName: req.session.signUpErrFn, errorLastName: req.session.signUpErrLn, errorEmail: req.session.signUpErrEmail, errorPass: req.session.signUpErrPass, errorPhone: req.session.signUpErrPhone, errorConfirm: req.session.signUpErrPassConfirm})
     } catch (error) {
         console.log(`error from signupPageGet ${error}`);
     }
@@ -18,15 +18,12 @@ export const signUpPost = async (req, res) => {
         const result = await signupVerify(req.body)
 
         if (result.status === "Email already exists") {
-            req.session.signUpErr = "Email already exists"
+            req.session.signUpErrEmail = "Email already exists"
             return res.status(STATUS_CODE.BAD_REQUEST).redirect('/user/signUpPage')
-        }else if (result.status ===  "Phone number already exists") {
-            req.session.signUpErr =  "Phone number already exists"
-            return res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).redirect('/user/signUpPage')
         }
 
         if (result.status === "confirm password does not match password") {
-            req.session.signUpErrPass = "Passwords do not match"
+            req.session.signUpErrPassConfirm = "Passwords do not match"
             return res.status(STATUS_CODE.BAD_REQUEST).redirect('/user/signUpPage')
         }
         req.session.tempEmail = result.email
@@ -43,7 +40,8 @@ export const otpPage = (req, res) => {
     try {
         res.status(STATUS_CODE.OK).render('otpVerificationPage', {otpErr: req.session.otpInvalid})
     } catch (error) {
-        console.log(`error from otpPage`);        
+        console.log(`error from otpPage`);   
+        res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).redirect('/user/signUpPage')     
     }
 }
 
@@ -77,16 +75,17 @@ export const otpPagePost = async (req, res) => {
 
 export const resendOtp = async (req, res) => {
     try {
+        req.session.otpInvalid = null
         let result = await resendingOtp(req.session.tempEmail)
 
         if (result.status === "User Not Found") {
-            req.session.otpResentErr = "User Not Found"
-            return res.status(STATUS_CODE.BAD_REQUEST).redirect('/user/signUpOtp')
+            req.session.otpInvalid = "User Not Found"
+            return res.json({success: true, redirectUrl: '/user/signUpOtp'})
         }
-        return res.json({success: true})
+        return res.json({success: true, redirectUrl: '/user/signUpOtp'})
     } catch (error) {
         console.log(`error from resendOtp ${error}`);
-        
+        res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).redirect('/user/signUpOtp')
     }
 }
 
