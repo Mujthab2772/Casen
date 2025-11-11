@@ -1,8 +1,8 @@
 import express from "express"
 import { otpPage, otpPagePost, resendOtp, signUpPageGet, signUpPost } from "../controllers/user/signupController.js"
-import { validateSignUp } from "../middlewares/validationMiddleware.js"
+import { resetPasswordValidate, validateSignUp } from "../middlewares/validationMiddleware.js"
 import { googleAuth, googleAuthCallback } from "../controllers/user/googleAuthController.js"
-import { loginGet } from "../controllers/user/loginController.js"
+import { forgotOtpPage, forgotOtpVerify, forgotPass, forgotPassResetPost, login, loginGet, resendforgotOtp, resetPassword, resetPasswordVerify } from "../controllers/user/loginController.js"
 
 const router = express.Router()
 
@@ -21,5 +21,21 @@ router.get('/auth/google', googleAuth)
 router.get('/auth/google/callback', googleAuthCallback)
 
 router.get('/loginPage', loginGet)
+
+router.post('/login', login)
+
+router.get('/forgotPassword', forgotPass)
+
+router.post('/forgotPassword', forgotPassResetPost)
+
+router.get("/forgotOtp", forgotOtpPage)
+
+router.post('/forgotOtpVerify', forgotOtpVerify)
+
+router.post('/resendForgotOtp', resendforgotOtp)
+
+router.get('/resetPasswordPage', resetPassword)
+
+router.post('/resetPassword', resetPasswordValidate, resetPasswordVerify)
 
 export default router

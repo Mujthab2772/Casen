@@ -48,3 +48,36 @@ export const validateSignUp = (req, res, next) => {
         res.redirect('/user/signUpPage')       
     }
 }
+
+export const resetPasswordValidate = (req, res, next) => {
+    try {
+        req.session.newPassErr = null
+        req.session.confirmPassErr = null
+        const {resetPassword, confirmResetPass} = req.body
+
+        const errors = {}
+
+        if(resetPassword !== confirmResetPass) {
+            errors.confirmPassErr = "The Password is not match"
+        }
+
+        if(!resetPassword || !validatePassword(resetPassword)) {
+            errors.password = "Password must be at least 8 characters with uppercase, lowercase, number, and special character";
+        }
+
+        if(Object.keys(errors).length > 0) {
+            req.session.newPassErr = errors.password 
+            req.session.confirmPassErr = errors.confirmPassErr
+            return res.render('resetPassword', {resetErr: req.session.newPassErr, confirmPassErr: req.session.confirmPassErr})
+        }
+
+        req.session.newPassErr = null
+        req.session.confirmPassErr = null
+
+        next()
+
+    } catch (error) {
+        console.log(`error from resetPasswordMiddleware ${error}`);
+        res.redirect('/user/resetPasswordPage')
+    }
+}

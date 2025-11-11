@@ -10,19 +10,15 @@ const otpSchema = new mongoose.Schema(
     },
     firstName: {
       type: String,
-      required: true,
     },
     lastName: {
       type: String,
-      required: true,
     },
     phoneNumber: {
       type: String,
-      required: true,
     },
     password: {
       type: String,
-      required: true,
     },
     otp: {
       type: String,
@@ -30,7 +26,6 @@ const otpSchema = new mongoose.Schema(
     },
     otpExpiresAt: {
       type: Date,
-      required: true,
     },
   },
   { timestamps: true }

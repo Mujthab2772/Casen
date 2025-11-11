@@ -105,6 +105,7 @@ export const resendingOtp = async (email) => {
 
         await sendOtpEmail(email, newOtp)
 
+        
         return {status: "success", email}
         
     } catch (error) {

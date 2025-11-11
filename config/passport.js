@@ -18,8 +18,16 @@ passport.use(
 
         const email = profile.emails[0].value;
         let user = await userCollection.findOne({ email });
+        
 
         if(user) {
+
+          if(!user.isActive) {
+            console.warn(`Blocked user (${email}) attempted Google login)`)
+            return done(null, false, {message: "User is blocked"})
+          }
+
+
           user.profilePic = profile.photos?.[0]?.value || "default.jpg";
           await user.save();
           return done(null, user);
@@ -34,6 +42,7 @@ passport.use(
             profilePic: profile.photos?.[0]?.value || "default.jpg",
             isVerified: true,
             authProvider: "google",
+            isActive: true
           });
 
           try {
