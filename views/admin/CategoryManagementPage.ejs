@@ -51,7 +51,7 @@
             <span>Orders</span>
           </a>
 
-          <a href="#" class="nav-item">
+          <a href="/admin/products" class="nav-item">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
               <path d="M3 1a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V1z"/>
               <path d="M3 5a1 1 0 011-1h12a1 1 0 011 1v12a2 2 0 01-2 2H5a2 2 0 01-2-2V5z"/>
@@ -119,14 +119,14 @@
         </div>
 
         <div class="content-area">
-          <form action="/admin/searchCategory" method="post">
+          <form action="/admin/category" method="get">
           <div class="toolbar">
             <div class="search-wrapper">
               <svg class="search-icon" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M9 17C13.4183 17 17 13.4183 17 9C17 4.58172 13.4183 1 9 1C4.58172 1 1 4.58172 1 9C1 13.4183 4.58172 17 9 17Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 <path d="M19 19L14.65 14.65" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
-              <input type="search" name="searchCategory" class="search-input" placeholder="Search category..." />
+              <input type="search" name="searchCategory" class="search-input" placeholder="Search category..."  value="<%= searchCategory || '' %>"/>
             </div>
 
             <div class="toolbar-actions">
@@ -137,7 +137,7 @@
                   Filter by Status
                 </button>
               </form>
-              <form action="/admin/addcategorypage" method="get">
+              <form action="/admin/addcategory" method="get">
               <button class="sort-btn" >
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
     <path d="M10 4C10.5523 4 11 4.44772 11 5V9H15C15.5523 9 16 9.44772 16 10C16 10.5523 15.5523 11 15 11H11V15C11 15.5523 10.5523 16 10 16C9.44772 16 9 15.5523 9 15V11H5C4.44772 11 4 10.5523 4 10C4 9.44772 4.44772 9 5 9H9V5C9 4.44772 9.44772 4 10 4Z"/>
@@ -175,7 +175,7 @@
                       <div> <%= categories[i].description %></div>
                     </div>
                   </td>
-                  <% if(categories[i].isVaild){ %>
+                  <% if(categories[i].isValid){ %>
                       <td><span class="badge badge-active">Active</span></td>
                   <% }else{ %>
                       <td><span class="badge badge-suspended">Blocked</span></td>
@@ -183,14 +183,14 @@
                   
                   <td>
                     <div class="actions-cell">
-                      <form action="/admin/editCategory/<%= categories[i]._id %>" method="post">
+                      <form action="/admin/editCategory/<%= categories[i]._id %>" method="get">
                         <button class="action-btn" title="Edit" type="submit">
                           <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
                             <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
                           </svg>
                         </button>
                       </form>
-                      <form class="delete-form" action="/admin/category/<%= categories[i].categoryId %>" method="post"  data-status="<%= categories[i].isVaild %>">
+                      <form class="delete-form" action="/admin/category/<%= categories[i].categoryId %>?_method=PATCH" method="post"  data-status="<%= categories[i].isVaild %>">
                           <button class="action-btn delete-btn" title="Delete" type="submit">
                             <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
                               <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
@@ -209,21 +209,25 @@
           <div class="pagination">
             <div class="pagination-info">Showing <%= categorySkip + 1 %> to <%= end %> of <%= countCategory %> customers</div>
             <div class="pagination-controls">
-              <form action="/admin/categorie/?categoryPage=<%= page - 1 %>" method="post">
+              <!-- <form action="/admin/categorie/?categoryPage=<%= page - 1 %>" method="post"> -->
+                <a href="/admin/category?page=<%= page - 1 %>&searchCategory=<%= searchCategory || '' %>">
                 <button class="pagination-btn" title="Previous">
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
                   <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"/>
                 </svg>
               </button>
-              </form>
+              </a>
+              <!-- </form> -->
               <div class="pagination-number"><%= page %>/<%= Math.ceil(countCategory/5) || 1 %></div>
-              <form action="/admin/categorie/?categoryPage=<%= page + 1 %>" method="post">
+              <!-- <form action="/admin/categorie/?categoryPage=<%= page + 1 %>" method="post"> -->
+                <a href="/admin/category?page=<%= page + 1 %>&searchCategory=<%= searchCategory || '' %>">
                 <button class="pagination-btn" title="Next">
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
                   <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
                 </svg>
               </button>
-              </form>
+              </a>
+              <!-- </form> -->
             </div>
           </div>
         </div>

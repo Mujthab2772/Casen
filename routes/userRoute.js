@@ -24,7 +24,7 @@ router.get('/loginPage', loginGet)
 
 router.post('/login', login)
 
-router.get('/forgotPassword', forgotPass)
+router.get('/forgotPasswordPage', forgotPass)
 
 router.post('/forgotPassword', forgotPassResetPost)
 

@@ -18,34 +18,23 @@ export const categoryAddToDb = async (categoryName, description, fileUrl) => {
     return {status: "Success", categoryDatas}
 }
 
-export const categoryFetch = async (searchCategory = null, page, limit = 5) => {
+export const categoryFetch = async (search = null, page, limit = 5) => {
     const categorySkip = (page - 1) * limit
-    let countCategory = await categoryCollection.countDocuments({})
+    
+    let filter = {};
 
-    let categories
-
-    if (!searchCategory) {
-        categories = await categoryCollection.find({})
-        .sort({createdAt: -1})
-        .skip(categorySkip)
-        .limit(limit)
-    } else {
-        categories = await categoryCollection.find({categoryId: {$in: searchCategory}})
-        .sort({createdAt: -1})
-        .skip(categorySkip)
-        .limit(limit)
+    if (search) {
+        filter.categoryName = { $regex: search, $options: "i" }
     }
+
+    const countCategory = await categoryCollection.countDocuments(filter)
+
+    const categories = await categoryCollection.find(filter)
+        .sort({ createdAt: -1 })
+        .skip(categorySkip)
+        .limit(limit)
+    
     return {categories, countCategory, categorySkip, end: Math.min(categorySkip + limit, countCategory)}
-}
-
-export const categorySearch = async (searchWord) => {
-    let data = await categoryCollection.find({
-        categoryName: { $regex: searchWord, $options: "i" }
-    }, {_id: 0, categoryId: 1}).sort({createdAt: -1})
-
-    data = data.map(item => item.categoryId)
-
-    return data
 }
 
 export const toggleBlockAndUnblock = async (categoryid) => {
@@ -54,10 +43,10 @@ export const toggleBlockAndUnblock = async (categoryid) => {
 
         if(!categoryDetail) throw new Error("User Not Found")
 
-        if(categoryDetail.isVaild) {            
-            await categoryCollection.updateOne({categoryId: categoryid}, {$set: {isVaild: false}})
+        if(categoryDetail.isValid) {            
+            await categoryCollection.updateOne({categoryId: categoryid}, {$set: {isValid: false}})
         }else {
-            await categoryCollection.updateOne({categoryId: categoryid}, {$set: {isVaild: true}})
+            await categoryCollection.updateOne({categoryId: categoryid}, {$set: {isValid: true}})
         }
     } catch (error) {
         console.log(`Error from toggleBlockAndUnblock ${error}`);

@@ -8,7 +8,7 @@ const categorySchema = new mongoose.Schema({
     },
     offerId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "offer",
+        ref: "Offer",
         default: null
     },
     categoryName: {
@@ -25,7 +25,7 @@ const categorySchema = new mongoose.Schema({
         type: String,
         default: ""
     },
-    isVaild: {
+    isValid: {
         type: Boolean,
         default: true
     }

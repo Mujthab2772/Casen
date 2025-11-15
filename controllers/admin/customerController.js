@@ -2,9 +2,13 @@ import { customerDetails, searchForUser, toggleBlockAndUnblock } from "../../ser
 import { STATUS_CODE } from "../../util/statusCodes.js"
 
 
-export const customersGet = async (req, res) => {
+export const customers = async (req, res) => {
     try {
-        let page = (req.session.page) || 1
+        let page = parseInt(req.query.page) || 1
+        req.session.page = page
+        if(req.query.searchValue) {
+            req.session.searchedUser = false
+        }
         const { userDetails, countCustomers, skip, end } = await customerDetails(req.session.searchedUser, page)
         
         res.status(STATUS_CODE.OK).render("coustomersPage", {customers: userDetails, countCustomers: countCustomers, page: page, start: skip, end})
@@ -17,7 +21,7 @@ export const customersGet = async (req, res) => {
 export const customerBlocking = async (req, res) => {
     try {
         await toggleBlockAndUnblock(req.params.Id)
-        res.status(STATUS_CODE.OK).redirect("/admin/customers")
+        res.status(STATUS_CODE.OK).redirect(`/admin/customers?page=${req.session.page}`)
     } catch (error) {
         console.error(`Error from customerBlocking: ${error}`)
         res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).send("Internal Server Error")
@@ -38,24 +42,3 @@ export const customerSearch = async (req, res) => {
     }
 }
 
-export const customerResetSearch = (req, res) => {
-    try {
-        req.session.searchedUser = null
-         res.status(STATUS_CODE.OK).redirect("/admin/customers")
-    } catch (error) {
-        console.error(`Error from customerResetSearch: ${error}`)
-        res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).send("Internal Server Error")        
-    }
-}
-
-export const customerPagination = (req, res) => {
-    try {
-        req.session.page = parseInt(req.query.page)
-        res.status(STATUS_CODE.OK).redirect("/admin/customers")
-        
-    } catch (error) {
-        console.error(`Error from customerPagination: ${error}`)
-        res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).send("Internal Server Error")
-        
-    }
-}

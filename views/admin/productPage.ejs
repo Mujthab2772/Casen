@@ -6,6 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>E-Commerce Admin - Customers</title>
     <link rel="stylesheet" href="/customersPage.css" />
+    <style>
+  #successModal {
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
+#successModal:not(.hidden) {
+    opacity: 1;
+}
+  
+</style>
   </head>
   <body>
     <div class="dashboard-container">
@@ -41,7 +51,7 @@
             <span>Orders</span>
           </a>
 
-          <a href="/admin/products" class="nav-item">
+          <a href="/admin/products" class="nav-item active">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
               <path d="M3 1a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V1z"/>
               <path d="M3 5a1 1 0 011-1h12a1 1 0 011 1v12a2 2 0 01-2 2H5a2 2 0 01-2-2V5z"/>
@@ -49,7 +59,7 @@
             <span>Products</span>
           </a>
 
-          <a href="#" class="nav-item active">
+          <a href="/admin/customers" class="nav-item">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
               <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v1h8v-1zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"/>
             </svg>
@@ -105,18 +115,18 @@
 
       <main class="main-dashboard">
         <div class="dashboard-header">
-          <h1 class="page-title">Customers</h1>
+          <h1 class="page-title">Product Management</h1>
         </div>
 
         <div class="content-area">
-          <form action="/admin/customers" method="post">
+          <form action="" method="post">
           <div class="toolbar">
             <div class="search-wrapper">
               <svg class="search-icon" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M9 17C13.4183 17 17 13.4183 17 9C17 4.58172 13.4183 1 9 1C4.58172 1 1 4.58172 1 9C1 13.4183 4.58172 17 9 17Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 <path d="M19 19L14.65 14.65" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
-              <input type="search" name="searchBar" class="search-input" placeholder="Search customers..." />
+              <input type="search" name="searchCategory" class="search-input" placeholder="Search category..." />
             </div>
 
             <div class="toolbar-actions">
@@ -127,16 +137,14 @@
                   Filter by Status
                 </button>
               </form>
-              <!-- <form action="/admin/customer/reset" method="post"> -->
-                <a href="/admin/customers?searchValue=null" style="text-decoration: none;">
-              <button class="sort-btn" type="button">
+              <form action="/admin/addProduct" method="get">
+              <button class="sort-btn" >
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-  <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4C7.58 4 4 7.58 4 12C4 16.42 7.58 20 12 20C15.73 20 18.84 17.45 19.73 14H17.65C16.83 16.33 14.61 18 12 18C8.69 18 6 15.31 6 12C6 8.69 8.69 6 12 6C13.66 6 15.14 6.69 16.22 7.78L13 11H20V4L17.65 6.35Z"/>
-</svg>
-                Reset
+    <path d="M10 4C10.5523 4 11 4.44772 11 5V9H15C15.5523 9 16 9.44772 16 10C16 10.5523 15.5523 11 15 11H11V15C11 15.5523 10.5523 16 10 16C9.44772 16 9 15.5523 9 15V11H5C4.44772 11 4 10.5523 4 10C4 9.44772 4.44772 9 5 9H9V5C9 4.44772 9.44772 4 10 4Z"/>
+  </svg>
+                Add New Product
               </button>
-              </a>
-              <!-- </form> -->
+              </form>
             </div>
           </div>
 
@@ -144,40 +152,54 @@
             <table class="customers-table">                   
               <thead>
                 <tr>
-                  <th>Customer</th>
-                  <th>Contact</th>
+                  <th>Product Name</th>
+                  <th>Variant Color</th>
+                  <th>Stock</th>
+                  <th>Price</th>
                   <th>Status</th>
                   <th>Actions</th>
                 </tr>
               </thead>
-              <% for(let i = 0; i < customers.length; i++) { %>
+             
               <tbody>
-                <tr>
-                  <td>
-                    <div class="customer-cell">
-                      <img src="<%= customers[i].profilePic %>" alt="profilePic" class="customer-avatar" />
-                      <div class="customer-info">
-                        <div class="customer-name"> <%= customers[i].firstName %>  <%= customers[i].lastName %> </div>
-                        <div class="customer-date">Registered: <%= new Date(customers[i].createdAt).toISOString().split("T")[0] %></div>
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    <div class="contact-cell">
-                      <div> <%= customers[i].email %> </div>
-                      <div class="phone"> <%= customers[i].phoneNumber %> </div>
-                    </div>
-                  </td>
-                  <% if(customers[i].isActive){ %>
-                      <td><span class="badge badge-active">Active</span></td>
-                  <% }else{ %>
-                      <td><span class="badge badge-suspended">Blocked</span></td>
-                  <% } %>
-                  
-                  
-                  <td>
+  <% for (let i = 0; i < products.length; i++) { %>
+    <% let product = products[i]; %>
+
+    <% for (let j = 0; j < product.variantId.length; j++) { %>
+      <% let variant = product.variantId[j]; %>
+
+      <tr>
+        <td>
+          <div class="customer-cell">
+            <img src="<%= product.categoryId.image %>" alt="categoryPic" class="customer-avatar" />
+            <div class="customer-info">
+              <div class="customer-name"><%= product.productName %></div>
+              <div class="customer-date"><%= product.categoryId.categoryName %></div>
+            </div>
+          </div>
+        </td>
+
+        <td><div class="contact-cell"><div><%= variant.color %></div></div></td>
+        <td><div class="contact-cell"><div><%= variant.stock %></div></div></td>
+        <td><div class="contact-cell"><div><%= variant.price %></div></div></td>
+
+        <% if(product.isActive){ %>
+          <td><span class="badge badge-active">Active</span></td>
+        <% } else { %>
+          <td><span class="badge badge-suspended">Blocked</span></td>
+        <% } %>
+
+
+        <td>
                     <div class="actions-cell">
-                      <form class="delete-form" action="/admin/customers/<%= customers[i]._id %>?_method=PATCH" method="post"  data-status="<%= customers[i].isActive %>">
+                      <form action="/admin/editProductPage?productid=<%= product.productId %>" method="post">
+                        <button class="action-btn" title="Edit" type="submit">
+                          <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
+                          </svg>
+                        </button>
+                      </form>
+                      <form class="delete-form" action="" method="post"  data-status="">
                           <button class="action-btn delete-btn" title="Delete" type="submit">
                             <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
                               <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
@@ -186,43 +208,71 @@
                       </form>
                     </div>
                   </td>
+      </tr>
 
-                </tr>
-              </tbody>
-              <% } %>
+    <% } %> <!-- end variant loop -->
+
+  <% } %> <!-- end product loop -->
+</tbody>
             </table>
           </div>
 
           <div class="pagination">
-            <div class="pagination-info">Showing <%= start+1 %> to <%= end %> of <%= countCustomers %> customers</div>
+            <div class="pagination-info">Showing 1 to 5 of 11 Products</div>
             <div class="pagination-controls">
-              <!-- <form action="/admin/customer/?page=<%= page - 1 %>" method="post"> -->
-                <a href="/admin/customers?page=<%= page - 1 %>">
+              <form action="" method="post">
                 <button class="pagination-btn" title="Previous">
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
                   <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"/>
                 </svg>
               </button>
-              </a>
-              <!-- </form> -->
-              <div class="pagination-number"><%= page %> / <%= Math.ceil(countCustomers/5) || 1 %> </div>
-              <!-- <form action="/admin/customers?page=<%= page + 1 %>" method=""> -->
-                <a href="/admin/customers?page=<%= page + 1 %>">
-                <button class="pagination-btn" title="Next" type="submit">
+              </form>
+              <div class="pagination-number">1/5</div>
+              <form action="" method="post">
+                <button class="pagination-btn" title="Next">
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
                   <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
                 </svg>
               </button>
-              </a>
-              <!-- </form> -->
+              </form>
             </div>
           </div>
         </div>
       </main>
     </div>
+
+
+
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-      <script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const params = new URLSearchParams(window.location.search);
+  const success = params.get("success");
+
+  if (success && success.toLowerCase() === "true") {
+    Swal.fire({
+      title: "Category Added!",
+      text: "The new category was successfully added.",
+      icon: "success",
+      confirmButtonText: "OK",
+      confirmButtonColor: "#111827", // dark gray
+      background: "#fff",
+      color: "#111",
+      customClass: {
+        popup: "rounded-lg shadow-lg"
+      }
+    }).then(() => {
+      // Optional: clean up URL after showing alert
+      window.history.replaceState({}, document.title, window.location.pathname);
+    });
+  }
+});
+</script>
+
+
+
+<script>
 document.addEventListener('DOMContentLoaded', () => {
   const deleteForms = document.querySelectorAll('.delete-form');
 

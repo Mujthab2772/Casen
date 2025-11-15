@@ -1,41 +1,46 @@
 import express from "express"
-import { adminLoginGet, adminLoginPost } from "../controllers/admin/adminController.js"
-import { customerBlocking, customerPagination, customerResetSearch, customerSearch, customersGet } from "../controllers/admin/customerController.js"
-import { addCategory, addCategoryPost, categoryGet, categoryPagination, editCategory, editCategoryGet, editCategoryPatch, searchCategory, validCategory } from "../controllers/admin/categoryController.js"
+import { adminLogin, adminLoginVerify } from "../controllers/admin/adminController.js"
+import { customerBlocking, customers, customerSearch } from "../controllers/admin/customerController.js"
+import { addCategory, addCategoryUpdate, category, editCategory, editCategoryUpdate, validCategory } from "../controllers/admin/categoryController.js"
 import upload from "../middlewares/multer.js"
+import { addProductPage, addProductsPost, editProduct, productsPage } from "../controllers/admin/productController.js"
 
 const router = express.Router()
 
-router.get("/adminLogin", adminLoginGet)
+router.get("/login", adminLogin) //adminlogin to login
 
-router.post("/adminLogin", adminLoginPost)
+router.post("/login", adminLoginVerify)
 
-router.get("/customers", customersGet)
+// Customer Page
 
-router.post("/customers/:Id", customerBlocking)
+router.get("/customers", customers)
+
+router.patch("/customers/:Id", customerBlocking) //post to patch
 
 router.post("/customers", customerSearch)
 
-router.post("/customer/reset", customerResetSearch)
+// Category Page
 
-router.post("/customer", customerPagination)
+router.get("/category", category)
 
-router.get("/category", categoryGet)
+router.get("/addcategory", addCategory)
 
-router.get("/addcategoryPage", addCategory)
+router.post("/addCategory", upload.single("fileUpload"), addCategoryUpdate)
 
-router.post("/addCategory",upload.single("fileUpload"), addCategoryPost)
+router.patch("/category/:categoryId", validCategory)
 
-router.post("/searchCategory", searchCategory)
+router.get("/editCategory/:id", editCategory)
 
-router.post("/category/:categoryId", validCategory)
+router.patch('/updateCategory/:categoryid', upload.single("fileUpload"), editCategoryUpdate)
 
-router.get("/editCategory", editCategoryGet)
+//Product Page
 
-router.post("/editCategory/:id", editCategory)
+router.get('/products', productsPage)
 
-router.patch('/updateCategory/:id',upload.single("fileUpload"), editCategoryPatch)
+router.get('/addProduct', addProductPage)
 
-router.post('/categorie', categoryPagination)
+router.post('/addProducts', upload.any(), addProductsPost)
+
+router.patch('/editProductPage', editProduct)
 
 export default router
