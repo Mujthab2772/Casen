@@ -1,4 +1,5 @@
-import { addProductService, categoryDetails, editProductDetails, fetchProducts } from "../../service/admin/productService.js";
+import { addProductService, categoryDetails, editProductDetails, fetchProducts, updateProductService } from "../../service/admin/productService.js";
+import { STATUS_CODE } from "../../util/statusCodes.js";
 
 export const productsPage = async (req, res) => {
     try {
@@ -25,7 +26,7 @@ export const addProductPage = async (req, res) => {
     }
 }
 
-export const addProductsPost = async (req, res) => {
+export const addProducts = async (req, res) => {
   try {
     const result = await addProductService(req)
     res.redirect("/admin/products");
@@ -38,11 +39,26 @@ export const addProductsPost = async (req, res) => {
 
 export const editProduct = async (req, res) => {
     try {
-        const result = await editProductDetails(req.query.productid)
-        const categoryResult = await categoryDetails()
-        // console.log(result.categoryId)
-        res.render('editProduct', {product: {variantId: result[0].variantId, categoryId: result[0].categoryId}, categories: categoryResult.options})
-    } catch (error) {
+        const productid = req.query.productid
+        const data = await editProductDetails(productid)
+        const categories = await categoryDetails()
         
+        res.status(STATUS_CODE.OK).render('editProduct', {product: {data: data[0],variantId: data[0].variantId, categoryId: data[0].categoryId}, categories: categories.options || []})
+    } catch (error) {
+        console.log(`error from editProduct ${error}`);
+        res.redirect('/admin/products')
+    }
+}
+
+export const updateProduct = async (req, res) => {
+    try {
+        const productId = req.params.productid
+
+        const result = await updateProductService(req, productId)
+
+        res.status(STATUS_CODE.OK).redirect('/admin/products')
+    } catch (error) {
+        console.log(`error from updateProduct ${error}`);
+        res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).redirect('/admin/editProduct')
     }
 }

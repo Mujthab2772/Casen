@@ -3,7 +3,7 @@ import { adminLogin, adminLoginVerify } from "../controllers/admin/adminControll
 import { customerBlocking, customers, customerSearch } from "../controllers/admin/customerController.js"
 import { addCategory, addCategoryUpdate, category, editCategory, editCategoryUpdate, validCategory } from "../controllers/admin/categoryController.js"
 import upload from "../middlewares/multer.js"
-import { addProductPage, addProductsPost, editProduct, productsPage } from "../controllers/admin/productController.js"
+import { addProductPage, addProducts, editProduct, productsPage, updateProduct } from "../controllers/admin/productController.js"
 
 const router = express.Router()
 
@@ -39,8 +39,10 @@ router.get('/products', productsPage)
 
 router.get('/addProduct', addProductPage)
 
-router.post('/addProducts', upload.any(), addProductsPost)
+router.post('/addProducts', upload.any(), addProducts)
 
-router.patch('/editProductPage', editProduct)
+router.get('/editProduct', editProduct)
+
+router.put('/editProduct/:productid', upload.any(), updateProduct)
 
 export default router

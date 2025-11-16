@@ -8,21 +8,22 @@ import adminRouter from "./routes/adminRoute.js"
 import userRouter from "./routes/userRoute.js";
 import methodOverride from 'method-override'
 import passport from './config/passport.js';
+import upload from "./middlewares/multer.js";
 
 dotenv.config();
 const app = express()
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-app.use(express.json());
+app.use(methodOverride('_method'))
 app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
 app.set('view engine', "ejs")
 
 
 app.use(express.static(path.join(__dirname, 'public/admin')))
 app.use(express.static(path.join(__dirname, 'public/user')))
-app.use(methodOverride('_method'))
 
 app.use(session({
     secret: "Casen@2772",
