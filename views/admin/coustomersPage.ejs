@@ -108,15 +108,15 @@
           <h1 class="page-title">Customers</h1>
         </div>
 
-        <div class="content-area">
-          <form action="/admin/customers" method="post">
+        <div class="content-area">                              
+          <form action="/admin/customers" method="get">
           <div class="toolbar">
             <div class="search-wrapper">
               <svg class="search-icon" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M9 17C13.4183 17 17 13.4183 17 9C17 4.58172 13.4183 1 9 1C4.58172 1 1 4.58172 1 9C1 13.4183 4.58172 17 9 17Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 <path d="M19 19L14.65 14.65" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
-              <input type="search" name="searchBar" class="search-input" placeholder="Search customers..." />
+              <input type="search" name="searchCustomer" class="search-input" placeholder="Search customers..." value="<%= searchCustomer || '' %>"/>
             </div>
 
             <div class="toolbar-actions">
@@ -197,7 +197,7 @@
             <div class="pagination-info">Showing <%= start+1 %> to <%= end %> of <%= countCustomers %> customers</div>
             <div class="pagination-controls">
               <!-- <form action="/admin/customer/?page=<%= page - 1 %>" method="post"> -->
-                <a href="/admin/customers?page=<%= page - 1 %>">
+                <a href="/admin/customers?page=<%= page - 1 %>&searchCustomer=<%= searchCustomer || '' %>">
                 <button class="pagination-btn" title="Previous">
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
                   <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"/>
@@ -207,7 +207,7 @@
               <!-- </form> -->
               <div class="pagination-number"><%= page %> / <%= Math.ceil(countCustomers/5) || 1 %> </div>
               <!-- <form action="/admin/customers?page=<%= page + 1 %>" method=""> -->
-                <a href="/admin/customers?page=<%= page + 1 %>">
+                <a href="/admin/customers?page=<%= page + 1 %>&searchCustomer=<%= searchCustomer || '' %>">
                 <button class="pagination-btn" title="Next" type="submit">
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
                   <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/>

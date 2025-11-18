@@ -6,20 +6,283 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>E-Commerce Admin - Customers</title>
     <link rel="stylesheet" href="/customersPage.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-  #successModal {
-    opacity: 0;
-    transition: opacity 0.3s ease-in-out;
-}
-#successModal:not(.hidden) {
-    opacity: 1;
-}
-  
-</style>
+      #successModal {
+        opacity: 0;
+        transition: opacity 0.3s ease-in-out;
+      }
+      #successModal:not(.hidden) {
+        opacity: 1;
+      }
+      
+      /* Variants Modal Styles */
+      .variants-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        z-index: 1000;
+        overflow-y: auto;
+        padding: 20px;
+      }
+      
+      .variants-modal:target {
+        display: block;
+      }
+      
+      .variants-modal-content {
+        background: white;
+        border-radius: 12px;
+        max-width: 1200px;
+        margin: 40px auto;
+        box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+        position: relative;
+      }
+      
+      .modal-header {
+        padding: 24px 32px;
+        border-bottom: 1px solid #e5e7eb;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      
+      .modal-header h2 {
+        font-size: 24px;
+        font-weight: 600;
+        color: #111827;
+      }
+      
+      .close-modal {
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        color: #6b7280;
+        transition: color 0.2s;
+      }
+      
+      .close-modal:hover {
+        color: #111827;
+      }
+      
+      .modal-body {
+        padding: 32px;
+      }
+      
+      .product-info {
+        display: flex;
+        gap: 32px;
+        margin-bottom: 32px;
+      }
+      
+      .product-image {
+        width: 200px;
+        height: 200px;
+        border-radius: 8px;
+        overflow: hidden;
+        flex-shrink: 0;
+      }
+      
+      .product-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      
+      .product-details {
+        flex: 1;
+      }
+      
+      .product-details h3 {
+        font-size: 20px;
+        margin-bottom: 8px;
+      }
+      
+      .product-meta {
+        color: #6b7280;
+        margin-bottom: 16px;
+      }
+      
+      .variants-container {
+        margin-top: 32px;
+      }
+      
+      .variant-section {
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 24px;
+        margin-bottom: 24px;
+        position: relative;
+      }
+      
+      .variant-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+      }
+      
+      .variant-title {
+        font-weight: 600;
+        color: #111827;
+        font-size: 18px;
+      }
+      
+      .variant-meta {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 20px;
+      }
+      
+      .variant-meta-item {
+        display: flex;
+        flex-direction: column;
+      }
+      
+      .variant-meta-item label {
+        font-size: 12px;
+        color: #6b7280;
+        margin-bottom: 4px;
+      }
+      
+      .variant-meta-item span {
+        font-weight: 500;
+        font-size: 16px;
+      }
+      
+      .variant-status {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 500;
+      }
+      
+      .status-active {
+        background: #dcfce7;
+        color: #166534;
+      }
+      
+      .status-blocked {
+        background: #fee2e2;
+        color: #b91c1c;
+      }
+      
+      .image-grid {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .image-item {
+            width: 350px;
+            height: 150px;
+            border: 2px dashed #ccc;
+            padding: 10px;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+          
+          .image-item img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            border-radius: 10%;
+        }
+      
+      .modal-footer {
+        padding: 24px 32px;
+        border-top: 1px solid #e5e7eb;
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+      }
+      
+      .btn {
+        padding: 10px 20px;
+        border-radius: 6px;
+        font-weight: 500;
+        cursor: pointer;
+        border: none;
+        font-size: 14px;
+      }
+      
+      .btn-outline {
+        background: white;
+        border: 1px solid #d1d5db;
+        color: #374151;
+      }
+      
+      .btn-outline:hover {
+        background: #f3f4f6;
+      }
+      
+      .btn-primary {
+        background: #111827;
+        color: white;
+      }
+      
+      .btn-primary:hover {
+        background: #1f2937;
+      }
+      
+      .back-button {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #374151;
+        text-decoration: none;
+        font-weight: 500;
+        margin-bottom: 24px;
+        padding: 8px 16px;
+        border-radius: 6px;
+        transition: background 0.2s;
+      }
+      
+      .back-button:hover {
+        background: #f9fafb;
+      }
+      
+      .back-button svg {
+        width: 16px;
+        height: 16px;
+      }
+      
+      /* Responsive adjustments */
+      @media (max-width: 768px) {
+        .product-info {
+          flex-direction: column;
+        }
+        
+        .product-image {
+          width: 100%;
+          height: 300px;
+        }
+        
+        .variants-container {
+          margin-top: 24px;
+        }
+        
+        .modal-body {
+          padding: 20px;
+        }
+        
+        .modal-header {
+          padding: 16px 20px;
+        }
+      }
+    </style>
   </head>
   <body>
     <div class="dashboard-container">
       <aside class="sidebar">
+        <!-- ... existing sidebar code ... -->
         <div class="sidebar-header">
           <div class="sidebar-logo">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -31,7 +294,6 @@
           </div>
           <span class="sidebar-title">Casen</span>
         </div>
-
         <nav class="sidebar-nav">
           <a href="#" class="nav-item">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
@@ -41,7 +303,6 @@
             </svg>
             <span>Dashboard</span>
           </a>
-
           <a href="#" class="nav-item">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
               <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 6H6.28l-.31-1.243A1 1 0 005 4H3z"/>
@@ -50,7 +311,6 @@
             </svg>
             <span>Orders</span>
           </a>
-
           <a href="/admin/products" class="nav-item active">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
               <path d="M3 1a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V1z"/>
@@ -58,43 +318,37 @@
             </svg>
             <span>Products</span>
           </a>
-
           <a href="/admin/customers" class="nav-item">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
               <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v1h8v-1zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"/>
             </svg>
             <span>Customers</span>
           </a>
-
           <a href="#" class="nav-item">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
               <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
             </svg>
             <span>Analytics</span>
           </a>
-
           <a href="#" class="nav-item">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
               <path d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z"/>
             </svg>
             <span>Coupons</span>
           </a>
-
           <a href="/admin/category" class="nav-item">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
               <path d="M7 3a1 1 0 000 2h6a1 1 0 000-2H7zM4 7a1 1 0 011-1h10a1 1 0 011 1v3a2 2 0 01-2 2H6a2 2 0 01-2-2V7zm2 3a1 1 0 100 2 1 1 0 000-2z"/>
             </svg>
             <span>Categories</span>
           </a>
-
           <a href="#" class="nav-item">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-              <path d="M4.5 3a2.5 2.5 0 015 0V4h4V3a2.5 2.5 0 015 0v1h2.006a1 1 0 01.994.89l1.348 13.48A2 2 0 0118.334 20H1.666a2 2 0 01-1.994-2.21L1 4.89A1 1 0 012 4h2V3a2.5 2.5 0 012.5-2.5z"/>
+              <path d="M4.5 3a2.5 2.5 0 00-2.5 2.5v10a2.5 2.5 0 002.5 2.5h11a2.5 2.5 0 002.5-2.5V5.5a2.5 2.5 0 00-2.5-2.5h-11zM10 16a1 1 0 110-2 1 1 0 010 2zm-3-1a1 1 0 100-2 1 1 0 000 2zm7 0a1 1 0 100-2 1 1 0 000 2z"/>
             </svg>
             <span>Offer</span>
           </a>
         </nav>
-
         <div class="sidebar-footer">
           <div class="user-info">
             <div class="user-avatar">A</div>
@@ -112,23 +366,20 @@
           </button>
         </div>
       </aside>
-
       <main class="main-dashboard">
         <div class="dashboard-header">
           <h1 class="page-title">Product Management</h1>
         </div>
-
         <div class="content-area">
-          <form action="" method="post">
+          <form action="/admin/products" method="get">
           <div class="toolbar">
             <div class="search-wrapper">
               <svg class="search-icon" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M9 17C13.4183 17 17 13.4183 17 9C17 4.58172 13.4183 1 9 1C4.58172 1 1 4.58172 1 9C1 13.4183 4.58172 17 9 17Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 <path d="M19 19L14.65 14.65" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
-              <input type="search" name="searchCategory" class="search-input" placeholder="Search product/variantname..." />
+              <input type="search" name="searchProduct" class="search-input" placeholder="Search product/variantName..." value="<%= searchProduct %>"/>
             </div>
-
             <div class="toolbar-actions">
                   <button class="filter-btn">
                   <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
@@ -136,7 +387,6 @@
                   </svg>
                   Filter by Status
                 </button>
-              </form>
               <form action="/admin/addProduct" method="get">
               <button class="sort-btn" >
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
@@ -147,171 +397,422 @@
               </form>
             </div>
           </div>
-
           <div class="table-wrapper">       
             <table class="customers-table">                   
               <thead>
                 <tr>
                   <th>Product Name</th>
-                  <th>Variant Color</th>
-                  <th>Stock</th>
-                  <th>Price</th>
+                  <th>Description</th>
                   <th>Status</th>
                   <th>Actions</th>
                 </tr>
               </thead>
              
               <tbody>
-  <% for (let i = 0; i < products.length; i++) { %>
-    <% let product = products[i]; %>
-
-    <% for (let j = 0; j < product.variantId.length; j++) { %>
-      <% let variant = product.variantId[j]; %>
-
-      <tr>
-        <td>
-          <div class="customer-cell">
-            <img src="<%= product.categoryId.image %>" alt="categoryPic" class="customer-avatar" />
-            <div class="customer-info">
-              <div class="customer-name"><%= product.productName %></div>
-              <div class="customer-date"><%= product.categoryId.categoryName %></div>
-            </div>
-          </div>
-        </td>
-
-        <td><div class="contact-cell"><div><%= variant.color %></div></div></td>
-        <td><div class="contact-cell"><div><%= variant.stock %></div></div></td>
-        <td><div class="contact-cell"><div><%= variant.price %></div></div></td>
-
-        <% if(product.isActive){ %>
-          <td><span class="badge badge-active">Active</span></td>
-        <% } else { %>
-          <td><span class="badge badge-suspended">Blocked</span></td>
-        <% } %>
-
-
-        <td>
-                    <div class="actions-cell">
-                      <!-- <form action="/admin/editProduct?productid=<%= product.productId %>" method="get"> -->
-                        <a href="/admin/editProduct?productid=<%= product.productId %>">
-                        <button class="action-btn" title="Edit" type="submit">
-                          <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
-                            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
-                          </svg>
-                        </button>
-                      </a>
-                      <!-- </form> -->
-                      <form class="delete-form" action="" method="post"  data-status="">
-                          <button class="action-btn delete-btn" title="Delete" type="submit">
+                <% for (let item of products) { %>
+                  <tr>
+                    <td>
+                      <div class="customer-cell">
+                        <img src="<%= item.category.image %>" class="customer-avatar" style="object-fit: contain;"/>
+                        <div class="customer-info">
+                          <div class="customer-name">
+                            <%= item.productName %>
+                          </div>
+                          <div class="customer-date">
+                            <%= item.category.categoryName %>
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <%= item.description %>
+                    </td>
+                    
+                    <!-- Display Product Status (based on your chosen logic) -->
+                    <td>
+                      <% if (item.isActive) { %> <!-- or use item.hasActiveVariant if that's your logic -->
+                        <span class="badge badge-active">Active</span>
+                        <% } else { %>
+                          <span class="badge badge-suspended">Blocked</span>
+                          <% } %>
+                    </td>
+                    <td>
+                      <div class="actions-cell">
+                        <!-- VIEW VARIANTS - MODIFIED TO OPEN MODAL -->
+                        <a href="#variantsModal_<%= item.productId %>" class="view-variants-btn">
+                          <button class="action-btn" title="View Variants">
                             <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
-                              <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                              <path
+                                d="M10 3C5 3 1.73 7.11 1 10c.73 2.89 4 7 9 7s8.27-4.11 9-7c-.73-2.89-4-7-9-7zm0 12a5 5 0 110-10 5 5 0 010 10z" />
                             </svg>
                           </button>
-                      </form>
-                    </div>
-                  </td>
-      </tr>
-
-    <% } %> <!-- end variant loop -->
-
-  <% } %> <!-- end product loop -->
-</tbody>
+                        </a>
+              
+                        <a href="/admin/editProduct?productid=<%= item.productId %>">
+                          <button class="action-btn" title="Edit" type="submit">
+                            <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
+                              <path
+                                d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                            </svg>
+                          </button>
+                        </a>
+              
+                        <form class="delete-form" action="/admin/updateProduct?productId=<%= item.productId %>&_method=PATCH"
+                          method="post" data-status="<%= item.isActive %>">
+                          <button class="action-btn delete-btn" title="Delete" type="submit">
+                            <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
+                              <path fill-rule="evenodd"
+                                d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                                clip-rule="evenodd" />
+                            </svg>
+                          </button>
+                        </form>
+                      </div>
+                    </td>
+                  </tr>
+                  <% } %>
+              </tbody>
             </table>
           </div>
-
           <div class="pagination">
-            <div class="pagination-info">Showing 1 to 5 of 11 Products</div>
+            <div class="pagination-info">Showing <%= productSkip + 1 %> to <%= end %> of <%= countProduct %> Variants</div>
             <div class="pagination-controls">
-              <form action="" method="post">
+              <a href="/admin/products?page=<%= page - 1 %>&searchProduct=<%= searchProduct || '' %>">
                 <button class="pagination-btn" title="Previous">
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
                   <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"/>
                 </svg>
               </button>
-              </form>
-              <div class="pagination-number">1/5</div>
-              <form action="" method="post">
+              </a>
+              <div class="pagination-number"><%= page %> / <%= Math.ceil(countProduct/5) || 1 %></div>
+              <a href="/admin/products?page=<%= page + 1 %>&searchProduct=<%= searchProduct || '' %>">
                 <button class="pagination-btn" title="Next">
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
                   <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
                 </svg>
               </button>
-              </form>
+              </a>
             </div>
           </div>
         </div>
       </main>
     </div>
 
+    <%
+  let groupedProducts = {};
+
+  products.forEach(item => {
+    if (!groupedProducts[item.productId]) {
+      groupedProducts[item.productId] = {
+        productId: item.productId,
+        productName: item.productName,
+        isActive: item.isActive,
+        category: item.category,
+        variants: []
+      };
+    }
+
+    // FIXED: unwrap full array instead of only item.variant[0]
+    const variantArray = Array.isArray(item.variant) ? item.variant : [];
+
+    groupedProducts[item.productId].variants.push(...variantArray);
+  });
+
+  const groupedList = Object.values(groupedProducts);
+%>
+
+<% groupedList.forEach(group => { %>
+
+<div id="variantsModal_<%= group.productId %>" class="variants-modal">
+  <div class="variants-modal-content">
+
+    <!-- HEADER -->
+    <div class="modal-header">
+      <a href="#" class="back-button">
+        <%- `
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"/>
+          </svg>
+        ` %>
+        Back
+      </a>
+
+      <h2><%= group.productName %> Details</h2>
+
+      <a href="#" class="close-modal">&times;</a>
+    </div>
+
+    <!-- BODY -->
+    <div class="modal-body">
+      <div class="product-info">
+
+        <div class="product-image">
+          <img src="<%= group.category.image %>" alt="" style="object-fit: contain;">
+        </div>
+
+        <div class="product-details">
+          <h3><%= group.productName %></h3>
+
+          <div class="product-meta">
+            Category:
+            <span class="font-medium"><%= group.category.categoryName %></span>
+          </div>
+
+          <div class="product-meta">
+            Total Variants:
+            <span class="font-medium"><%= group.variants.length %></span>
+          </div>
+
+          <div class="product-meta">
+            Status:
+            <% if (group.isActive) { %>
+              <span class="status-active">Active</span>
+            <% } else { %>
+              <span class="status-blocked">Blocked</span>
+            <% } %>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- VARIANT CARDS -->
+      <div class="variants-container">
+
+        <% group.variants.forEach((variant, index) => { 
+             variant = variant || {};
+             variant.images = Array.isArray(variant.images) ? variant.images : [];
+             const toggleColor = variant.isActive ? "bg-green-500" : "bg-red-500";
+             const toggleMove = variant.isActive ? "translate-x-8" : "translate-x-0";
+        %>
+
+        <div class="variant-section">
+
+          <!-- VARIANT HEADER -->
+          <div class="variant-header">
+            <div class="variant-title">Variant <%= index+1 %>: <%= variant.color %></div>
+
+            <!-- <form action="/admin/updateProduct?variantId=<%= variant.variantId %>&_method=PATCH" method="post"> -->
+              <button type="submit" class="toggle-variant-btn w-16 h-8 flex items-center rounded-full p-1 transition <%= toggleColor %>"
+                data-variant-id="<%= variant.variantId %>"
+                data-is-active="<%= variant.isActive %>"
+                >
+                <div class="bg-white w-6 h-6 rounded-full shadow-md transform transition <%= toggleMove %>"></div>
+              </button>
+            <!-- </form> -->
+          </div>
+
+          <!-- META -->
+          <div class="variant-meta">
+            <div class="variant-meta-item">
+              <label>Color</label>
+              <span><%= variant.color %></span>
+            </div>
+
+            <div class="variant-meta-item">
+              <label>Price</label>
+              <span>$<%= variant.price %></span>
+            </div>
+
+            <div class="variant-meta-item">
+              <label>Stock</label>
+              <span><%= variant.stock %></span>
+            </div>
+          </div>
+
+          <!-- IMAGES -->
+          <div>
+            <label class="block font-medium mb-2">
+              Product Images (<%= variant.images.length %>)
+            </label>
+
+            <div class="image-grid">
+
+              <% variant.images.slice(0, 3).forEach(image => { %>
+                <div class="image-item">
+                  <img src="<%= image %>" alt="product-image">
+                </div>
+              <% }) %>
+
+              <% if (variant.images.length > 3) { %>
+                <div class="image-item flex items-center justify-center bg-gray-50 text-gray-500">
+                  +<%= variant.images.length - 3 %> more
+                </div>
+              <% } %>
+
+            </div>
+          </div>
+
+        </div>
+
+        <% }) %>
+
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="modal-footer">
+      <a href="/admin/products" class="btn btn-outline">Cancel</a>
+      <a href="/admin/editProduct?productid=<%= group.productId %>" class="btn btn-primary">Edit Product</a>
+    </div>
+
+  </div>
+</div>
+
+<% }) %>
+
+
+
 
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  const params = new URLSearchParams(window.location.search);
-  const success = params.get("success");
-
-  if (success && success.toLowerCase() === "true") {
-    Swal.fire({
-      title: "Category Added!",
-      text: "The new category was successfully added.",
-      icon: "success",
-      confirmButtonText: "OK",
-      confirmButtonColor: "#111827", // dark gray
-      background: "#fff",
-      color: "#111",
-      customClass: {
-        popup: "rounded-lg shadow-lg"
-      }
-    }).then(() => {
-      // Optional: clean up URL after showing alert
-      window.history.replaceState({}, document.title, window.location.pathname);
-    });
-  }
-});
-</script>
 
 
+    <script>
+      // Handle variant status toggle without page reload
+document.querySelectorAll('.toggle-variant-btn').forEach(button => {
+  button.addEventListener('click', async function () {
+    const variantId = this.dataset.variantId;
+    const isActive = this.dataset.isActive === 'true';
+    const newIsActive = !isActive;
 
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-  const deleteForms = document.querySelectorAll('.delete-form');
+    // Optional: show loading state (disable button)
+    const originalClasses = this.className;
+    this.disabled = true;
+    this.classList.add('opacity-70', 'cursor-not-allowed');
 
-  deleteForms.forEach(form => {
-    form.addEventListener('submit', (event) => {
-      event.preventDefault();
+    try {
+      const response = await fetch(`/admin/updateProduct?variantId=${variantId}&_method=PATCH`, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json', // helps backend detect AJAX
+        }
+      });
 
-      // Get user's active status from the data attribute
-      const isActive = form.dataset.status === 'true';
+      if (response.ok) {
+        // ✅ Update data attribute
+        this.dataset.isActive = newIsActive;
 
-      if (isActive) {
-        // Show SweetAlert confirmation only if user is active
+        // ✅ Update color & position classes
+        const newColor = newIsActive ? 'bg-green-500' : 'bg-red-500';
+        const newMove = newIsActive ? 'translate-x-8' : 'translate-x-0';
+
+        // Rebuild class string to preserve Tailwind classes + update color
+        this.className = `toggle-variant-btn w-16 h-8 flex items-center rounded-full p-1 transition ${newColor}`;
+        
+        // Update the inner knob position
+        const knob = this.querySelector('div');
+        knob.className = `bg-white w-6 h-6 rounded-full shadow-md transform transition ${newMove}`;
+
+        // Optional: small toast notification
         Swal.fire({
-          title: 'Are you sure?',
-          text: "This action will permanently block the active user!",
-          icon: 'warning',
-          showCancelButton: true,
-          confirmButtonColor: '#3085d6',
-          cancelButtonColor: '#d33',
-          confirmButtonText: 'Yes, block it!',
-          cancelButtonText: 'Cancel'
-        }).then((result) => {
-          if (result.isConfirmed) {
-            form.submit();
+          toast: true,
+          position: 'top-end',
+          icon: 'success',
+          title: `Variant ${newIsActive ? 'activated' : 'blocked'}!`,
+          showConfirmButton: false,
+          timer: 1200,
+          timerProgressBar: true,
+          background: '#fff',
+          color: '#111',
+          customClass: {
+            popup: 'rounded-lg'
           }
         });
       } else {
-        // If user is not active, just submit without popup
-        form.submit();
+        throw new Error('Server error');
       }
-    });
+    } catch (error) {
+      console.log('Toggle failed:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Update failed',
+        text: 'Please try again.',
+        confirmButtonColor: '#111827'
+      });
+    } finally {
+      // Re-enable button
+      this.disabled = false;
+      this.classList.remove('opacity-70', 'cursor-not-allowed');
+    }
   });
 });
-</script>
+    </script>
 
-
-
-
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const params = new URLSearchParams(window.location.search);
+        const success = params.get("success");
+        if (success && success.toLowerCase() === "true") {
+          Swal.fire({
+            title: "Category Added!",
+            text: "The new category was successfully added.",
+            icon: "success",
+            confirmButtonText: "OK",
+            confirmButtonColor: "#111827",
+            background: "#fff",
+            color: "#111",
+            customClass: {
+              popup: "rounded-lg shadow-lg"
+            }
+          }).then(() => {
+            window.history.replaceState({}, document.title, window.location.pathname);
+          });
+        }
+      });
+      
+      document.addEventListener('DOMContentLoaded', () => {
+        const deleteForms = document.querySelectorAll('.delete-form');
+        deleteForms.forEach(form => {
+          form.addEventListener('submit', (event) => {
+            event.preventDefault();
+            const isActive = form.dataset.status === 'true';
+            if (isActive) {
+              Swal.fire({
+                title: 'Are you sure?',
+                text: "This action will permanently block the active Product!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, block it!',
+                cancelButtonText: 'Cancel'
+              }).then((result) => {
+                if (result.isConfirmed) {
+                  form.submit();
+                }
+              });
+            } else {
+              form.submit();
+            }
+          });
+        });
+        
+        // Close modal when clicking the close button or back button
+        document.querySelectorAll('.close-modal, .back-button').forEach(element => {
+          element.addEventListener('click', function(e) {
+            e.preventDefault();
+            const modalId = this.closest('.variants-modal').id;
+            window.location.hash = '';
+          });
+        });
+        
+        // Close modal when clicking outside the content
+        document.querySelectorAll('.variants-modal').forEach(modal => {
+          modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+              window.location.hash = '';
+            }
+          });
+        });
+        
+        // Prevent modal content clicks from closing the modal
+        document.querySelectorAll('.variants-modal-content').forEach(content => {
+          content.addEventListener('click', function(e) {
+            e.stopPropagation();
+          });
+        });
+      });
+    </script>
   </body>
 </html>

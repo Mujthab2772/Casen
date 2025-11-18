@@ -98,30 +98,73 @@ export const addProductService = async (req) => {
 }
 
 
-export const fetchProducts = async () => {
-    try {
-        const products = await Product.find({}).populate({
-            path: "categoryId",
-            model: "category",
-            select: "categoryId categoryName description image"
-        }).populate({
-            path: "variantId",
-            model: "ProductVariant",
-            select: "variantId color stock price images"
-        }).exec()
+export const fetchProducts = async (search = null, page, limit = 5) => {
+  try {
+    const skip = (page - 1) * limit;
 
-        if(!products){
-            return null
-        }
+    let match = {};
 
-        const result = products.map(p => p.toObject({ getters: true }));
-
-        return result
-    } catch (error) {
-        console.log(`error from fetchproducts ${error}`);
-        throw error
+    if (search) {
+      match.productName = { $regex: search, $options: "i" };
     }
-}
+
+    
+
+    const totalVariants = await Product.countDocuments({})
+
+    // FETCH PAGINATED VARIANTS
+    const dataPipeline = [
+      { $match: match },
+
+      {
+        $lookup: {
+          from: "productvariants",
+          localField: "variantId",
+          foreignField: "_id",
+          as: "variant"
+        }
+      },
+
+      {
+        $lookup: {
+          from: "categories",
+          localField: "categoryId",
+          foreignField: "_id",
+          as: "category"
+        }
+      },
+      { $unwind: "$category" },
+
+      { $skip: skip },
+      { $limit: limit },
+
+      {
+        $project: {
+          productId: 1,
+          productName: 1,
+          category: 1,
+          variant: 1,
+          isActive: 1,
+          description: 1
+        }
+      }
+    ];
+
+    const result = await Product.aggregate(dataPipeline);
+
+    return {
+      result,
+      countProduct: totalVariants,
+      productSkip: skip,
+      end: Math.min(skip + limit, totalVariants)
+    };
+
+  } catch (error) {
+    console.log("fetchProducts error:", error);
+    throw error;
+  }
+};
+
 
 
 export const editProductDetails = async (productid) => {
@@ -302,6 +345,36 @@ export const updateProductService = async (req, productId) => {
 
     } catch (error) {
         console.log(`error from updateproductservice ${error}`)
+        throw error
+    }
+}
+
+export const toggleStatusProduct = async (productId, variantId) => {
+    try {
+
+        if(productId) {
+            const product = await Product.findOne({ productId }).populate("variantId");
+            if (!product) return { status: "Product Not Found" };
+    
+            product.isActive = !product.isActive
+            await product.save()
+
+            return { status: "product status updated"}
+        }
+
+        if(variantId) {
+            const variant = await ProductVariant.findOne({variantId})
+
+            if(!variant) return {status: "variant not found"}
+
+            variant.isActive = !variant.isActive
+            await variant.save()
+
+            return {status: "variant status updated"}
+        }
+
+    } catch (error) {
+        console.log(`error from toggleStatusProduct ${error}`);
         throw error
     }
 }

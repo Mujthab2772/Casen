@@ -19,20 +19,20 @@ export const signUpPost = async (req, res) => {
 
         if (result.status === "Email already exists") {
             req.session.signUpErrEmail = "Email already exists"
-            return res.status(STATUS_CODE.BAD_REQUEST).redirect('/user/signUpPage')
+            return res.status(STATUS_CODE.BAD_REQUEST).redirect('/signUpPage')
         }
 
         if (result.status === "confirm password does not match password") {
             req.session.signUpErrPassConfirm = "Passwords do not match"
-            return res.status(STATUS_CODE.BAD_REQUEST).redirect('/user/signUpPage')
+            return res.status(STATUS_CODE.BAD_REQUEST).redirect('/signUpPage')
         }
         req.session.tempEmail = result.email
-        return res.status(STATUS_CODE.OK).redirect('/user/signUpOtp')
+        return res.status(STATUS_CODE.OK).redirect('/signUpOtp')
 
 
     } catch (error) {
         console.log(`error from signUpPost ${error}`);
-        res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).redirect('/user/signUpPage')
+        res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).redirect('/signUpPage')
     }    
 }
 
@@ -41,7 +41,7 @@ export const otpPage = (req, res) => {
         res.status(STATUS_CODE.OK).render('otpVerificationPage', {otpErr: req.session.otpInvalid})
     } catch (error) {
         console.log(`error from otpPage`);   
-        res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).redirect('/user/signUpPage')     
+        res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).redirect('/signUpPage')     
     }
 }
 
@@ -56,20 +56,20 @@ export const otpPagePost = async (req, res) => {
 
         if (result.status === "Not Found") {
             req.session.otpInvalid = "Not Found"
-            return res.status(STATUS_CODE.BAD_REQUEST).redirect('/user/signUpOtp')
+            return res.status(STATUS_CODE.BAD_REQUEST).redirect('/signUpOtp')
         }else if (result.status === "Invalid OTP") {
             req.session.otpInvalid = "Invalid OTP"
-            return res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).redirect('/user/signUpOtp')
+            return res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).redirect('/signUpOtp')
         }else if(result.status === "OTP expired") {
             req.session.otpInvalid = "OTP expired"
-            return res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).redirect('/user/signUpOtp')
+            return res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).redirect('/signUpOtp')
         }
 
 
-        return res.status(STATUS_CODE.OK).redirect('/user/HomePage')
+        return res.status(STATUS_CODE.OK).redirect('/HomePage')
     } catch (error) {
         console.log(`error from otpPagePost ${error}`);
-        res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).redirect('/user/signUpOtp')
+        res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).redirect('/signUpOtp')
     }
 }
 
@@ -80,12 +80,12 @@ export const resendOtp = async (req, res) => {
 
         if (result.status === "User Not Found") {
             req.session.otpInvalid = "User Not Found"
-            return res.json({success: true, redirectUrl: '/user/signUpOtp'})
+            return res.json({success: true, redirectUrl: '/signUpOtp'})
         }
-        return res.json({success: true, redirectUrl: '/user/signUpOtp'})
+        return res.json({success: true, redirectUrl: '/signUpOtp'})
     } catch (error) {
         console.log(`error from resendOtp ${error}`);
-        res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).redirect('/user/signUpOtp')
+        res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).redirect('/signUpOtp')
     }
 }
 

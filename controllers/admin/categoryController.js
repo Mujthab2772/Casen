@@ -60,7 +60,7 @@ export const validCategory = async (req, res) => {
     try {
         const categoryid = req.params.categoryId
         await toggleBlockAndUnblock(categoryid)
-        return res.status(STATUS_CODE.OK).redirect(`/admin/category?Page=${req.session.categoryPage}`)
+        return res.status(STATUS_CODE.OK).redirect(`/admin/category?page=${req.session.categoryPage}`)
     } catch (error) {
         console.log(`Error from validCategory ${error}`);        
         res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).redirect('/admin/category')

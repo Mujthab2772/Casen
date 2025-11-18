@@ -1,10 +1,15 @@
-import { addProductService, categoryDetails, editProductDetails, fetchProducts, updateProductService } from "../../service/admin/productService.js";
+import { addProductService, categoryDetails, editProductDetails, fetchProducts, toggleStatusProduct, updateProductService } from "../../service/admin/productService.js";
 import { STATUS_CODE } from "../../util/statusCodes.js";
 
 export const productsPage = async (req, res) => {
     try {
-        const products = await fetchProducts()
-        res.render('productPage', {products})
+        const page = parseInt(req.query.page) || 1
+        const searchProduct = req.query.searchProduct || null
+        req.session.productPage = page
+
+        const products = await fetchProducts(searchProduct, page)
+
+        res.render('productPage', {products: products.result, page, countProduct: products.countProduct, productSkip: products.productSkip, end: products.end, searchProduct})
     } catch (error) {
         console.log(`error from productsPage ${error}`);
         res.redirect('/admin/products')
@@ -62,3 +67,27 @@ export const updateProduct = async (req, res) => {
         res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).redirect('/admin/editProduct')
     }
 }
+
+export const productStatus = async (req, res) => {
+  try {
+    const { productId, variantId } = req.query;
+
+    await toggleStatusProduct(productId, variantId);
+
+    // If it's an AJAX request (like from fetch), send JSON
+    if (req.headers.accept?.includes('application/json')) {
+      return res.json({ success: true });
+    }
+
+    // Otherwise, redirect (for non-AJAX fallback)
+    res.redirect(`/admin/products?page=${req.session.productPage || 1}`);
+  } catch (error) {
+    console.error(`Error in productStatus: ${error}`);
+    
+    if (req.headers.accept?.includes('application/json')) {
+      return res.status(500).json({ success: false, error: 'Update failed' });
+    }
+    
+    res.redirect('/admin/products?error=1');
+  }
+};

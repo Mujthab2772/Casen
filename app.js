@@ -51,7 +51,7 @@ app.use("/admin", (req, res, next) => {
     next()
 }, adminRouter)
 
-app.use("/user", (req, res, next) => {
+app.use("/", (req, res, next) => {
     app.set("views", path.join(__dirname, "views/user"))
     next()
 }, userRouter)

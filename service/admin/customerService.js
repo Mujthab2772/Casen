@@ -3,35 +3,25 @@ import userCollection from "../../models/userModel.js";
 export const customerDetails = async (searchedUser = null, page, limit = 5) => {
     try {
         const skip = (page - 1) * limit
-        let countCustomers = await userCollection.countDocuments({})
-
-        let userDetails
-
-        if(!searchedUser){
-            userDetails = await userCollection
-                .find({}, { _id: 1, userId: 1, firstName: 1, lastName: 1, email: 1, phoneNumber: 1, profilePic: 1, isActive: 1, createdAt: 1, updatedAt: 1 })
-                .sort({ createdAt: -1 })
-                .skip(skip)
-                .limit(limit);
-        }else{
-            const userIds = searchedUser.map(user => user.userId);
-
-            // Query all at once and paginate
-            userDetails = await userCollection
-            .find(
-            { userId: { $in: userIds } },
-            {
-            _id: 1, userId: 1, firstName: 1, lastName: 1,
-            email: 1, phoneNumber: 1, profilePic: 1,
-            isActive: 1, createdAt: 1, updatedAt: 1
-            }
-            )
-            .sort({ createdAt: -1 })
-            .skip(skip)
-            .limit(limit);
-
-            countCustomers = await userCollection.find({userId: {$in: userIds}}).countDocuments({})
+        
+        let filter = {}
+        
+        if (searchedUser) {
+            filter = {
+                $or: [
+                    { firstName: { $regex: searchedUser, $options: "i" } },
+                    { lastName: { $regex: searchedUser, $options: "i" } }
+                ]
+            };
         }
+        
+        let countCustomers = await userCollection.countDocuments(filter)
+
+
+        let userDetails = await userCollection.find(filter)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
 
         return {userDetails, countCustomers, skip, end: Math.min(skip + limit, countCustomers)}
 
@@ -58,7 +48,7 @@ export const toggleBlockAndUnblock = async (userId) => {
     }
 }
 
-export const searchForUser = async (searchBar) => {
+export const searchedUser = async (searchBar) => {
     try {
         let searchUsers = await userCollection.find({
             $or: [
@@ -71,7 +61,7 @@ export const searchForUser = async (searchBar) => {
 
         return searchUsers
     } catch (error) {
-        console.log(`Error from searchForUser ${error}`);
+        console.log(`Error from searchedUser ${error}`);
         throw error
     }
 }

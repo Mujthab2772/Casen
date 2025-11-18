@@ -1,9 +1,9 @@
 import express from "express"
 import { adminLogin, adminLoginVerify } from "../controllers/admin/adminController.js"
-import { customerBlocking, customers, customerSearch } from "../controllers/admin/customerController.js"
+import { customerBlocking, customers } from "../controllers/admin/customerController.js"
 import { addCategory, addCategoryUpdate, category, editCategory, editCategoryUpdate, validCategory } from "../controllers/admin/categoryController.js"
 import upload from "../middlewares/multer.js"
-import { addProductPage, addProducts, editProduct, productsPage, updateProduct } from "../controllers/admin/productController.js"
+import { addProductPage, addProducts, editProduct, productsPage, productStatus, updateProduct } from "../controllers/admin/productController.js"
 
 const router = express.Router()
 
@@ -17,7 +17,6 @@ router.get("/customers", customers)
 
 router.patch("/customers/:Id", customerBlocking) //post to patch
 
-router.post("/customers", customerSearch)
 
 // Category Page
 
@@ -44,5 +43,7 @@ router.post('/addProducts', upload.any(), addProducts)
 router.get('/editProduct', editProduct)
 
 router.put('/editProduct/:productid', upload.any(), updateProduct)
+
+router.patch('/updateProduct', productStatus)
 
 export default router

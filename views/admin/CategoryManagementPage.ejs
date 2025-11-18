@@ -164,7 +164,7 @@
                 <tr>
                   <td>
                     <div class="customer-cell">
-                      <img src="<%= categories[i].image %>" alt="categoryPic" class="customer-avatar" />
+                      <img src="<%= categories[i].image %>" alt="categoryPic" class="customer-avatar" style="object-fit: contain;"/>
                       <div class="customer-info">
                         <div class="customer-name"><%= categories[i].categoryName %></div>
                       </div>
@@ -190,7 +190,7 @@
                           </svg>
                         </button>
                       </form>
-                      <form class="delete-form" action="/admin/category/<%= categories[i].categoryId %>?_method=PATCH" method="post"  data-status="<%= categories[i].isVaild %>">
+                      <form class="delete-form" action="/admin/category/<%= categories[i].categoryId %>?_method=PATCH" method="post"  data-status="<%= categories[i].isValid %>">
                           <button class="action-btn delete-btn" title="Delete" type="submit">
                             <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
                               <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
@@ -280,7 +280,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Show SweetAlert confirmation only if user is active
         Swal.fire({
           title: 'Are you sure?',
-          text: "This action will permanently block the active user!",
+          text: "This action will permanently block the active category!",
           icon: 'warning',
           showCancelButton: true,
           confirmButtonColor: '#3085d6',
