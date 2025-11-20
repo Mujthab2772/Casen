@@ -25,11 +25,13 @@ export const productDetails = async () => {
                 }
             },
             { $unwind: "$variants" },
-            { $match: { "variants.isActive": true } }
+            { $match: { "variants.isActive": true } },
+            { $sort: {createdAt: -1}}
         ]);
         
         return details
     } catch (error) {
-
+        console.log(`error from landinpage Service product details ${error}`);
+        throw error
     }
 }

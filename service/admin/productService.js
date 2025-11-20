@@ -172,6 +172,7 @@ export const editProductDetails = async (productid) => {
         const data = await Product.find({productId: productid})
         .populate('categoryId')
         .populate('variantId')
+        .lean()
         
         if(!data) {
             return {status: "Not Found"}

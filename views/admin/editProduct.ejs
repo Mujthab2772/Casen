@@ -9,7 +9,6 @@
   <script src="https://cdn.jsdelivr.net/npm/cropperjs@1.5.13/dist/cropper.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    /* small helper to show hidden file inputs for debugging if needed */
     .hidden { display: none; }
   </style>
 </head>
@@ -21,7 +20,6 @@
 
     <h1 class="text-2xl font-bold mb-4">Edit Product</h1>
 
-    <!-- Form: method POST + _method=PATCH for method-override -->
     <form id="productForm" enctype="multipart/form-data" method="post" action="/admin/editProduct/<%= product.data.productId %>?_method=PUT">
       <!-- Basic fields -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
@@ -36,14 +34,20 @@
         </div>
 
         <div class="md:col-span-2">
-          <label class="block text-sm font-medium">Category</label>
-          <select name="categoryId" class="mt-1 block w-full border rounded p-2">
-            <option value="<%= product.categoryId._id %>"><%= product.categoryId.categoryName %></option>
-            <% categories.forEach(cat => { %>
-              <option value="<%= cat._id %>"><%= cat.categoryName %></option>
-            <% }) %>
-          </select>
-        </div>
+  <label class="block text-sm font-medium">Category</label>
+  <select name="categoryId" class="mt-1 block w-full border rounded p-2">
+    <% 
+      const currentCat = product.data.categoryId || {};
+      const currentId = (currentCat._id || '').toString();
+      categories.forEach(cat => {
+        const isSelected = cat._id.toString() === currentId;
+    %>
+      <option value="<%= cat._id %>" <%= isSelected ? 'selected' : '' %>>
+        <%= cat.categoryName %>
+      </option>
+    <% }); %>
+  </select>
+</div>
       </div>
 
       <!-- Variants area -->
@@ -56,10 +60,8 @@
         <div id="variantsContainer" class="space-y-4"></div>
       </div>
 
-      <!-- Hidden persistent inputs container -->
       <div id="hiddenFileInputs" class="hidden"></div>
 
-      <!-- Submit -->
       <div class="flex justify-end space-x-2">
         <button type="button" onclick="history.back()" class="px-4 py-2 border rounded">Cancel</button>
         <button type="submit" class="px-4 py-2 bg-black text-white rounded">Save Product</button>
@@ -82,60 +84,75 @@
   </div>
 
   <!-- LOADING POPUP -->
-<div id="loaderOverlay"
-     class="fixed inset-0 bg-black bg-opacity-40 hidden items-center justify-center z-[9999]">
-  <div class="flex flex-col items-center">
-    <svg class="animate-spin h-12 w-12 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-      <path class="opacity-75" fill="currentColor"
-            d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4l-3 3 3 3H4z">
-      </path>
-    </svg>
-    <p class="text-white mt-3 text-lg">Updating Product...</p>
+  <div id="loaderOverlay"
+       class="fixed inset-0 bg-black bg-opacity-40 hidden items-center justify-center z-[9999]">
+    <div class="flex flex-col items-center">
+      <svg class="animate-spin h-12 w-12 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor"
+              d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4l-3 3 3 3H4z">
+        </path>
+      </svg>
+      <p class="text-white mt-3 text-lg">Updating Product...</p>
+    </div>
   </div>
-</div>
 
+  <script id="product-data" type="application/json">
+<%- JSON.stringify(product.data) %>
+</script>
 
   <script>
-    /*****************************************************************
-     * Client-side JS: persistent file inputs + rendering + cropper
-     *****************************************************************/
     (function () {
-      // initial data from server
-      const initialProduct = JSON.parse(`<%- JSON.stringify(product.data) %>`);
-      const initialVariants = (initialProduct.variantId || []).map(v => ({
-        _id: v._id,
-        color: v.color || '',
-        price: v.price || '',
-        stock: v.stock || '',
-        // images can be base64/dataURL or existing URLs
-        images: Array.isArray(v.images) && v.images.length ? v.images.slice(0,3) : [null, null, null]
-      }));
+      // ✅ Safely parse product data
+       const initialProduct = JSON.parse(
+      document.getElementById('product-data').textContent
+    );
 
-      let variants = initialVariants.length ? initialVariants : [{ color: '', price: '', stock: '', images: [null,null,null] }];
+    // ✅ Now process variants
+    const initialVariants = (initialProduct.variantId || []).map(v => {
+      let price = '0';
+      if (v.price) {
+        if (typeof v.price === 'object' && v.price.$numberDecimal) {
+          price = v.price.$numberDecimal;
+        } else {
+          price = String(v.price);
+        }
+      }
+      return {
+        _id: v._id || '',
+        color: v.color || '',
+        price: price,
+        stock: v.stock != null ? String(v.stock) : '',
+        images: Array.isArray(v.images) ? v.images.slice(0, 3) : [null, null, null]
+      };
+    });
+
+      let variants = initialVariants.length ? initialVariants : [{ color: '', price: '', stock: '', images: [null, null, null] }];
 
       // DOM refs
       const variantsContainer = document.getElementById('variantsContainer');
       const fileInputsContainer = document.getElementById('hiddenFileInputs');
       const addVariantBtn = document.getElementById('addVariantBtn');
 
-      // cropper
+      // Cropper state
       let cropper = null;
       const cropModal = document.getElementById('cropModal');
       const cropImage = document.getElementById('cropImage');
       const applyCropBtn = document.getElementById('applyCrop');
       const cancelCropBtn = document.getElementById('cancelCrop');
-
-      // state for cropper: which variant/image is being edited
       let cropTargetVariant = null;
       let cropTargetImageIndex = null;
 
-      // Create (persistent) hidden file inputs for a variant index
+      // Escape HTML for input values
+      function escapeHtml(str) {
+        if (str == null) return '';
+        return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'<','>':'>','"':'&quot;',"'":"&#39;"}[m]));
+      }
+
+      // Create hidden file inputs for variant
       function createHiddenFileInputsForVariant(variantIndex) {
         for (let i = 0; i < 3; i++) {
-          // If an input already exists for this pair, skip
           if (document.querySelector(`input[name="variantImages_${variantIndex}_${i}"]`)) continue;
-
           const input = document.createElement('input');
           input.type = 'file';
           input.name = `variantImages_${variantIndex}_${i}`;
@@ -143,62 +160,53 @@
           input.dataset.variant = variantIndex;
           input.dataset.image = i;
           input.className = 'hidden file-input-persistent';
-
-          // change listener to update preview when user selects a file manually
           input.addEventListener('change', (e) => handleFileSelectFromInput(variantIndex, i, e));
           fileInputsContainer.appendChild(input);
         }
       }
 
-      // Initialize hidden inputs for all initial variants
-      function ensureAllHiddenInputs() {
-        variants.forEach((_, idx) => createHiddenFileInputsForVariant(idx));
-      }
-
-      // Render UI for variants (this DOES NOT recreate hidden inputs)
       function renderVariants() {
         variantsContainer.innerHTML = '';
         variants.forEach((variant, variantIndex) => {
           const wrapper = document.createElement('div');
           wrapper.className = 'border rounded-lg p-4 bg-gray-50 space-y-4 shadow-sm';
 
-          // build image slots HTML
           const imageSlotsHtml = [0,1,2].map(i => {
-            const imgHtml = variant.images[i] ? `
-              <div class="relative w-full h-36 flex items-center justify-center group">
-                <img src="${variant.images[i]}" class="object-cover w-full h-full rounded-lg" />
-                <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-opacity rounded-lg"></div>
-                <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity space-x-2">
-                  <button data-action="remove-image" data-variant="${variantIndex}" data-image="${i}" class="remove-image bg-red-500 text-white w-8 h-8 rounded-full" type="button">×</button>
-                  <button data-action="crop-image" data-variant="${variantIndex}" data-image="${i}" class="crop-image bg-blue-500 text-white w-8 h-8 rounded-full" type="button">✂</button>
-                </div>
-              </div>` : `
-              <div class="flex flex-col items-center justify-center text-gray-400">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0l-4 4m4-4l4 4M21 12v8a2 2 0 01-2 2H5a2 2 0 01-2-2v-8" />
-                </svg>
-                <span class="text-sm font-medium">Upload</span>
-              </div>` ;
+  const hasImage = variant.images[i] !== null && variant.images[i] !== undefined;
 
-            return `
-              <div class="image-slot relative group border-2 border-dashed border-gray-300 rounded-xl bg-gray-50 flex flex-col items-center justify-center p-4 hover:border-green-500 hover:bg-gray-100 cursor-pointer"
-                   data-variant="${variantIndex}" data-image="${i}">
-                ${imgHtml}
-                <!-- note: real persistent input sits in #hiddenFileInputs -->
-              </div>
-            `;
-          }).join('');
+  const imgHtml = hasImage
+    ? `
+      <div class="relative w-full h-36 flex items-center justify-center group">
+        <img src="${escapeHtml(variant.images[i])}" class="object-cover w-full h-full rounded-lg" />
+        <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-opacity rounded-lg"></div>
+        <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity space-x-2">
+          <button data-action="remove-image" data-variant="${variantIndex}" data-image="${i}" class="remove-image bg-red-500 text-white w-8 h-8 rounded-full" type="button">×</button>
+          <button data-action="crop-image" data-variant="${variantIndex}" data-image="${i}" class="crop-image bg-blue-500 text-white w-8 h-8 rounded-full" type="button">✂</button>
+        </div>
+      </div>`
+    : `
+      <div class="flex flex-col items-center justify-center text-gray-400">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0l-4 4m4-4l4 4M21 12v8a2 2 0 01-2 2H5a2 2 0 01-2-2v-8" />
+        </svg>
+        <span class="text-sm font-medium">Upload</span>
+      </div>`;
+
+  // ✅ WRAP in .image-slot with data attributes!
+  return `
+    <div class="image-slot relative group border-2 border-dashed border-gray-300 rounded-xl bg-gray-50 flex flex-col items-center justify-center p-4 hover:border-green-500 hover:bg-gray-100 cursor-pointer"
+         data-variant="${variantIndex}" data-image="${i}">
+      ${imgHtml}
+    </div>
+  `;
+}).join('');
 
           wrapper.innerHTML = `
             <div class="flex justify-between items-center">
               <h3 class="text-lg font-semibold text-gray-800">Variant ${variantIndex + 1}</h3>
               <button type="button" data-action="remove-variant" data-variant="${variantIndex}" class="text-red-600">Remove</button>
             </div>
-
-            <input type="hidden" name="variantId_${variantIndex}" value="${variant._id || ''}">
-
-
-
+            <input type="hidden" name="variantId_${variantIndex}" value="${escapeHtml(variant._id)}">
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <label class="block text-sm font-medium">Color</label>
@@ -213,7 +221,6 @@
                 <input type="number" name="variantstock" class="variant-stock mt-1 block w-full border rounded p-2" value="${escapeHtml(variant.stock)}">
               </div>
             </div>
-
             <div class="mt-3">
               <h4 class="text-md font-semibold mb-3 text-gray-900">Product Images <span class="text-sm text-gray-500">(3)</span></h4>
               <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -221,247 +228,168 @@
               </div>
             </div>
           `;
-
           variantsContainer.appendChild(wrapper);
         });
       }
 
-      // helper to escape values in template
-      function escapeHtml(str) {
-        if (str === null || str === undefined) return '';
-        return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[m]));
-      }
-
-      // triggers the hidden input click
       function triggerHiddenInput(variantIndex, imageIndex) {
         const input = document.querySelector(`input[name="variantImages_${variantIndex}_${imageIndex}"]`);
-        if (!input) {
-          console.warn('Hidden input not found for', variantIndex, imageIndex);
-          return;
-        }
-        input.click();
+        if (input) input.click();
       }
 
-      // handle manual file selection from real input
       function handleFileSelectFromInput(variantIndex, imageIndex, e) {
-        const file = e.target.files && e.target.files[0];
+        const file = e.target.files?.[0];
         if (!file) return;
-
-        // show preview (read as dataURL)
         const reader = new FileReader();
         reader.onload = (ev) => {
           variants[variantIndex].images[imageIndex] = ev.target.result;
-          renderVariants(); // safe: hidden inputs persist
+          renderVariants();
         };
         reader.readAsDataURL(file);
       }
 
-      // open cropper modal with existing image (dataURL or URL) OR open file picker to pick then crop
       function openCropperFor(variantIndex, imageIndex) {
         cropTargetVariant = variantIndex;
         cropTargetImageIndex = imageIndex;
-        const current = variants[variantIndex].images[imageIndex] || '';
-        cropImage.src = current;
+        cropImage.src = variants[variantIndex].images[imageIndex] || '';
         cropModal.classList.remove('hidden');
-        // init cropper
         setTimeout(() => {
           if (cropper) cropper.destroy();
-          cropper = new Cropper(cropImage, { viewMode: 1, autoCropArea: 1, movable: true, zoomable: true, scalable: true, rotatable: true });
+          cropper = new Cropper(cropImage, {
+            viewMode: 1,
+            autoCropArea: 1,
+            movable: true,
+            zoomable: true,
+            scalable: true,
+            rotatable: true
+          });
         }, 50);
       }
 
-      // apply crop: turn canvas into File and attach to persistent input
       function applyCrop() {
         if (!cropper) return;
         const canvas = cropper.getCroppedCanvas({ width: 800, height: 800 });
         canvas.toBlob((blob) => {
           const file = new File([blob], 'cropped.png', { type: 'image/png' });
-          // attach to persistent hidden input via DataTransfer
           const input = document.querySelector(`input[name="variantImages_${cropTargetVariant}_${cropTargetImageIndex}"]`);
-          if (!input) {
-            console.error('Persistent input not found', cropTargetVariant, cropTargetImageIndex);
-            return;
-          }
+          if (!input) return;
           const dt = new DataTransfer();
           dt.items.add(file);
           input.files = dt.files;
-
-          // update preview (use objectURL)
           variants[cropTargetVariant].images[cropTargetImageIndex] = URL.createObjectURL(file);
-
-          // re-render previews (keeps persistent inputs intact)
           renderVariants();
-
           closeCropModal();
         }, 'image/png');
       }
 
       function closeCropModal() {
-        if (cropper) { cropper.destroy(); cropper = null; }
+        if (cropper) cropper.destroy();
+        cropper = null;
         cropModal.classList.add('hidden');
         cropImage.src = '';
       }
 
-      // remove image (clears image preview AND clears persistent input.files)
       function removeImage(variantIndex, imageIndex) {
         variants[variantIndex].images[imageIndex] = null;
         const input = document.querySelector(`input[name="variantImages_${variantIndex}_${imageIndex}"]`);
-        if (input) input.value = ''; // clear file
+        if (input) input.value = '';
         renderVariants();
       }
 
-      // handle UI click events (delegation)
+      // Event delegation
       variantsContainer.addEventListener('click', (e) => {
-        const cropBtn = e.target.closest('[data-action="crop-image"], .crop-image');
+        const cropBtn = e.target.closest('[data-action="crop-image"]');
         if (cropBtn) {
-          const v = Number(cropBtn.dataset.variant || cropBtn.closest('[data-variant]')?.dataset.variant);
-          const i = Number(cropBtn.dataset.image || cropBtn.closest('[data-image]')?.dataset.image);
-          // if no current image, open file selector first
-          if (!variants[v].images[i]) {
-            // trigger hidden input; once user selects a file, they can crop via crop icon that will appear
-            triggerHiddenInput(v,i);
-            return;
+          const v = Number(cropBtn.dataset.variant);
+          const i = Number(cropBtn.dataset.image);
+          if (!variants[v]?.images[i]) {
+            triggerHiddenInput(v, i);
+          } else {
+            openCropperFor(v, i);
           }
-          openCropperFor(v,i);
           return;
         }
 
-        const removeImgBtn = e.target.closest('[data-action="remove-image"], .remove-image');
+        const removeImgBtn = e.target.closest('[data-action="remove-image"]');
         if (removeImgBtn) {
-          const v = Number(removeImgBtn.dataset.variant || removeImgBtn.closest('[data-variant]')?.dataset.variant);
-          const i = Number(removeImgBtn.dataset.image || removeImgBtn.closest('[data-image]')?.dataset.image);
-          removeImage(v,i);
+          const v = Number(removeImgBtn.dataset.variant);
+          const i = Number(removeImgBtn.dataset.image);
+          removeImage(v, i);
           return;
         }
 
-        // click on image slot to open file picker
         const slot = e.target.closest('.image-slot');
         if (slot) {
           const v = Number(slot.dataset.variant);
           const i = Number(slot.dataset.image);
-          triggerHiddenInput(v,i);
+          triggerHiddenInput(v, i);
           return;
         }
 
-        // remove variant
-        const remVariant = e.target.closest('[data-action="remove-variant"], button[data-action="remove-variant"], button[data-variant][data-action="remove-variant"]');
+        const remVariant = e.target.closest('[data-action="remove-variant"]');
         if (remVariant) {
           const v = Number(remVariant.dataset.variant);
           variants.splice(v, 1);
-          // re-create persistent inputs: easiest approach is to rebuild inputs container (safe)
-          rebuildPersistentInputs();
+          fileInputsContainer.innerHTML = '';
+          variants.forEach((_, idx) => createHiddenFileInputsForVariant(idx));
           renderVariants();
           return;
         }
       });
 
-      // when persistent hidden inputs change (user picks file), update preview
-      function handleFileInputChangeEvent(e) {
-        const input = e.target;
-        const v = Number(input.dataset.variant);
-        const i = Number(input.dataset.image);
-        handleFileSelectFromInput(v, i, e);
-      }
-
-      // create persistent inputs for all variants (idempotent)
-      function createPersistentInputsForAllVariants() {
-        // we'll clear and re-create only if counts mismatch
-        // simpler: ensure inputs exist for each variant
-        variants.forEach((_, idx) => createHiddenFileInputsForVariant(idx));
-      }
-
-      // rebuild all persistent inputs (used after removing variant)
-      function rebuildPersistentInputs() {
-        // clear and recreate
-        fileInputsContainer.innerHTML = '';
-        createPersistentInputsForAllVariants();
-      }
-
-      // add variant
       addVariantBtn.addEventListener('click', () => {
         variants.push({ color: '', price: '', stock: '', images: [null, null, null] });
         createHiddenFileInputsForVariant(variants.length - 1);
         renderVariants();
       });
 
-      // crop modal buttons
       applyCropBtn.addEventListener('click', applyCrop);
       cancelCropBtn.addEventListener('click', closeCropModal);
 
-      // initialisation
-      createPersistentInputsForAllVariants();
+      // Initialize
+      variants.forEach((_, idx) => createHiddenFileInputsForVariant(idx));
       renderVariants();
 
-      // wire persistent inputs change listeners (delegated)
+      // Persistent input change listener
       fileInputsContainer.addEventListener('change', (e) => {
         const input = e.target;
-        if (input && input.matches('input.file-input-persistent')) {
+        if (input.matches('input.file-input-persistent')) {
           handleFileSelectFromInput(Number(input.dataset.variant), Number(input.dataset.image), e);
         }
       });
 
-      // ==================== FORM SUBMIT HANDLER ====================
-      // before submit: collect variant inputs values (colors, prices, stocks) into form fields properly
+      // Form submit
       document.getElementById('productForm').addEventListener('submit', (ev) => {
-        // Show loader instantly
-document.getElementById("loaderOverlay").classList.remove("hidden");
+        document.getElementById("loaderOverlay").classList.remove("hidden");
 
+        // Refresh variantId hidden inputs
+        document.querySelectorAll('input[name^="variantId_"]').forEach(n => n.remove());
+        variants.forEach((variant, idx) => {
+          const hidden = document.createElement('input');
+          hidden.type = 'hidden';
+          hidden.name = `variantId_${idx}`;
+          hidden.value = variant._id || '';
+          document.getElementById('productForm').appendChild(hidden);
+        });
 
-        // ================== FIX: SEND ORDERED variantId_* FIELDS ==================
-    document.querySelectorAll('input[name^="variantId_"]').forEach(n => n.remove());
-
-    variants.forEach((variant, idx) => {
-        const hidden = document.createElement('input');
-        hidden.type = 'hidden';
-        hidden.name = `variantId_${idx}`;
-        hidden.value = variant._id || '';
-        document.getElementById('productForm').appendChild(hidden);
-    });
-        // ensure variant inputs are serialized: create hidden fields for arrays
-        // remove any existing variant hidden arrays
-        document.querySelectorAll('input[name^="variantcolor_index_"]').forEach(n=>n.remove());
-        document.querySelectorAll('input[name^="variantprice_index_"]').forEach(n=>n.remove());
-        document.querySelectorAll('input[name^="variantstock_index_"]').forEach(n=>n.remove());
-
-        // ========== NEW: Send existing images data ==========
+        // Send existing image URLs (for unchanged images)
         const existingImagesData = {};
         variants.forEach((variant, idx) => {
           existingImagesData[idx] = variant.images.map(img => {
-            // Only include if it's a URL (not a blob/dataURL from new upload)
             if (img && (img.startsWith('http://') || img.startsWith('https://'))) {
               return img;
             }
             return null;
           });
         });
-        
         const existingInput = document.createElement('input');
         existingInput.type = 'hidden';
         existingInput.name = 'existingImages';
         existingInput.value = JSON.stringify(existingImagesData);
         document.getElementById('productForm').appendChild(existingInput);
-        // ========== END NEW CODE ==========
-
-        // // gather current values from UI
-        // document.querySelectorAll('#variantsContainer > div').forEach((variantNode, idx) => {
-        //   const color = variantNode.querySelector('.variant-color')?.value || '';
-        //   const price = variantNode.querySelector('.variant-price')?.value || '';
-        //   const stock = variantNode.querySelector('.variant-stock')?.value || '';
-
-        //   // create indexed hidden inputs compatible with your server parsing
-        //   const ci = document.createElement('input'); ci.type='hidden'; ci.name=`variantcolor`; ci.value = color;
-        //   const pi = document.createElement('input'); pi.type='hidden'; pi.name=`variantprice`; pi.value = price;
-        //   const si = document.createElement('input'); si.type='hidden'; si.name=`variantstock`; si.value = stock;
-        //   // append to form
-        //   document.getElementById('productForm').appendChild(ci);
-        //   document.getElementById('productForm').appendChild(pi);
-        //   document.getElementById('productForm').appendChild(si);
-        // });
-
-        // Now allow submission to proceed: persistent file inputs are already in the DOM with proper names
       });
-
     })();
   </script>
 </body>
 </html>
+

@@ -34,7 +34,7 @@ export const addProductPage = async (req, res) => {
 export const addProducts = async (req, res) => {
   try {
     const result = await addProductService(req)
-    res.redirect("/admin/products");
+    res.redirect("/admin/products?success=true");
   } catch (error) {
     console.error(`error from addProductsPost ${error}`);
     res.redirect("/admin/addProduct");
@@ -43,17 +43,38 @@ export const addProducts = async (req, res) => {
 
 
 export const editProduct = async (req, res) => {
-    try {
-        const productid = req.query.productid
-        const data = await editProductDetails(productid)
-        const categories = await categoryDetails()
-        
-        res.status(STATUS_CODE.OK).render('editProduct', {product: {data: data[0],variantId: data[0].variantId, categoryId: data[0].categoryId}, categories: categories.options || []})
-    } catch (error) {
-        console.log(`error from editProduct ${error}`);
-        res.redirect('/admin/products')
+  try {
+    const productid = req.query.productid;
+    const data = await editProductDetails(productid);
+    const categories = await categoryDetails();
+
+    if (!data || data.length === 0) {
+      return res.redirect('/admin/products');
     }
-}
+
+    let product = data[0];
+
+    // 🔧 Convert Decimal128 prices to strings for safe JSON
+    if (Array.isArray(product.variantId)) {
+      product.variantId = product.variantId.map(v => ({
+        ...v,
+        price: v.price && typeof v.price === 'object' && v.price.$numberDecimal
+          ? v.price.$numberDecimal
+          : String(v.price || '0'),
+        stock: v.stock != null ? String(v.stock) : '0'
+      }));
+    }
+
+    // ✅ ONLY pass product.data — clean and consistent
+    res.status(STATUS_CODE.OK).render('editProduct', {
+      product: { data: product }, // ← only this
+      categories: categories.options || []
+    });
+  } catch (error) {
+    console.error(`editProduct error:`, error);
+    res.redirect('/admin/products');
+  }
+};
 
 export const updateProduct = async (req, res) => {
     try {

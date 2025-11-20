@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title><%= product.productName %> - Casen</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    /* Fallback for unknown colors */
+    .color-fallback-black { background-color: #000; }
+    .color-fallback-white { background-color: #fff; border: 1px solid #ccc; }
+    .color-fallback-wine-red { background-color: #722F37; }
+    .color-fallback-red { background-color: #ef4444; }
+    .color-fallback-blue { background-color: #3b82f6; }
+    .color-fallback-green { background-color: #10b981; }
+    .color-fallback-pink { background-color: #ec4899; }
+    .color-fallback-orange { background-color: #f97316; }
+    .color-fallback-purple { background-color: #a855f7; }
+    .color-fallback-gray { background-color: #9ca3af; }
+    .color-fallback-violet { background-color: #8a2be2; } 
+  </style>
+</head>
+<body class="bg-white text-gray-800 font-sans">
+
+  <!-- Header -->
+  <header class="bg-white shadow-md">
+    <div class="container mx-auto px-4 py-2 flex items-center justify-between">
+      <div class="flex items-center">
+        <img src="" alt="Logo" class="h-10">
+      </div>
+      <nav class="hidden md:flex space-x-6">
+        <a href="/" class="text-gray-800 hover:text-red-500">Home</a>
+        <a href="/products" class="text-gray-800 hover:text-red-500">Phone Cases</a>
+        <a href="#" class="text-gray-800 hover:text-red-500">Sale</a>
+      </nav>
+      <div class="flex items-center space-x-4">
+        <button class="text-gray-800 hover:text-red-500">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </button>
+        <!-- <button class="text-gray-800 hover:text-red-500">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+          </svg>
+        </button> -->
+        <button class="text-gray-800 hover:text-red-500">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
+        </button>
+      </div>
+      <button class="md:hidden text-gray-800 hover:text-red-500">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Product Section -->
+  <main class="container mx-auto px-4 py-8">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+      <!-- Product Image Gallery -->
+<div class="space-y-3"> <!-- Reduced from space-y-4 -->
+  <div class="relative w-full aspect-square bg-gray-100 rounded-lg overflow-hidden">
+    <img 
+      id="mainImage" 
+      src="<%= product.variants.length > 0 ? (product.variants[0].images && product.variants[0].images[0] ? product.variants[0].images[0] : 'https://placehold.co/600x600?text=No+Image') : 'https://placehold.co/600x600?text=No+Variants' %>" 
+      alt="<%= product.productName %>" 
+      class="w-full h-full object-cover"
+      style="object-fit: contain;"
+    />
+    <button class="absolute top-4 right-4 p-3 bg-white rounded-full shadow-md hover:bg-gray-100 transition">
+      <i class="far fa-heart text-gray-600 text-xl"></i>
+    </button>
+  </div>
+
+  <!-- Thumbnail Gallery -->
+  <div id="thumbnailGallery" class="flex space-x-2 overflow-x-auto pb-1"> <!-- Reduced pb-2 → pb-1 -->
+    <!-- Thumbnails will be populated by JavaScript -->
+  </div>
+
+  <!-- Color Selection -->
+<div class="bg-gray-50 p-4 rounded-lg">
+  <h3 class="font-semibold mb-3">Color - <span id="selectedColor"><%= product.variants.length > 0 ? product.variants[0].color : 'N/A' %></span></h3>
+  <div class="flex space-x-3" id="colorOptions">
+    <% product.variants.forEach((variant, index) => { 
+        const colorLower = variant.color.toLowerCase();
+        let fallbackClass = 'color-fallback-gray';
+
+        // Unified partial-match detection (order matters: check longer/more specific first)
+        if (colorLower.includes('wine') || colorLower.includes('burgundy')) {
+          fallbackClass = 'color-fallback-wine-red';
+        } else if (colorLower.includes('black')) {
+          fallbackClass = 'color-fallback-black';
+        } else if (colorLower.includes('white')) {
+          fallbackClass = 'color-fallback-white';
+        } else if (colorLower.includes('purple')) {
+          fallbackClass = 'color-fallback-purple';
+        } else if (colorLower.includes('red')) {
+          fallbackClass = 'color-fallback-red';
+        } else if (colorLower.includes('blue')) {
+          fallbackClass = 'color-fallback-blue';
+        } else if (colorLower.includes('green')) {
+          fallbackClass = 'color-fallback-green';
+        } else if (colorLower.includes('pink')) {
+          fallbackClass = 'color-fallback-pink';
+        } else if (colorLower.includes('orange')) {
+          fallbackClass = 'color-fallback-orange';
+        } else if(colorLower.includes('grape')) {
+          fallbackClass = 'color-fallback-violet'
+        }
+        // Add more as needed (e.g., gold, silver, gray)
+        else if (colorLower.includes('gray') || colorLower.includes('grey')) {
+          fallbackClass = 'color-fallback-gray';
+        }
+    %>
+      <div 
+        class="w-10 h-10 rounded-full cursor-pointer border-2 <%= index === 0 ? 'border-blue-500' : 'border-transparent' %> <%= fallbackClass %>"
+        data-color="<%= variant.color %>"
+        data-price="<%= variant.price %>"
+        data-stock="<%= variant.stock %>"
+        data-images='<%= JSON.stringify(variant.images && variant.images.length ? variant.images : ["https://placehold.co/600x600?text=No+Image"]) %>'
+        onclick="selectVariant(this)"
+      ></div>
+    <% }); %>
+  </div>
+</div>
+</div>
+
+      <!-- Product Details -->
+      <div class="space-y-6">
+        <div>
+          <p class="text-sm text-gray-500"><%= product.category.categoryName %></p>
+          <p class="text-sm text-gray-500"><%= product.productName %></p>
+          <h1 class="text-2xl font-bold mt-1"><%= product.variants[0].color %></h1>
+        </div>
+
+        <div class="flex items-center space-x-2 text-sm text-orange-500">
+          <i class="fas fa-fire"></i>
+          <span>153+ bought in past month</span>
+        </div>
+
+        <div class="flex items-center space-x-4">
+          <span class="text-xl font-bold text-red-500" id="price">
+            Rs. <%= product.variants.length > 0 ? product.variants[0].price : '0' %>.00
+          </span>
+        </div>
+
+        <div 
+          class="inline-flex items-center px-3 py-1 rounded-full text-sm" 
+          id="stockStatus"
+        >
+          <% const firstVariant = product.variants[0]; %>
+          <% if (firstVariant && firstVariant.stock > 0) { %>
+            <div class="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+            In stock (<%= firstVariant.stock %> available)
+          <% } else { %>
+            Out of stock
+          <% } %>
+        </div>
+
+        <!-- Description -->
+        <div class="border-t border-gray-200 pt-4">
+          <div class="flex justify-between items-center cursor-pointer" onclick="toggleAccordion('description')">
+            <h3 class="font-semibold">Description</h3>
+            <i id="descIcon" class="fas fa-chevron-down text-sm"></i>
+          </div>
+          <div id="description" class="mt-3 text-sm text-gray-600 hidden">
+            <p><%= product.description || 'No description available.' %></p>
+          </div>
+        </div>
+
+        <!-- Technical Specification -->
+        <div class="border-t border-gray-200 pt-4">
+          <div class="flex justify-between items-center cursor-pointer" onclick="toggleAccordion('spec')">
+            <h3 class="font-semibold">Technical Specification</h3>
+            <i id="specIcon" class="fas fa-chevron-down text-sm"></i>
+          </div>
+          <div id="spec" class="mt-3 text-sm text-gray-600 hidden">
+            <div class="mb-3">
+              <h4 class="font-medium mb-1">Material:</h4>
+              <p><%= product.category?.categoryName || 'N/A' %></p>
+            </div>
+            <div class="mb-3">
+              <h4 class="font-medium mb-1">Protection Level:</h4>
+              <ul class="list-disc pl-5 space-y-1">
+                <li>Shockproof</li>
+                <li>Drop Protection</li>
+                <li>Anti-Slip Sides</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quantity & Add to Cart -->
+<div class="flex flex-col space-y-3">
+  <div class="flex items-center space-x-4">
+    <div class="flex items-center border border-gray-300 rounded-full">
+      <button class="px-3 py-1 text-gray-600 hover:bg-gray-100" onclick="updateQuantity(-1)">-</button>
+      <span class="px-3 py-1" id="quantity">1</span>
+      <button class="px-3 py-1 text-gray-600 hover:bg-gray-100" onclick="updateQuantity(1)">+</button>
+    </div>
+    <button class="flex-1 bg-black text-white py-3 rounded-full font-medium hover:bg-gray-800 transition">
+      Add to cart
+    </button>
+  </div>
+  <!-- Wishlist Button -->
+  <button class="flex items-center justify-center space-x-2 border border-gray-300 text-gray-700 py-3 rounded-full font-medium hover:bg-gray-50 transition">
+    <i class="far fa-heart"></i>
+    <span>Add to Wishlist</span>
+  </button>
+</div>
+
+        <!-- Share Options -->
+        <div class="flex items-center space-x-4 text-sm">
+          <span class="font-medium">Share:</span>
+          <button class="text-gray-600 hover:text-blue-600"><i class="fab fa-facebook-f"></i></button>
+          <button class="text-gray-600 hover:text-blue-400"><i class="fab fa-twitter"></i></button>
+          <button class="text-gray-600 hover:text-red-600"><i class="fab fa-pinterest-p"></i></button>
+          <button class="text-gray-600 hover:text-gray-900"><i class="fas fa-envelope"></i></button>
+          <div class="ml-auto">
+            <button class="text-sm text-gray-500 flex items-center">
+              <i class="fas fa-question-circle mr-1"></i> Need help?
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- You May Also Like -->
+    <section class="mt-16 bg-gradient-to-r from-yellow-50 to-orange-50 py-12 rounded-2xl">
+      <div class="container mx-auto px-4">
+        <h2 class="text-3xl font-bold mb-8">You May Also Like</h2>
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6">
+          <% for (let i = 0; i < 6; i++) { %>
+            <div class="bg-white rounded-lg overflow-hidden shadow-sm">
+              <div class="relative">
+                <img src="https://placehold.co/300x300/1f2937/ffffff?text=Case<%= i+1 %>" class="w-full h-48 object-contain" />
+                <span class="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded">Save 50%</span>
+              </div>
+              <div class="p-4">
+                <div class="text-xs text-gray-500 mb-1">PIKKME</div>
+                <div class="text-sm mb-2">Pikkme iPhone 16 Case</div>
+                <div class="flex items-center justify-between">
+                  <span class="text-sm font-bold text-red-500">Rs. 499.00</span>
+                  <span class="text-xs line-through text-gray-400">Rs. 999.00</span>
+                </div>
+              </div>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-black text-white pt-12 pb-8 mt-16">
+    <div class="border-b border-gray-700 pb-8 mb-8">
+      <div class="container mx-auto px-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div class="flex items-start space-x-3">
+            <div class="text-blue-400"><i class="fas fa-headset text-xl"></i></div>
+            <div>
+              <h3 class="font-semibold mb-1">Customer service</h3>
+              <p class="text-sm text-gray-400">We're here to help!</p>
+            </div>
+          </div>
+          <div class="flex items-start space-x-3">
+            <div class="text-blue-400"><i class="fas fa-shipping-fast text-xl"></i></div>
+            <div>
+              <h3 class="font-semibold mb-1">Fast Free Shipping</h3>
+              <p class="text-sm text-gray-400">On all orders</p>
+            </div>
+          </div>
+          <div class="flex items-start space-x-3">
+            <div class="text-blue-400"><i class="fas fa-lock text-xl"></i></div>
+            <div>
+              <h3 class="font-semibold mb-1">Secure payment</h3>
+              <p class="text-sm text-gray-400">100% secure</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="container mx-auto px-4">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div>© 2025 Casen. All rights reserved.</div>
+        <div></div>
+        <div></div>
+        <div>
+          <div><a href="tel:+918851294403">Whatsapp: +91-8851294403</a></div>
+          <div><a href="mailto:support@Casen.com">support@Casen.com</a></div>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    let currentQuantity = 1;
+
+    function selectVariant(el) {
+      // Update active border
+      document.querySelectorAll('#colorOptions > div').forEach(d => {
+        d.classList.remove('border-blue-500');
+        d.classList.add('border-transparent');
+      });
+      el.classList.remove('border-transparent');
+      el.classList.add('border-blue-500');
+
+      const color = el.getAttribute('data-color');
+      const price = el.getAttribute('data-price');
+      const stock = parseInt(el.getAttribute('data-stock'));
+      const images = JSON.parse(el.getAttribute('data-images'));
+
+      // Update main image
+      const mainImage = document.getElementById('mainImage');
+      mainImage.src = images[0] || 'https://placehold.co/600x600?text=No+Image';
+
+      // Update UI
+      document.getElementById('selectedColor').textContent = color;
+      document.getElementById('price').textContent = 'Rs. ' + price + '.00';
+
+      const stockEl = document.getElementById('stockStatus');
+      if (stock > 0) {
+        stockEl.innerHTML = `<div class="w-3 h-3 bg-green-500 rounded-full mr-2"></div> In stock (${stock} available)`;
+        stockEl.className = "inline-flex items-center px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm";
+      } else {
+        stockEl.textContent = "Out of stock";
+        stockEl.className = "inline-flex items-center px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm";
+      }
+
+      // Reset quantity
+      currentQuantity = 1;
+      document.getElementById('quantity').textContent = currentQuantity;
+
+      // Update thumbnails
+      const thumbnailContainer = document.getElementById('thumbnailGallery');
+      thumbnailContainer.innerHTML = '';
+
+      const thumbnails = images.slice(0, 5);
+      if (thumbnails.length > 0) {
+        thumbnails.forEach(img => {
+          const thumb = document.createElement('img');
+          thumb.src = img;
+          thumb.alt = 'Thumbnail';
+          thumb.className = 'w-16 h-16 object-cover border border-gray-300 rounded cursor-pointer';
+          thumb.onclick = () => { mainImage.src = img; };
+          thumbnailContainer.appendChild(thumb);
+        });
+      } else {
+        const placeholder = document.createElement('img');
+        placeholder.src = 'https://placehold.co/100x100?text=Thumb';
+        placeholder.className = 'w-16 h-16 object-cover border border-gray-300 rounded';
+        thumbnailContainer.appendChild(placeholder);
+      }
+    }
+
+    function updateQuantity(change) {
+      const activeVariant = document.querySelector('#colorOptions .border-blue-500');
+      if (!activeVariant) return;
+
+      const maxStock = parseInt(activeVariant.getAttribute('data-stock'));
+      currentQuantity += change;
+      if (currentQuantity < 1) currentQuantity = 1;
+      if (currentQuantity > maxStock) currentQuantity = maxStock;
+
+      document.getElementById('quantity').textContent = currentQuantity;
+    }
+
+    function toggleAccordion(id) {
+      const content = document.getElementById(id);
+      const icon = document.getElementById(id + 'Icon');
+      if (content.classList.contains('hidden')) {
+        content.classList.remove('hidden');
+        icon.classList.remove('fa-chevron-down');
+        icon.classList.add('fa-chevron-up');
+      } else {
+        content.classList.add('hidden');
+        icon.classList.remove('fa-chevron-up');
+        icon.classList.add('fa-chevron-down');
+      }
+    }
+
+    // Initialize: select first variant if exists
+    document.addEventListener('DOMContentLoaded', () => {
+      const first = document.querySelector('#colorOptions > div');
+      if (first) {
+        selectVariant(first);
+      }
+    });
+  </script>
+</body>
+</html>

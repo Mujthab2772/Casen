@@ -387,6 +387,7 @@
                   </svg>
                   Filter by Status
                 </button>
+              </form>
               <form action="/admin/addProduct" method="get">
               <button class="sort-btn" >
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
@@ -745,8 +746,8 @@ document.querySelectorAll('.toggle-variant-btn').forEach(button => {
         const success = params.get("success");
         if (success && success.toLowerCase() === "true") {
           Swal.fire({
-            title: "Category Added!",
-            text: "The new category was successfully added.",
+            title: "Product Added!",
+            text: "The new product was successfully added.",
             icon: "success",
             confirmButtonText: "OK",
             confirmButtonColor: "#111827",

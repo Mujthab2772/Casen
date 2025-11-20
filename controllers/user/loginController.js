@@ -25,28 +25,28 @@ export const login = async (req, res) => {
 
         if (result.status === "User Not Found") {
             req.session.loginErr = "Not have account please signUp"
-            return res.status(STATUS_CODE.BAD_REQUEST).redirect('/loginPage')
+            return res.status(STATUS_CODE.BAD_REQUEST).redirect('/login')
         }
 
         if (result.status === "Login with Google") {
             req.session.loginErr = 'Login with Google'
-            return res.status(STATUS_CODE.OK).redirect('/loginPage')
+            return res.status(STATUS_CODE.OK).redirect('/login')
         }
 
         if(result.status === "User is Blocked") {
             req.session.loginErr = "Account is Blocked"
-            return res.status(STATUS_CODE.OK).redirect('/loginPage')
+            return res.status(STATUS_CODE.OK).redirect('/login')
         }
 
         if (result.status === "Incorrect Password") {
             req.session.loginPassErr = "Incorrect Password"
-            return res.status(STATUS_CODE.BAD_REQUEST).redirect("/loginPage")
+            return res.status(STATUS_CODE.BAD_REQUEST).redirect("/login")
         }
 
         return res.status(STATUS_CODE.OK).redirect('/HomePage')
     } catch (error) {
         console.log(`error from login ${error}`);
-        return res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).redirect("/loginPage")
+        return res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).redirect("/login")
     }
 }
 
@@ -56,7 +56,7 @@ export const forgotPass = (req, res) => {
         return res.status(STATUS_CODE.OK).render('forgotPassword', {forgotPassErr: req.session.forgotPassErr})
     } catch (error) {
         console.log(`error from forgotPass ${error}`);
-        return res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).redirect('/loginPage')
+        return res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).redirect('/login')
     }
 }
 
