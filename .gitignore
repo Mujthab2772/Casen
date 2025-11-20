@@ -1,0 +1,8 @@
+# Dependencies
+node_modules/
+
+# Uploads folder (e.g., user-uploaded images/files)
+uploads/
+
+# Environment variables
+.env
