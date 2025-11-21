@@ -3,44 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="icon" type="image/png" sizes="32x32" href="/logo.png">
   <title>Casen - Phone Cases</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <style>
-    /* Full-height layout to keep footer at bottom */
-    html, body {
-      height: 100%;
-      margin: 0;
-    }
-    body {
-      display: flex;
-      flex-direction: column;
-      font-family: ui-sans-serif, system-ui, sans-serif;
-    }
-
-    /* Main content fills available space */
-    main {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      min-height: 0;
-    }
-
-    /* Scrollable area for filters and products */
-    .product-container {
-      flex: 1;
-      overflow: auto;
-      padding-bottom: 2rem;
-    }
-
-    /* Bottom info section stays at bottom of main */
-    .bottom-info-section {
-      padding-top: 2rem;
-      padding-bottom: 1rem;
-      margin-top: auto;
-    }
-
-    /* Improved price filter button */
     .price-apply-btn {
       background: linear-gradient(to right, #ef4444, #b91c1c);
       color: white;
@@ -63,7 +30,6 @@
       transform: translateY(0);
     }
     
-    /* Input focus styles */
     .price-input, .color-input {
       outline: none;
       border: 1px solid #d1d5db;
@@ -76,14 +42,15 @@
       box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
     }
   </style>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.10/dist/cdn.min.js"></script>
 </head>
-<body class="bg-white font-sans">
+<body class="bg-white font-sans flex flex-col min-h-screen">
 
   <!-- Header -->
   <header class="bg-white shadow-md">
     <div class="container mx-auto px-4 py-2 flex items-center justify-between">
       <div class="flex items-center">
-        <img src="" alt="Logo" class="h-10">
+        <img src="/logo.png" alt="Logo" class="h-10 w-10 rounded-full object-cover">
       </div>
       <nav class="hidden md:flex space-x-6">
         <a href="/" class="text-gray-800 hover:text-red-500">Home</a>
@@ -92,18 +59,86 @@
         <a href="#" class="text-gray-800 hover:text-red-500">Tablet Cases</a>
         <a href="#" class="text-gray-800 hover:text-red-500">Sale</a>
       </nav>
+      <!-- Icons -->
       <div class="flex items-center space-x-4">
-        <button class="text-gray-800 hover:text-red-500">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-        </button>
-        <a href="/login" class="flex items-center space-x-1 text-gray-800 hover:text-red-500 text-sm font-medium">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-          </svg>
-          <span>Sign In</span>
-        </a>
+        <% if (locals.user && user.profilePic) { %>
+          <button class="text-gray-800 hover:text-red-500">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            </svg>
+          </button>
+          <button class="text-gray-800 hover:text-red-500">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+          </button>
+
+          <div class="relative" x-data="{ open: false }" @click.away="open = false">
+            <button @click="open = !open" class="rounded-full overflow-hidden w-6 h-6 border border-gray-300 focus:outline-none">
+              <img src="<%= user.profilePic %>" alt="Profile" class="w-full h-full object-cover" />
+            </button>
+            <div x-show="open"
+                 x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0 scale-95"
+                 x-transition:enter-end="opacity-100 scale-100"
+                 x-transition:leave="transition ease-in duration-150"
+                 x-transition:leave-start="opacity-100 scale-100"
+                 x-transition:leave-end="opacity-0 scale-95"
+                 class="absolute right-0 mt-1 w-40 bg-white shadow-lg rounded-md py-1 z-50">
+              <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" @click.stop="open = false">Profile</a>
+              <form action="/logout" method="post" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                <button type="submit" class="w-full text-left" @click.stop>Logout</button>
+              </form>
+            </div>
+          </div>
+
+        <% } else if (locals.user) { %>
+          <button class="text-gray-800 hover:text-red-500">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            </svg>
+          </button>
+          <button class="text-gray-800 hover:text-red-500">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+          </button>
+
+          <div class="relative" x-data="{ open: false }" @click.away="open = false">
+            <button @click="open = !open" class="w-6 h-6 flex items-center justify-center focus:outline-none">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            </button>
+            <div x-show="open"
+                 x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0 scale-95"
+                 x-transition:enter-end="opacity-100 scale-100"
+                 x-transition:leave="transition ease-in duration-150"
+                 x-transition:leave-start="opacity-100 scale-100"
+                 x-transition:leave-end="opacity-0 scale-95"
+                 class="absolute right-0 mt-1 w-40 bg-white shadow-lg rounded-md py-1 z-50">
+              <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" @click.stop="open = false">Profile</a>
+              <form action="/logout" method="post" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                <button type="submit" class="w-full text-left" @click.stop>Logout</button>
+              </form>
+            </div>
+          </div>
+
+        <% } else { %>
+          <a href="/login" class="flex items-center space-x-1 text-gray-800 hover:text-red-500 text-sm font-medium">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+            <span>Sign In</span>
+          </a>
+        <% } %>
       </div>
       <button class="md:hidden text-gray-800 hover:text-red-500">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -114,7 +149,7 @@
   </header>
 
   <!-- Main Content -->
-  <main class="container mx-auto px-4 py-6">
+  <main class="container mx-auto px-4 py-6 flex-grow">
     <!-- Top Filters -->
     <div class="flex flex-wrap gap-4 mb-6">
       <div class="flex gap-2">
@@ -143,286 +178,277 @@
       </div>
     </div>
 
-    <!-- Scrollable product area -->
-    <div class="product-container">
-      <div class="flex flex-col lg:flex-row gap-6">
-        <!-- Sidebar Filters -->
-        <aside class="lg:w-64 bg-white p-4 rounded-lg shadow-sm">
-          <div class="mb-6">
-            <h3 class="font-medium mb-3">In stock only</h3>
-            <label class="inline-flex items-center cursor-pointer">
-              <input type="checkbox" class="sr-only peer" disabled />
-              <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-            </label>
-            <p class="text-xs text-gray-500 mt-1">* Not implemented</p>
+    <!-- Product area -->
+    <div class="flex flex-col lg:flex-row gap-6">
+      <!-- Sidebar Filters -->
+      <aside class="lg:w-64 bg-white p-4 rounded-lg shadow-sm">
+        <!-- Price Filter -->
+        <div class="mb-6">
+          <h3 class="font-medium mb-3">Price</h3>
+          <div class="flex gap-2 items-center">
+            <input
+              type="number"
+              id="minPrice"
+              placeholder="Min"
+              class="w-20 p-2 border rounded text-sm price-input"
+              min="0"
+              value="<%= (query && query.minPrice) ? query.minPrice : '0' %>"
+            />
+            <span class="text-sm">to</span>
+            <input
+              type="number"
+              id="maxPrice"
+              placeholder="Max"
+              class="w-20 p-2 border rounded text-sm price-input"
+              min="0"
+              value="<%= (query && query.maxPrice) ? query.maxPrice : '1000' %>"
+            />
+            <button id="applyPrice" class="price-apply-btn">Apply</button>
           </div>
+        </div>
 
-          <!-- Price Filter -->
-          <div class="mb-6">
-            <h3 class="font-medium mb-3">Price</h3>
-            <div class="flex gap-2 items-center">
-              <input
-                type="number"
-                id="minPrice"
-                placeholder="Min"
-                class="w-20 p-2 border rounded text-sm price-input"
-                min="0"
-                value="<%= (query && query.minPrice) ? query.minPrice : '0' %>"
-              />
-              <span class="text-sm">to</span>
-              <input
-                type="number"
-                id="maxPrice"
-                placeholder="Max"
-                class="w-20 p-2 border rounded text-sm price-input"
-                min="0"
-                value="<%= (query && query.maxPrice) ? query.maxPrice : '1000' %>"
-              />
-              <button id="applyPrice" class="price-apply-btn">Apply</button>
-            </div>
+        <!-- Color Filter -->
+        <div class="mb-6">
+          <h3 class="font-medium mb-3">Color</h3>
+          <div class="flex gap-2 items-center">
+            <input
+              type="text"
+              id="colorFilterInput"
+              placeholder="e.g. violet, black..."
+              class="flex-1 p-2 border border-gray-300 rounded text-sm color-input"
+              value="<%= (query && query.color) ? query.color : '' %>"
+            />
+            <button id="applyColorFilter" class="price-apply-btn" style="padding: 0.25rem 0.5rem; font-size: 0.7rem;">
+              Go
+            </button>
           </div>
+        </div>
 
-          <!-- Color Filter (TEXT INPUT) -->
-          <div class="mb-6">
-            <h3 class="font-medium mb-3">Color</h3>
-            <div class="flex gap-2 items-center">
-              <input
-                type="text"
-                id="colorFilterInput"
-                placeholder="e.g. violet, black..."
-                class="flex-1 p-2 border border-gray-300 rounded text-sm color-input"
-                value="<%= (query && query.color) ? query.color : '' %>"
-              />
-              <button id="applyColorFilter" class="price-apply-btn" style="padding: 0.25rem 0.5rem; font-size: 0.7rem;">
-                Go
-              </button>
-            </div>
-          </div>
-
-          <!-- Category Filter -->
-          <div class="mb-6">
-            <h3 class="font-medium mb-3">Category</h3>
-            <div class="space-y-2">
-              <%
-                var uniqueCategories = [];
-                var seenCats = {};
-                for (var i = 0; i < products.length; i++) {
-                  if (products[i].category && products[i].category.categoryName) {
-                    var catName = products[i].category.categoryName;
-                    if (!seenCats[catName]) {
-                      uniqueCategories.push(catName);
-                      seenCats[catName] = true;
-                    }
+        <!-- Category Filter -->
+        <div class="mb-6">
+          <h3 class="font-medium mb-3">Category</h3>
+          <div class="space-y-2">
+            <%
+              var uniqueCategories = [];
+              var seenCats = {};
+              for (var i = 0; i < products.length; i++) {
+                if (products[i].category && products[i].category.categoryName) {
+                  var catName = products[i].category.categoryName;
+                  if (!seenCats[catName]) {
+                    uniqueCategories.push(catName);
+                    seenCats[catName] = true;
                   }
                 }
-                var activeCategories = [];
-                if (query && query.category) {
-                  activeCategories = (typeof query.category === 'string') ? query.category.split(',') : [];
+              }
+              var activeCategories = [];
+              if (query && query.category) {
+                activeCategories = (typeof query.category === 'string') ? query.category.split(',') : [];
+              }
+            %>
+            <% for (var i = 0; i < uniqueCategories.length; i++) { %>
+              <%
+                var cat = uniqueCategories[i];
+                var isChecked = '';
+                for (var j = 0; j < activeCategories.length; j++) {
+                  if (activeCategories[j] === cat) {
+                    isChecked = ' checked';
+                    break;
+                  }
                 }
               %>
-              <% for (var i = 0; i < uniqueCategories.length; i++) { %>
-                <%
-                  var cat = uniqueCategories[i];
-                  var isChecked = '';
-                  for (var j = 0; j < activeCategories.length; j++) {
-                    if (activeCategories[j] === cat) {
-                      isChecked = ' checked';
-                      break;
-                    }
-                  }
-                %>
-                <label class="flex items-center gap-2 text-sm">
-                  <input
-                    type="checkbox"
-                    class="form-checkbox h-4 w-4 text-blue-600 filter-checkbox"
-                    data-type="category"
-                    data-value="<%= cat %>"
-                    <%= isChecked %>
-                  />
-                  <%= cat %>
-                </label>
-              <% } %>
-            </div>
+              <label class="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  class="form-checkbox h-4 w-4 text-blue-600 filter-checkbox"
+                  data-type="category"
+                  data-value="<%= cat %>"
+                  <%= isChecked %>
+                />
+                <%= cat %>
+              </label>
+            <% } %>
           </div>
+        </div>
 
-          <!-- Product Filter -->
-          <div class="mb-6">
-            <h3 class="font-medium mb-3">Products</h3>
-            <div class="space-y-2">
-              <%
-                var uniqueProducts = [];
-                var seenProds = {};
-                for (var i = 0; i < products.length; i++) {
-                  if (products[i].productName) {
-                    var pName = products[i].productName;
-                    if (!seenProds[pName]) {
-                      uniqueProducts.push(pName);
-                      seenProds[pName] = true;
-                    }
+        <!-- Product Filter -->
+        <div class="mb-6">
+          <h3 class="font-medium mb-3">Products</h3>
+          <div class="space-y-2">
+            <%
+              var uniqueProducts = [];
+              var seenProds = {};
+              for (var i = 0; i < products.length; i++) {
+                if (products[i].productName) {
+                  var pName = products[i].productName;
+                  if (!seenProds[pName]) {
+                    uniqueProducts.push(pName);
+                    seenProds[pName] = true;
                   }
                 }
-                var activeProducts = [];
-                if (query && query.product) {
-                  activeProducts = (typeof query.product === 'string') ? query.product.split(',') : [];
+              }
+              var activeProducts = [];
+              if (query && query.product) {
+                activeProducts = (typeof query.product === 'string') ? query.product.split(',') : [];
+              }
+            %>
+            <% for (var i = 0; i < uniqueProducts.length; i++) { %>
+              <%
+                var prod = uniqueProducts[i];
+                var isCheckedProd = '';
+                for (var j = 0; j < activeProducts.length; j++) {
+                  if (activeProducts[j] === prod) {
+                    isCheckedProd = ' checked';
+                    break;
+                  }
                 }
               %>
-              <% for (var i = 0; i < uniqueProducts.length; i++) { %>
-                <%
-                  var prod = uniqueProducts[i];
-                  var isCheckedProd = '';
-                  for (var j = 0; j < activeProducts.length; j++) {
-                    if (activeProducts[j] === prod) {
-                      isCheckedProd = ' checked';
-                      break;
-                    }
-                  }
-                %>
-                <label class="flex items-center gap-2 text-sm">
-                  <input
-                    type="checkbox"
-                    class="form-checkbox h-4 w-4 text-blue-600 filter-checkbox"
-                    data-type="product"
-                    data-value="<%= prod %>"
-                    <%= isCheckedProd %>
-                  />
-                  <%= prod %>
-                </label>
-              <% } %>
-            </div>
+              <label class="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  class="form-checkbox h-4 w-4 text-blue-600 filter-checkbox"
+                  data-type="product"
+                  data-value="<%= prod %>"
+                  <%= isCheckedProd %>
+                />
+                <%= prod %>
+              </label>
+            <% } %>
           </div>
-        </aside>
+        </div>
+      </aside>
 
-        <!-- Product Grid -->
-        <div class="flex-1">
-          <% if (!products || products.length === 0) { %>
-            <div class="text-center py-12 text-gray-500">
-              <i class="fas fa-box-open text-4xl mb-4"></i>
-              <p>No products found. Try adjusting your filters.</p>
-            </div>
-          <% } else { %>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              <% for (var i = 0; i < products.length; i++) { %>
-                <%
-                  var p = products[i];
-                  var productId = p.productId || 'unknown';
-                  var productName = p.productName || 'Unnamed Product';
-                  var categoryName = (p.category && p.category.categoryName) ? p.category.categoryName : 'Uncategorized';
-                  var variant = p.variants || {};
-                  var color = variant.color || 'Unknown';
-                  var priceNum = (typeof variant.price === 'number') ? variant.price : 0;
-                  var imageUrl = (variant.images && Array.isArray(variant.images) && variant.images[0])
-                    ? variant.images[0]
-                    : 'https://via.placeholder.com/300';
-                %>
-                <a href="/product?product=<%= productId %>" class="block">
-                  <div class="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                    <div class="relative">
-                      <img 
-                        src="<%= imageUrl %>"
-                        alt="<%= productName %> (<%= color %>)"
-                        class="w-full h-64 object-contain p-2"
-                      />
-                      <div class="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">Save 50%</div>
-                    </div>
-                    <div class="p-4">
-                      <h3 class="text-sm font-medium mb-1">Casen <%= productName %> (<%= color %>)</h3>
-                      <p class="text-xs text-gray-500 mb-2"><%= categoryName %></p>
-                      <div class="flex items-center gap-2">
-                        <span class="text-red-600 font-bold">Rs. <%= priceNum.toFixed(2) %></span>
-                        <span class="text-gray-400 line-through text-xs">Rs. 999.00</span>
-                      </div>
+      <!-- Product Grid -->
+      <div class="flex-1">
+        <% if (!products || products.length === 0) { %>
+          <div class="text-center py-12 text-gray-500">
+            <i class="fas fa-box-open text-4xl mb-4"></i>
+            <p>No products found. Try adjusting your filters.</p>
+          </div>
+        <% } else { %>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <% for (var i = 0; i < products.length; i++) { %>
+              <%
+                var p = products[i];
+                var productId = p.productId || 'unknown';
+                var productName = p.productName || 'Unnamed Product';
+                var categoryName = (p.category && p.category.categoryName) ? p.category.categoryName : 'Uncategorized';
+                var variant = p.variants || {};
+                var color = variant.color || 'Unknown';
+                var priceNum = (typeof variant.price === 'number') ? variant.price : 0;
+                var imageUrl = (variant.images && Array.isArray(variant.images) && variant.images[0])
+                  ? variant.images[0]
+                  : 'https://via.placeholder.com/300';
+              %>
+              <a href="/product?product=<%= productId %>" class="block">
+                <div class="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                  <div class="relative">
+                    <img 
+                      src="<%= imageUrl %>"
+                      alt="<%= productName %> (<%= color %>)"
+                      class="w-full h-64 object-contain p-2"
+                    />
+                    <div class="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">Save 50%</div>
+                  </div>
+                  <div class="p-4">
+                    <h3 class="text-sm font-medium mb-1">Casen <%= productName %> (<%= color %>)</h3>
+                    <p class="text-xs text-gray-500 mb-2"><%= categoryName %></p>
+                    <div class="flex items-center gap-2">
+                      <span class="text-red-600 font-bold">Rs. <%= priceNum.toFixed(2) %></span>
+                      <span class="text-gray-400 line-through text-xs">Rs. 999.00</span>
                     </div>
                   </div>
-                </a>
-              <% } %>
-            </div>
+                </div>
+              </a>
+            <% } %>
+          </div>
 
-            <!-- Pagination -->
-            <% if (pagination && pagination.totalPages > 1) { %>
-              <%
-                function buildUrl(newParams) {
-                  var params = {};
-                  if (query) {
-                    for (var key in query) {
-                      if (Object.prototype.hasOwnProperty.call(query, key)) {
-                        var val = query[key];
-                        if (val !== undefined && val !== null && val !== '') {
-                          params[key] = val;
-                        }
-                      }
-                    }
-                  }
-                  for (var key in newParams) {
-                    if (Object.prototype.hasOwnProperty.call(newParams, key)) {
-                      var val = newParams[key];
+          <!-- Pagination -->
+          <% if (pagination && pagination.totalPages > 1) { %>
+            <%
+              function buildUrl(newParams) {
+                var params = {};
+                if (query) {
+                  for (var key in query) {
+                    if (Object.prototype.hasOwnProperty.call(query, key)) {
+                      var val = query[key];
                       if (val !== undefined && val !== null && val !== '') {
                         params[key] = val;
-                      } else {
-                        delete params[key];
                       }
                     }
                   }
-                  var pairs = [];
-                  for (var key in params) {
-                    if (Object.prototype.hasOwnProperty.call(params, key)) {
-                      pairs.push(encodeURIComponent(key) + '=' + encodeURIComponent(params[key]));
+                }
+                for (var key in newParams) {
+                  if (Object.prototype.hasOwnProperty.call(newParams, key)) {
+                    var val = newParams[key];
+                    if (val !== undefined && val !== null && val !== '') {
+                      params[key] = val;
+                    } else {
+                      delete params[key];
                     }
                   }
-                  return pairs.length ? pairs.join('&') : '';
                 }
-              %>
-              <div class="flex justify-center mt-8 space-x-1">
-                <% if (pagination.hasPrev) { %>
-                  <a href="?<%= buildUrl({ page: String(pagination.currentPage - 1) }) %>" class="px-3 py-1 border rounded hover:bg-gray-100">Prev</a>
-                <% } %>
+                var pairs = [];
+                for (var key in params) {
+                  if (Object.prototype.hasOwnProperty.call(params, key)) {
+                    pairs.push(encodeURIComponent(key) + '=' + encodeURIComponent(params[key]));
+                  }
+                }
+                return pairs.length ? pairs.join('&') : '';
+              }
+            %>
+            <div class="flex justify-center mt-8 space-x-1">
+              <% if (pagination.hasPrev) { %>
+                <a href="?<%= buildUrl({ page: String(pagination.currentPage - 1) }) %>" class="px-3 py-1 border rounded hover:bg-gray-100">Prev</a>
+              <% } %>
 
-                <% for (var pageNum = 1; pageNum <= pagination.totalPages; pageNum++) { %>
-                  <% if (pageNum === pagination.currentPage) { %>
-                    <span class="px-3 py-1 bg-blue-600 text-white rounded"><%= pageNum %></span>
-                  <% } else { %>
-                    <a href="?<%= buildUrl({ page: String(pageNum) }) %>" class="px-3 py-1 border rounded hover:bg-gray-100"><%= pageNum %></a>
-                  <% } %>
+              <% for (var pageNum = 1; pageNum <= pagination.totalPages; pageNum++) { %>
+                <% if (pageNum === pagination.currentPage) { %>
+                  <span class="px-3 py-1 bg-blue-600 text-white rounded"><%= pageNum %></span>
+                <% } else { %>
+                  <a href="?<%= buildUrl({ page: String(pageNum) }) %>" class="px-3 py-1 border rounded hover:bg-gray-100"><%= pageNum %></a>
                 <% } %>
+              <% } %>
 
-                <% if (pagination.hasNext) { %>
-                  <a href="?<%= buildUrl({ page: String(pagination.currentPage + 1) }) %>" class="px-3 py-1 border rounded hover:bg-gray-100">Next</a>
-                <% } %>
-              </div>
-            <% } %>
+              <% if (pagination.hasNext) { %>
+                <a href="?<%= buildUrl({ page: String(pagination.currentPage + 1) }) %>" class="px-3 py-1 border rounded hover:bg-gray-100">Next</a>
+              <% } %>
+            </div>
           <% } %>
-        </div>
-      </div>
-    </div>
-
-    <!-- Bottom Info Section -->
-    <div class="bottom-info-section grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-      <div class="flex items-start gap-3">
-        <div class="text-blue-600 text-2xl"><i class="fas fa-headset"></i></div>
-        <div>
-          <h3 class="font-bold text-lg">Customer service</h3>
-          <p class="text-sm text-gray-600">Your Satisfaction is Our Commitment—We're Here to Help!</p>
-        </div>
-      </div>
-      <div class="flex items-start gap-3">
-        <div class="text-blue-600 text-2xl"><i class="fas fa-shipping-fast"></i></div>
-        <div>
-          <h3 class="font-bold text-lg">Fast Free Shipping</h3>
-          <p class="text-sm text-gray-600">Enjoy the convenience of fast, free shipping on all orders!</p>
-        </div>
-      </div>
-      <div class="flex items-start gap-3">
-        <div class="text-blue-600 text-2xl"><i class="fas fa-lock"></i></div>
-        <div>
-          <h3 class="font-bold text-lg">Secure payment</h3>
-          <p class="text-sm text-gray-600">Your payment information is processed securely</p>
-        </div>
+        <% } %>
       </div>
     </div>
   </main>
 
   <!-- Footer -->
-  <footer class="bg-black text-white pt-8 pb-6 mt-auto">
+  <footer class="bg-black text-white pt-8 pb-6">
     <div class="container mx-auto px-4">
+
+      <!-- Bottom Info Section (now inside footer) -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center mb-8">
+        <div class="flex items-start gap-3 justify-center">
+          <div class="text-blue-600 text-2xl"><i class="fas fa-headset"></i></div>
+          <div>
+            <h3 class="font-bold text-lg">Customer service</h3>
+            <p class="text-sm text-gray-300">Your Satisfaction is Our Commitment—We're Here to Help!</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-3 justify-center">
+          <div class="text-blue-600 text-2xl"><i class="fas fa-shipping-fast"></i></div>
+          <div>
+            <h3 class="font-bold text-lg">Fast Free Shipping</h3>
+            <p class="text-sm text-gray-300">Enjoy the convenience of fast, free shipping on all orders!</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-3 justify-center">
+          <div class="text-blue-600 text-2xl"><i class="fas fa-lock"></i></div>
+          <div>
+            <h3 class="font-bold text-lg">Secure payment</h3>
+            <p class="text-sm text-gray-300">Your payment information is processed securely</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer Links -->
       <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
         <div>
           <h3 class="font-bold text-lg mb-4">Discover More</h3>
@@ -464,6 +490,7 @@
           </div>
         </div>
       </div>
+
       <div class="mt-8 pt-4 border-t border-gray-700 text-center text-sm">
         <p>&copy; 2025 Casen. All rights reserved.</p>
       </div>
@@ -585,5 +612,21 @@
       }
     });
   </script>
+
+  <script>
+    const slider1 = document.getElementById('bestSellingSlider');
+    const prevBtn1 = document.getElementById('bestSellingPrevBtn');
+    const nextBtn1 = document.getElementById('bestSellingNextBtn');
+
+    const scrollAmount1 = 280;
+
+    prevBtn1.addEventListener('click', () => {
+        slider1.scrollBy({ left: -scrollAmount1, behavior: 'smooth' });
+    });
+
+    nextBtn1.addEventListener('click', () => {
+        slider1.scrollBy({ left: scrollAmount1, behavior: 'smooth' });
+    });
+</script>
 </body>
 </html>

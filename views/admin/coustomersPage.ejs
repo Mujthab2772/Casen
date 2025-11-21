@@ -49,7 +49,7 @@
             <span>Products</span>
           </a>
 
-          <a href="#" class="nav-item active">
+          <a href="/admin/customers" class="nav-item active">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
               <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v1h8v-1zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"/>
             </svg>
@@ -93,13 +93,15 @@
               <div class="user-email">admin@example.com</div>
             </div>
           </div>
-          <button class="logout-btn">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-              <path d="M10.5 1.5H3a1.5 1.5 0 00-1.5 1.5v10a1.5 1.5 0 001.5 1.5h7.5a1.5 1.5 0 001.5-1.5v-4"/>
-              <path d="M10.5 5l3-3m0 0l-3-3m3 3H6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-            </svg>
-            Logout
-          </button>
+          <form action="/admin/logout" method="post">
+            <button class="logout-btn">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M10.5 1.5H3a1.5 1.5 0 00-1.5 1.5v10a1.5 1.5 0 001.5 1.5h7.5a1.5 1.5 0 001.5-1.5v-4"/>
+                <path d="M10.5 5l3-3m0 0l-3-3m3 3H6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+              </svg>
+              Logout
+            </button>
+          </form>
         </div>
       </aside>
 

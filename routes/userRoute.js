@@ -3,50 +3,56 @@ import { otpPage, otpPagePost, resendOtp, signUpPageGet, signUpPost } from "../c
 import { resetPasswordValidate, validateSignUp } from "../middlewares/validationMiddleware.js"
 import { googleAuth, googleAuthCallback } from "../controllers/user/googleAuthController.js"
 import { forgotOtpPage, forgotOtpVerify, forgotPass, forgotPassResetPost, login, loginGet, resendforgotOtp, resetPassword, resetPasswordVerify } from "../controllers/user/loginController.js"
-import { landingPage } from "../controllers/user/landingPage.js"
+import { landingPage, logout } from "../controllers/user/landingPage.js"
 import { fetchProducts, singleProduct } from "../controllers/user/productsController.js"
+import { preventAuthAccess, requireUserNotAdmin } from "../middlewares/userMiddleware.js"
+
 
 const router = express.Router()
 
-router.get('/signUpPage', signUpPageGet)
+router.get('/signUpPage',preventAuthAccess, signUpPageGet)
 
-router.post('/signup',validateSignUp, signUpPost)
+router.post('/signup', preventAuthAccess,validateSignUp, signUpPost)
 
-router.get('/signUpOtp', otpPage)
+router.get('/signUpOtp',preventAuthAccess, otpPage)
 
-router.post('/otpverify', otpPagePost)
+router.post('/otpverify',preventAuthAccess, otpPagePost)
 
-router.post('/resendOtp', resendOtp)
+router.post('/resendOtp',preventAuthAccess, resendOtp)
 
-router.get('/auth/google', googleAuth)
+router.get('/auth/google',preventAuthAccess, googleAuth)
 
-router.get('/auth/google/callback', googleAuthCallback)
+router.get('/auth/google/callback',preventAuthAccess, googleAuthCallback)
 
-router.get('/login', loginGet)
+router.get('/login',preventAuthAccess, loginGet)
 
-router.post('/login', login)
+router.post('/login',preventAuthAccess, login)
 
-router.get('/forgotPassword', forgotPass)
+router.get('/forgotPassword',preventAuthAccess, forgotPass)
 
-router.post('/forgotPassword', forgotPassResetPost)
+router.post('/forgotPassword',preventAuthAccess, forgotPassResetPost)
 
-router.get("/forgotOtp", forgotOtpPage)
+router.get("/forgotOtp",preventAuthAccess, forgotOtpPage)
 
-router.post('/forgotOtpVerify', forgotOtpVerify)
+router.post('/forgotOtpVerify',preventAuthAccess, forgotOtpVerify)
 
-router.post('/resendForgotOtp', resendforgotOtp)
+router.post('/resendForgotOtp',preventAuthAccess, resendforgotOtp)
 
-router.get('/resetPasswordPage', resetPassword)
+router.get('/resetPasswordPage',preventAuthAccess, resetPassword)
 
-router.post('/resetPassword', resetPasswordValidate, resetPasswordVerify)
+router.patch('/resetPassword',preventAuthAccess, resetPasswordValidate, resetPasswordVerify)
 
 
 /// landing Page
 
-router.get('/', landingPage)
+router.get('/',requireUserNotAdmin, landingPage)
 
-router.get('/products', fetchProducts)
+router.get('/products',requireUserNotAdmin, fetchProducts)
 
-router.get('/product', singleProduct)
+router.get('/product',requireUserNotAdmin, singleProduct)
+
+router.post('/logout', logout)
+
+// router.get('/Home',requireAuth, homePage)
 
 export default router

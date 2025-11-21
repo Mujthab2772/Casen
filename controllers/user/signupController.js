@@ -65,8 +65,10 @@ export const otpPagePost = async (req, res) => {
             return res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).redirect('/signUpOtp')
         }
 
+        req.session.isAuthenticated = true
+        req.session.userEmail = email
 
-        return res.status(STATUS_CODE.OK).redirect('/HomePage')
+        return res.status(STATUS_CODE.OK).redirect('/')
     } catch (error) {
         console.log(`error from otpPagePost ${error}`);
         res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).redirect('/signUpOtp')

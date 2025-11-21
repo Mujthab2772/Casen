@@ -31,7 +31,7 @@ export const adminLoginVerify = async (req, res) => {
         }
 
         req.session.adminUsr = adminUsername
-        return res.status(STATUS_CODE.OK).redirect("/admin/Dashboard")
+        return res.status(STATUS_CODE.OK).redirect("/admin/products")
 
     } catch (error) {
         console.error(`Error from adminLoginPost: ${error}`)
@@ -39,6 +39,21 @@ export const adminLoginVerify = async (req, res) => {
     }
 }
 
+
+export const logout = async (req, res) => {
+    try {
+        req.session.destroy(err => {
+            if(err) {
+                return res.send("Error Logging out")
+            }
+            res.clearCookie("connect.sid")
+            res.redirect('/admin')
+        })
+    } catch (error) {
+        console.log(`error from logoutadmin ${error}`);
+        
+    }
+}
 
 
 

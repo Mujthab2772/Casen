@@ -43,7 +43,10 @@ export const login = async (req, res) => {
             return res.status(STATUS_CODE.BAD_REQUEST).redirect("/login")
         }
 
-        return res.status(STATUS_CODE.OK).redirect('/HomePage')
+        req.session.isAuthenticated = true
+        req.session.userEmail = req.body.email
+
+        return res.status(STATUS_CODE.OK).redirect('/')
     } catch (error) {
         console.log(`error from login ${error}`);
         return res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).redirect("/login")

@@ -34,7 +34,8 @@ export const fetchProducts = async (req, res) => {
         res.render('products', {
             products: result.data || [],
             pagination: result.pagination || { currentPage: 1, totalPages: 1, total: 0, hasNext: false, hasPrev: false },
-            query: req.query || {}
+            query: req.query || {},
+            user: req.session.userDetail
         })
     } catch (error) {
         console.log(`error from fetchproducts ${error}`);
@@ -53,7 +54,7 @@ export const singleProduct = async (req, res) => {
         if(!result) return res.status(STATUS_CODE.BAD_REQUEST).redirect('/products')
 
         // console.log(result)
-        res.render('singleProduct', {product: result})
+        res.render('singleProduct', {product: result, user: req.session.userDetail})
     } catch (error) {
         console.log(`error from singleProduct ${error}`);
         res.redirect('/products')

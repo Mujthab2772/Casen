@@ -7,7 +7,7 @@ export const googleAuth = passport.authenticate("google", {
 
 export const googleAuthCallback = [
   passport.authenticate("google", {
-    failureRedirect: "/user/loginPage",
+    failureRedirect: "/login",
     failureMessage: true,
   }),
   async (req, res) => {
@@ -24,14 +24,25 @@ export const googleAuthCallback = [
           });
         });
 
-        return res.redirect("/user/loginPage?error=UserBlocked");
+        return res.redirect("/login?error=UserBlocked");
       }
 
-      // if not blocked
-      res.redirect("/user/HomePage");
+      req.session.isAuthenticated = true;
+      req.session.userEmail = req.user.email;
+
+      req.session.save((err) => {
+        if (err) return next(err);
+
+        // 🔒 Prevent back-navigation to auth screen
+        res.header("Cache-Control", "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0");
+        res.header("Pragma", "no-cache");
+        res.header("Expires", "0");
+
+        res.redirect("/");
+      });
     } catch (error) {
       console.log(`error from googleAuthCallback ${error}`);
-      res.redirect("/user/signUpPage");
+      res.redirect("/signUpPage");
     }
   },
 ];
