@@ -1,6 +1,6 @@
 export const validateEmail = (email) => {
     try {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+        const emailRegex = /^(?=.{5,}@)(?=[^@\s]*[a-zA-Z][^@\s]*@)[^@\s]+@[^@\s]+\.[^@\s]+$/
         return emailRegex.test(email)
     } catch (error) {
         console.log(`error from emailValidate ${error}`);        

@@ -24,7 +24,7 @@ export const addProductPage = async (req, res) => {
             return res.redirect('/admin/addProducts')
         }
 
-        res.render('productAddPage', {categories: result.options})
+        res.render('productAddPage', {categories: result.options, error: req.session.productErr})
     } catch (error) {
         console.log(`error from addProductPage`);
         res.redirect('/admin/products')
@@ -68,7 +68,8 @@ export const editProduct = async (req, res) => {
     // ✅ ONLY pass product.data — clean and consistent
     res.status(STATUS_CODE.OK).render('editProduct', {
       product: { data: product }, // ← only this
-      categories: categories.options || []
+      categories: categories.options || [],
+      error: req.session.productErr
     });
   } catch (error) {
     console.error(`editProduct error:`, error);

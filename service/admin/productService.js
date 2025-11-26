@@ -135,6 +135,7 @@ export const fetchProducts = async (search = null, page, limit = 5) => {
       },
       { $unwind: "$category" },
 
+      {$sort: {createdAt: -1}},
       { $skip: skip },
       { $limit: limit },
 
@@ -148,6 +149,7 @@ export const fetchProducts = async (search = null, page, limit = 5) => {
           description: 1
         }
       }
+
     ];
 
     const result = await Product.aggregate(dataPipeline);

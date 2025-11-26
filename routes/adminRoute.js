@@ -4,7 +4,8 @@ import { customerBlocking, customers } from "../controllers/admin/customerContro
 import { addCategory, addCategoryUpdate, category, editCategory, editCategoryUpdate, validCategory } from "../controllers/admin/categoryController.js"
 import upload from "../middlewares/multer.js"
 import { addProductPage, addProducts, editProduct, productsPage, productStatus, updateProduct } from "../controllers/admin/productController.js"
-import { adminCheck, adminCheckLogin } from "../middlewares/adminMiddleware.js"
+import { adminCheck, adminCheckLogin, validateAddCategory, validateEditCategory } from "../middlewares/adminMiddleware.js"
+import { validateAddProduct, validateEditProduct } from "../middlewares/validationProductMiddleware.js"
 
 const router = express.Router()
 
@@ -20,7 +21,7 @@ router.post("/login", adminLoginVerify)
 
 router.get("/customers",adminCheck, customers)
 
-router.patch("/customers/:Id", customerBlocking) //post to patch
+router.patch("/customers/:Id",adminCheck, customerBlocking) //post to patch
 
 
 // Category Page
@@ -29,13 +30,13 @@ router.get("/category",adminCheck, category)
 
 router.get("/addcategory",adminCheck, addCategory)
 
-router.post("/addCategory", upload.single("fileUpload"), addCategoryUpdate)
+router.post("/addCategory",adminCheck, upload.single("fileUpload"),validateAddCategory, addCategoryUpdate)
 
-router.patch("/category/:categoryId", validCategory)
+router.patch("/category/:categoryId",adminCheck, validCategory)
 
 router.get("/editCategory/:id",adminCheck, editCategory)
 
-router.patch('/updateCategory/:categoryid', upload.single("fileUpload"), editCategoryUpdate)
+router.patch('/updateCategory/:categoryid',adminCheck, upload.single("fileUpload"),validateEditCategory, editCategoryUpdate)
 
 //Product Page
 
@@ -43,13 +44,13 @@ router.get('/products',adminCheck, productsPage)
 
 router.get('/addProduct',adminCheck, addProductPage)
 
-router.post('/addProducts', upload.any(), addProducts)
+router.post('/addProducts',adminCheck, upload.any(),validateAddProduct, addProducts)
 
 router.get('/editProduct',adminCheck, editProduct)
 
-router.put('/editProduct/:productid', upload.any(), updateProduct)
+router.put('/editProduct/:productid',adminCheck, upload.any(),validateEditProduct, updateProduct)
 
-router.patch('/updateProduct', productStatus)
+router.patch('/updateProduct',adminCheck, productStatus)
 
 //logout 
 

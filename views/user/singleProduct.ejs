@@ -20,6 +20,15 @@
     .color-fallback-purple { background-color: #a855f7; }
     .color-fallback-gray { background-color: #9ca3af; }
     .color-fallback-violet { background-color: #8a2be2; } 
+
+    #zoomContainer {
+  cursor: zoom-in;
+  touch-action: none; /* Prevents scroll interference on touch devices */
+}
+#zoomLens {
+  border: 2px solid white;
+  box-shadow: 0 0 8px rgba(0,0,0,0.4);
+}
   </style>
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.10/dist/cdn.min.js"></script>
 </head>
@@ -137,23 +146,46 @@
   </header>
 
   <!-- Main Product Section -->
+  <nav aria-label="breadcrumb">
+  <ol class="flex items-center space-x-2 text-sm text-gray-500">
+    <li>
+      <a href="/" class="hover:text-gray-700">Home</a>
+    </li>
+    <li>
+      <span class="mx-1">/</span>
+    </li>
+    <li>
+      <a href="/products" class="hover:text-gray-700">Products</a>
+    </li>
+    <li>
+      <span class="mx-1">/</span>
+    </li>
+    <li class="text-gray-900">
+      <%= product.productName %>
+    </li>
+  </ol>
+</nav>
   <main class="container mx-auto px-4 py-8">
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-
       <!-- Product Image Gallery -->
 <div class="space-y-3"> <!-- Reduced from space-y-4 -->
-  <div class="relative w-full aspect-square bg-gray-100 rounded-lg overflow-hidden">
-    <img 
-      id="mainImage" 
-      src="<%= product.variants.length > 0 ? (product.variants[0].images && product.variants[0].images[0] ? product.variants[0].images[0] : 'https://placehold.co/600x600?text=No+Image') : 'https://placehold.co/600x600?text=No+Variants' %>" 
-      alt="<%= product.productName %>" 
-      class="w-full h-full object-cover"
-      style="object-fit: contain;"
-    />
-    <button class="absolute top-4 right-4 p-3 bg-white rounded-full shadow-md hover:bg-gray-100 transition">
-      <i class="far fa-heart text-gray-600 text-xl"></i>
-    </button>
-  </div>
+  <!-- Replace your current main image div with this -->
+<div class="relative w-full aspect-square bg-gray-100 rounded-lg overflow-hidden"
+     id="zoomContainer">
+  <img 
+    id="mainImage" 
+    src="<%= product.variants.length > 0 ? (product.variants[0].images && product.variants[0].images[0] ? product.variants[0].images[0] : 'https://placehold.co/600x600?text=No+Image') : 'https://placehold.co/600x600?text=No+Variants' %>" 
+    alt="<%= product.productName %>" 
+    class="w-full h-full object-contain"
+  />
+  <!-- Zoom lens (hidden by default) -->
+  <div id="zoomLens" class="hidden absolute w-24 h-24 rounded-full opacity-30 bg-gray-700 pointer-events-none"></div>
+
+  <!-- Keep your heart button -->
+  <!-- <button class="absolute top-4 right-4 p-3 bg-white rounded-full shadow-md hover:bg-gray-100 transition z-10">
+    <i class="far fa-heart text-gray-600 text-xl"></i>
+  </button> -->
+</div>
 
   <!-- Thumbnail Gallery -->
   <div id="thumbnailGallery" class="flex space-x-2 overflow-x-auto pb-1"> <!-- Reduced pb-2 → pb-1 -->
@@ -313,20 +345,22 @@
       <div class="container mx-auto px-4">
         <h2 class="text-3xl font-bold mb-8">You May Also Like</h2>
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6">
-          <% for (let i = 0; i < 6; i++) { %>
+          <% for (let i = 0; i < allproducts.length && i < 6; i++) { %>
             <div class="bg-white rounded-lg overflow-hidden shadow-sm">
-              <div class="relative">
-                <img src="https://placehold.co/300x300/1f2937/ffffff?text=Case<%= i+1 %>" class="w-full h-48 object-contain" />
-                <span class="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded">Save 50%</span>
-              </div>
-              <div class="p-4">
-                <div class="text-xs text-gray-500 mb-1">PIKKME</div>
-                <div class="text-sm mb-2">Pikkme iPhone 16 Case</div>
-                <div class="flex items-center justify-between">
-                  <span class="text-sm font-bold text-red-500">Rs. 499.00</span>
-                  <span class="text-xs line-through text-gray-400">Rs. 999.00</span>
+              <a href="/product?product=<%= allproducts[i].productId %>" class="block">
+                <div class="relative">
+                  <img src="<%= allproducts[i].variants.images[0] %>" class="w-full h-48 object-contain" />
+                  <span class="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded">Save 50%</span>
                 </div>
-              </div>
+                <div class="p-4">
+                  <div class="text-xs text-gray-500 mb-1">Casen</div>
+                  <div class="text-sm mb-2"><%= allproducts[i].productName %></div>
+                  <div class="flex items-center justify-between">
+                    <span class="text-sm font-bold text-red-500"><%= allproducts[i].variants.price %></span>
+                    <span class="text-xs line-through text-gray-400">Rs. 999.00</span>
+                  </div>
+                </div>
+              </a>
             </div>
           <% } %>
         </div>
@@ -485,6 +519,160 @@
     nextBtn1.addEventListener('click', () => {
         slider1.scrollBy({ left: scrollAmount1, behavior: 'smooth' });
     });
+</script>
+
+<script>
+  let currentQuantity1 = 1;
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const first = document.querySelector('#colorOptions > div');
+    if (first) {
+      selectVariant(first);
+    }
+    initImageZoom();
+  });
+
+  // --- Zoom Functions ---
+  function initImageZoom() {
+    const container = document.getElementById('zoomContainer');
+    const img = document.getElementById('mainImage');
+    const lens = document.getElementById('zoomLens');
+    if (!container || !img || !lens) return;
+
+    const zoom = 2;
+
+    function resetZoom() {
+      img.style.transform = 'scale(1)';
+      img.style.transformOrigin = 'center';
+      lens.classList.add('hidden');
+      container.style.cursor = 'zoom-in';
+    }
+
+    container.addEventListener('mouseenter', () => {
+      if (window.innerWidth <= 768) return;
+      lens.classList.remove('hidden');
+      container.style.cursor = 'none';
+    });
+
+    container.addEventListener('mouseleave', () => {
+      if (window.innerWidth <= 768) return;
+      resetZoom();
+    });
+
+    container.addEventListener('mousemove', (e) => {
+      if (window.innerWidth <= 768) return;
+      const rect = container.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      const lensSize = 96;
+      const half = lensSize / 2;
+      const maxX = rect.width - half;
+      const maxY = rect.height - half;
+
+      const boundedX = Math.max(half, Math.min(x, maxX));
+      const boundedY = Math.max(half, Math.min(y, maxY));
+
+      lens.style.left = (boundedX - half) + 'px';
+      lens.style.top = (boundedY - half) + 'px';
+
+      img.style.transform = `scale(${zoom})`;
+      img.style.transformOrigin = `${x}px ${y}px`;
+    });
+  }
+
+  // --- Product Functions ---
+  function selectVariant(el) {
+    document.querySelectorAll('#colorOptions > div').forEach(d => {
+      d.classList.remove('border-blue-500', 'border-transparent');
+      d.classList.add('border-transparent');
+    });
+    el.classList.replace('border-transparent', 'border-blue-500');
+
+    const color = el.getAttribute('data-color');
+    const price = el.getAttribute('data-price');
+    const stock = parseInt(el.getAttribute('data-stock'));
+    const images = JSON.parse(el.getAttribute('data-images'));
+
+    const mainImage = document.getElementById('mainImage');
+    mainImage.src = images[0] || 'https://placehold.co/600x600?text=No+Image';
+
+    // Reset zoom on image change
+    const img = document.getElementById('mainImage');
+    const lens = document.getElementById('zoomLens');
+    const container = document.getElementById('zoomContainer');
+    if (img && lens && container) {
+      img.style.transform = 'scale(1)';
+      img.style.transformOrigin = 'center';
+      lens.classList.add('hidden');
+      container.style.cursor = 'zoom-in';
+    }
+
+    document.getElementById('selectedColor').textContent = color;
+    document.getElementById('price').textContent = 'Rs. ' + price + '.00';
+
+    const stockEl = document.getElementById('stockStatus');
+    if (stock > 0) {
+      stockEl.innerHTML = `<div class="w-3 h-3 bg-green-500 rounded-full mr-2"></div> In stock (${stock} available)`;
+      stockEl.className = "inline-flex items-center px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm";
+    } else {
+      stockEl.textContent = "Out of stock";
+      stockEl.className = "inline-flex items-center px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm";
+    }
+
+    currentQuantity1 = 1;
+    document.getElementById('quantity').textContent = currentQuantity1;
+
+    // Update thumbnails
+    const thumbnailContainer = document.getElementById('thumbnailGallery');
+    thumbnailContainer.innerHTML = '';
+    const thumbnails = images.slice(0, 5);
+    if (thumbnails.length > 0) {
+      thumbnails.forEach(imgSrc => {
+        const thumb = document.createElement('img');
+        thumb.src = imgSrc;
+        thumb.alt = 'Thumbnail';
+        thumb.className = 'w-16 h-16 object-cover border border-gray-300 rounded cursor-pointer flex-shrink-0';
+        thumb.onclick = () => {
+          mainImage.src = imgSrc;
+          // Reset zoom
+          if (img) {
+            img.style.transform = 'scale(1)';
+            img.style.transformOrigin = 'center';
+            lens.classList.add('hidden');
+            container.style.cursor = 'zoom-in';
+          }
+        };
+        thumbnailContainer.appendChild(thumb);
+      });
+    } else {
+      const placeholder = document.createElement('img');
+      placeholder.src = 'https://placehold.co/100x100?text=Thumb';
+      placeholder.className = 'w-16 h-16 object-cover border border-gray-300 rounded flex-shrink-0';
+      thumbnailContainer.appendChild(placeholder);
+    }
+  }
+
+  function updateQuantity(change) {
+    const activeVariant = document.querySelector('#colorOptions .border-blue-500');
+    if (!activeVariant) return;
+    const maxStock = parseInt(activeVariant.getAttribute('data-stock'));
+    currentQuantity1 += change;
+    currentQuantity1 = Math.max(1, Math.min(currentQuantity1, maxStock));
+    document.getElementById('quantity').textContent = currentQuantity1;
+  }
+
+  function toggleAccordion(id) {
+    const content = document.getElementById(id);
+    const icon = document.getElementById(id + 'Icon');
+    if (content.classList.contains('hidden')) {
+      content.classList.remove('hidden');
+      icon.className = icon.className.replace('fa-chevron-down', 'fa-chevron-up');
+    } else {
+      content.classList.add('hidden');
+      icon.className = icon.className.replace('fa-chevron-up', 'fa-chevron-down');
+    }
+  }
 </script>
 </body>
 </html>

@@ -5,7 +5,7 @@ import { googleAuth, googleAuthCallback } from "../controllers/user/googleAuthCo
 import { forgotOtpPage, forgotOtpVerify, forgotPass, forgotPassResetPost, login, loginGet, resendforgotOtp, resetPassword, resetPasswordVerify } from "../controllers/user/loginController.js"
 import { landingPage, logout } from "../controllers/user/landingPage.js"
 import { fetchProducts, singleProduct } from "../controllers/user/productsController.js"
-import { preventAuthAccess, requireUserNotAdmin } from "../middlewares/userMiddleware.js"
+import { preventAuthAccess, requireActiveUser } from "../middlewares/userMiddleware.js"
 
 
 const router = express.Router()
@@ -45,14 +45,13 @@ router.patch('/resetPassword',preventAuthAccess, resetPasswordValidate, resetPas
 
 /// landing Page
 
-router.get('/',requireUserNotAdmin, landingPage)
+router.get('/',requireActiveUser, landingPage)
 
-router.get('/products',requireUserNotAdmin, fetchProducts)
+router.get('/products',requireActiveUser, fetchProducts)
 
-router.get('/product',requireUserNotAdmin, singleProduct)
+router.get('/product',requireActiveUser, singleProduct)
 
 router.post('/logout', logout)
 
-// router.get('/Home',requireAuth, homePage)
 
 export default router

@@ -405,7 +405,8 @@
               <thead>
                 <tr>
                   <th>Product Name</th>
-                  <th>Description</th>
+                  <th>Variants</th>
+                  <th>Category</th>
                   <th>Status</th>
                   <th>Actions</th>
                 </tr>
@@ -422,14 +423,17 @@
                             <%= item.productName %>
                           </div>
                           <div class="customer-date">
-                            <%= item.category.categoryName %>
                           </div>
                         </div>
                       </div>
                     </td>
                     <td>
-                      <%= item.description %>
+                      <%= item.variant.length %> variants
                     </td>
+                    <td>
+                      <%= item.category.categoryName %>
+                    </td>
+
                     
                     <!-- Display Product Status (based on your chosen logic) -->
                     <td>

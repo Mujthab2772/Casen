@@ -1,53 +1,75 @@
 import { validateEmail, validateFirstName, validateLastName, validatePassword, validatePhone } from "../util/validation.js";
 
 export const validateSignUp = (req, res, next) => {
-    try {
-        req.session.signUpErrFn = null
-        req.session.signUpErrLn = null
-        req.session.signUpErrEmail = null
-        req.session.signUpErrPass  = null
-        req.session.signUpErrPhone = null
-        req.session.signUpErrPassConfirm = null
-       const {firstName, lastName, password, email, phone} = req.body
+  // Check if it's an AJAX/JSON request
+  const isJsonRequest = req.headers['content-type']?.includes('application/json');
 
-       const errors = {}
+  try {
+    const { firstName, lastName, password, email, phone, confirmPassword } = req.body;
 
-       if(!firstName || !validateFirstName(firstName)) {
-        errors.firstName = "First name must contain only letters (2–30 chars)"
-       }
+    const errors = {};
 
-       if(!lastName || !validateLastName(lastName)) {
-        errors.lastName = "Last name must contain only letters (1–30 chars)";
-       }
-
-       if(!email || !validateEmail(email)) {
-        errors.email = "Please enter a valid email address"
-       }
-
-       if(!password || !validatePassword(password)) {
-        errors.password = "Password must be at least 8 characters with uppercase, lowercase, number, and special character";
-       }
-
-       if(!phone || !validatePhone(phone)) {
-        errors.phone = "Please enter a valid 10-digit phone number"
-       }
-
-       if(Object.keys(errors).length > 0) {
-        req.session.signUpErrFn = errors.firstName
-        req.session.signUpErrLn = errors.lastName
-        req.session.signUpErrEmail = errors.email   
-        req.session.signUpErrPass  = errors.password
-        req.session.signUpErrPhone = errors.phone
-
-        return res.render('signupPage', {errorFirstName: req.session.signUpErrFn, errorLastName: req.session.signUpErrLn, errorEmail: req.session.signUpErrEmail, errorPass: req.session.signUpErrPass, errorPhone: req.session.signUpErrPhone, errorConfirm: null})
-       }
-
-       next()
-    } catch (error) {
-        console.log(`error from validatesignUp ${error}`); 
-        res.redirect('/user/signUpPage')       
+    if (!firstName || !validateFirstName(firstName)) {
+      errors.firstName = "First name must contain only letters (2–30 chars)";
     }
-}
+
+    if (!lastName || !validateLastName(lastName)) {
+      errors.lastName = "Last name must contain only letters (1–30 chars)";
+    }
+
+    if (!email || !validateEmail(email)) {
+      errors.email = "Please enter a valid email address";
+    }
+
+    if (!phone || !validatePhone(phone)) {
+      errors.phone = "Please enter a valid 10-digit phone number";
+    }
+
+    if (!password || !validatePassword(password)) {
+      errors.password = "Password must be at least 8 characters with uppercase, lowercase, number, and special character";
+    }
+
+    if (password !== confirmPassword) {
+      errors.confirmPassword = "Passwords do not match";
+    }
+
+    if (Object.keys(errors).length > 0) {
+      if (isJsonRequest) {
+        // Respond with JSON for AJAX requests
+        return res.status(400).json({
+          success: false,
+          error: Object.values(errors)[0], // or send full errors object
+          errors // optional: send all field errors
+        });
+      } else {
+        // Traditional form post: render page with errors
+        req.session.signUpErrFn = errors.firstName;
+        req.session.signUpErrLn = errors.lastName;
+        req.session.signUpErrEmail = errors.email;
+        req.session.signUpErrPass = errors.password;
+        req.session.signUpErrPhone = errors.phone;
+        req.session.signUpErrPassConfirm = errors.confirmPassword;
+
+        return res.render('signupPage', {
+          errorFirstName: errors.firstName,
+          errorLastName: errors.lastName,
+          errorEmail: errors.email,
+          errorPass: errors.password,
+          errorPhone: errors.phone,
+          errorConfirm: errors.confirmPassword
+        });
+      }
+    }
+
+    next();
+  } catch (error) {
+    console.log(`Error from validateSignUp: ${error}`);
+    if (isJsonRequest) {
+      return res.status(500).json({ success: false, error: 'Internal server error' });
+    }
+    res.redirect('/signUpPage');
+  }
+};
 
 export const resetPasswordValidate = (req, res, next) => {
     try {
@@ -78,6 +100,6 @@ export const resetPasswordValidate = (req, res, next) => {
 
     } catch (error) {
         console.log(`error from resetPasswordMiddleware ${error}`);
-        res.redirect('/user/resetPasswordPage')
+        res.redirect('/resetPasswordPage')
     }
 }

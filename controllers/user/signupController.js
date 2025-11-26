@@ -11,30 +11,36 @@ export const signUpPageGet = (req, res) => {
 
 
 export const signUpPost = async (req, res) => {
-    try {
-        req.session.signUpErr = null
-        req.session.signUpErrPass = null
-        req.session.tempEmail = null
-        const result = await signupVerify(req.body)
+  try {
+    // Clear old session errors (optional, since we use JSON now)
+    const result = await signupVerify(req.body);
 
-        if (result.status === "Email already exists") {
-            req.session.signUpErrEmail = "Email already exists"
-            return res.status(STATUS_CODE.BAD_REQUEST).redirect('/signUpPage')
-        }
+    if (result.status === "Email already exists") {
+      return res.status(STATUS_CODE.CONFLICT).json({
+        success: false,
+        error: "Email already exists"
+      });
+    }
 
-        if (result.status === "confirm password does not match password") {
-            req.session.signUpErrPassConfirm = "Passwords do not match"
-            return res.status(STATUS_CODE.BAD_REQUEST).redirect('/signUpPage')
-        }
-        req.session.tempEmail = result.email
-        return res.status(STATUS_CODE.OK).redirect('/signUpOtp')
+    if (result.status === "confirm password does not match password") {
+      return res.status(STATUS_CODE.BAD_REQUEST).json({
+        success: false,
+        error: "Passwords do not match"
+      });
+    }
 
+    // Success: store temp email in session and respond positively
+    req.session.tempEmail = result.email;
+    return res.status(STATUS_CODE.CREATED).json({ success: true });
 
-    } catch (error) {
-        console.log(`error from signUpPost ${error}`);
-        res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).redirect('/signUpPage')
-    }    
-}
+  } catch (error) {
+    console.log(`error from signUpPost ${error}`);
+    return res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      error: "Internal server error"
+    });
+  }
+};
 
 export const otpPage = (req, res) => {
     try {

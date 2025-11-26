@@ -3,18 +3,22 @@ import { resendingOtp } from "../../service/user/signupService.js";
 import { STATUS_CODE } from "../../util/statusCodes.js";
 
 export const loginGet = (req, res) => {
-    try {
-        if (req.session.messages && req.session.messages[0] === "User is blocked") {
-            req.session.loginErr = "User is blocked";
-        }
+  try {
+    let { loginErr, loginPassErr } = req.session;
+    // Clear immediately to avoid leakage
+    req.session.loginErr = null;
+    req.session.loginPassErr = null;
 
-        req.session.messages = []
-        res.render('loginPage', {loginErr: req.session.loginErr, loginPassErr: req.session.loginPassErr})
-
-        req.session.loginErr = null
-    } catch (error) {
-        console.log(`error from ${error}`);        
+    if (req.session.messages?.[0] === "User is blocked") {
+      loginErr = "User is blocked";
     }
+    req.session.messages = [];
+
+    res.render('loginPage', { loginErr, loginPassErr });
+  } catch (error) {
+    console.error(`Error in loginGet: ${error}`);
+    res.status(500).redirect('/login');
+  }
 }
 
 export const login = async (req, res) => {
@@ -98,7 +102,7 @@ export const forgotOtpPage = async (req, res) => {
 export const forgotOtpVerify = async (req, res) => {
     try {
         const email = req.session.forgotEmail
-        req.session.otpInvalid = ''
+        req.session.otpInvalid = null
 
         if (!email) {
             req.session.otpInvalid = "NoEmailInSession";
@@ -115,6 +119,9 @@ export const forgotOtpVerify = async (req, res) => {
         }else if (result.status === "Invalid Otp") {
             req.session.otpInvalid = "Invalid OTP"
             return res.status(STATUS_CODE.BAD_REQUEST).redirect('/forgotOtp')
+        }else if( result.status === "OTP expired") {
+            req.session.otpInvalid = "OTP expired"
+            return res.status(STATUS_CODE.BAD_REQUEST).redirect('/forgotOtp')
         }
 
         return res.status(STATUS_CODE.OK).redirect('/resetPasswordPage')
@@ -128,9 +135,11 @@ export const forgotOtpVerify = async (req, res) => {
 export const resendforgotOtp = async (req, res) => {
     try {
         req.session.otpInvalid = null
-        
+        console.log(req.session.forgotEmail)
         let result = await resendingOtp(req.session.forgotEmail)
 
+
+        console.log(result)
         if (result.status === "User Not Found") {
             req.session.otpInvalid = "User Not Found"
             return res.json({success: true, redirectUrl: '/forgotOtp'})
@@ -138,7 +147,7 @@ export const resendforgotOtp = async (req, res) => {
         return res.json({success: true, redirectUrl: '/forgotOtp'})
     } catch (error) {
         console.log(`error from resendOtp ${error}`);
-        res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).redirect('/signUpOtp')
+        res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).redirect('/forgotOtp')
     }
 }
 
@@ -165,7 +174,7 @@ export const resetPasswordVerify = async (req, res) => {
             return res.status(STATUS_CODE.BAD_REQUEST).redirect('/resetPasswordPage')
         }
 
-        res.status(STATUS_CODE.OK).redirect('/loginPage')
+        res.status(STATUS_CODE.OK).redirect('/login')
     } catch (error) {
         console.log(`error from resetPasswordVerify ${error}`);
         res.redirect('/resetPasswordPage')

@@ -1,7 +1,7 @@
 import { Product } from "../../models/productModel.js"
 import userCollection from "../../models/userModel.js";
 
-export const productDetails = async () => {
+export const productDetailsFilter = async () => {
     try {
         const details = await Product.aggregate([
             { $match: { isActive: true } },
@@ -39,7 +39,7 @@ export const productDetails = async () => {
 
 export const userDetail = async (useremail) => {
     try {
-        const user = await userCollection.findOne({email: useremail}, {
+        let user = await userCollection.findOne({email: useremail}, {
             _id: 1,
             userId: 1,
             firstName: 1,

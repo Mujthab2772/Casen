@@ -1,14 +1,14 @@
-import { productDetails, userDetail } from "../../service/user/landingpageService.js"
+import { productDetailsFilter, userDetail } from "../../service/user/landingpageService.js"
 
 export const landingPage = async (req, res) => {
     try {
+        const result = await productDetailsFilter()
+        const email = req.session.userEmail
         let user = null
-        if(req.session.userEmail) {
-            const email = req.session.userEmail
-            user = await userDetail(email) 
+        if(email) {
+            user = await userDetail(email)
             req.session.userDetail = user
         }
-        const result = await productDetails()
 
         res.render('landingPage', {products: result, user})
     } catch (error) {

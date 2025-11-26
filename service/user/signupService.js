@@ -94,6 +94,7 @@ export const resendingOtp = async (email) => {
         if(!userExist) {
             return {status: "User Not Found"}
         }
+        console.log('working')
 
         const newOtp = generateOtp()
         const otpExpiresAt = Date.now() + 2 * 60 * 1000

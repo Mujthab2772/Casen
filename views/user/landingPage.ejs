@@ -5,14 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" sizes="32x32" href="/logo.png">
     <title>Casen</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Tailwind CSS with line-clamp plugin -->
+    <script src="https://cdn.tailwindcss.com?plugins=line-clamp"></script>
     <style>
         /* Custom styles can be added here if needed */
     </style>
-
-  <!-- Other head tags (meta, title, styles, etc.) -->
-  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.10/dist/cdn.min.js"></script>
-
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.10/dist/cdn.min.js"></script>
 </head>
 <body class="font-sans">
     <!-- Header Navigation -->
@@ -32,97 +30,90 @@
             </nav>
             <!-- Icons -->
             <div class="flex items-center space-x-4">
-  <% if (locals.user && user.profilePic) { %>
-    <!-- Heart and Cart Icons -->
-    <button class="text-gray-800 hover:text-red-500">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-          d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-      </svg>
-    </button>
-    <button class="text-gray-800 hover:text-red-500">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-          d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-      </svg>
-    </button>
+                <% if (locals.user && user.profilePic) { %>
+                <!-- Heart and Cart Icons -->
+                <button class="text-gray-800 hover:text-red-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                    </svg>
+                </button>
+                <button class="text-gray-800 hover:text-red-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                </button>
 
-    <!-- For user with profilePic -->
-<div class="relative" x-data="{ open: false }" @click.away="open = false">
-  <button @click="open = !open" class="rounded-full overflow-hidden w-6 h-6 border border-gray-300 focus:outline-none">
-    <img src="<%= user.profilePic %>" alt="Profile" class="w-full h-full object-cover" />
-  </button>
+                <!-- For user with profilePic -->
+                <div class="relative" x-data="{ open: false }" @click.away="open = false">
+                    <button @click="open = !open" class="rounded-full overflow-hidden w-6 h-6 border border-gray-300 focus:outline-none">
+                        <img src="<%= user.profilePic %>" alt="Profile" class="w-full h-full object-cover" />
+                    </button>
 
-  <div x-show="open"
-       x-transition:enter="transition ease-out duration-200"
-       x-transition:enter-start="opacity-0 scale-95"
-       x-transition:enter-end="opacity-100 scale-100"
-       x-transition:leave="transition ease-in duration-150"
-       x-transition:leave-start="opacity-100 scale-100"
-       x-transition:leave-end="opacity-0 scale-95"
-       class="absolute right-0 mt-1 w-40 bg-white shadow-lg rounded-md py-1 z-50">
-    <a href="/profile" 
-       class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-       @click.stop="open = false">Profile</a>
-    <form action="/logout" method="post" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-      <button type="submit" class="w-full text-left" @click.stop>Logout</button>
-    </form>
-  </div>
-</div>
+                    <div x-show="open"
+                         x-transition:enter="transition ease-out duration-200"
+                         x-transition:enter-start="opacity-0 scale-95"
+                         x-transition:enter-end="opacity-100 scale-100"
+                         x-transition:leave="transition ease-in duration-150"
+                         x-transition:leave-start="opacity-100 scale-100"
+                         x-transition:leave-end="opacity-0 scale-95"
+                         class="absolute right-0 mt-1 w-40 bg-white shadow-lg rounded-md py-1 z-50">
+                        <a href="/profile" 
+                           class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                           @click.stop="open = false">Profile</a>
+                        <form action="/logout" method="post" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                            <button type="submit" class="w-full text-left" @click.stop>Logout</button>
+                        </form>
+                    </div>
+                </div>
 
-  <% } else if (locals.user) { %>
-    <!-- Heart and Cart Icons -->
-    <button class="text-gray-800 hover:text-red-500">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-          d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-      </svg>
-    </button>
-    <button class="text-gray-800 hover:text-red-500">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-          d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-      </svg>
-    </button>
+                <% } else if (locals.user) { %>
+                <!-- Heart and Cart Icons -->
+                <button class="text-gray-800 hover:text-red-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                    </svg>
+                </button>
+                <button class="text-gray-800 hover:text-red-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                </button>
 
-    <!-- Fallback icon -->
-<div class="relative" x-data="{ open: false }" @click.away="open = false">
-  <button @click="open = !open" class="w-6 h-6 flex items-center justify-center focus:outline-none">
-    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-    </svg>
-  </button>
+                <!-- Fallback icon -->
+                <div class="relative" x-data="{ open: false }" @click.away="open = false">
+                    <button @click="open = !open" class="w-6 h-6 flex items-center justify-center focus:outline-none">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                    </button>
 
-  <div x-show="open"
-       x-transition:enter="transition ease-out duration-200"
-       x-transition:enter-start="opacity-0 scale-95"
-       x-transition:enter-end="opacity-100 scale-100"
-       x-transition:leave="transition ease-in duration-150"
-       x-transition:leave-start="opacity-100 scale-100"
-       x-transition:leave-end="opacity-0 scale-95"
-       class="absolute right-0 mt-1 w-40 bg-white shadow-lg rounded-md py-1 z-50">
-    <a href="/profile" 
-       class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-       @click.stop="open = false">Profile</a>
-    <form action="/logout" method="post" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-      <button type="submit" class="w-full text-left" @click.stop>Logout</button>
-    </form>
-  </div>
-</div>
+                    <div x-show="open"
+                         x-transition:enter="transition ease-out duration-200"
+                         x-transition:enter-start="opacity-0 scale-95"
+                         x-transition:enter-end="opacity-100 scale-100"
+                         x-transition:leave="transition ease-in duration-150"
+                         x-transition:leave-start="opacity-100 scale-100"
+                         x-transition:leave-end="opacity-0 scale-95"
+                         class="absolute right-0 mt-1 w-40 bg-white shadow-lg rounded-md py-1 z-50">
+                        <a href="/profile" 
+                           class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                           @click.stop="open = false">Profile</a>
+                        <form action="/logout" method="post" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                            <button type="submit" class="w-full text-left" @click.stop>Logout</button>
+                        </form>
+                    </div>
+                </div>
 
-  <% } else { %>
-    <!-- Guest: Sign In -->
-    <a href="/login" class="flex items-center space-x-1 text-gray-800 hover:text-red-500 text-sm font-medium">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-      </svg>
-      <span>Sign In</span>
-    </a>
-  <% } %>
-</div>
-
+                <% } else { %>
+                <!-- Guest: Sign In -->
+                <a href="/login" class="flex items-center space-x-1 text-gray-800 hover:text-red-500 text-sm font-medium">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                    <span>Sign In</span>
+                </a>
+                <% } %>
+            </div>
 
             <!-- Hamburger Menu for Mobile -->
             <button class="md:hidden text-gray-800 hover:text-red-500">
@@ -134,379 +125,368 @@
     </header>
 
     <section class="relative overflow-hidden" style="height: 650px;">
-    <!-- Video Container -->
-    <div class="absolute inset-0 w-full h-full">
-        <video id="heroVideo" class="w-full h-full object-cover" autoplay muted loop>
-            <source src="https://pikkme.com/cdn/shop/videos/c/vp/8bd6813624eb4be19540154a990ac332/8bd6813624eb4be19540154a990ac332.HD-720p-4.5Mbps-39202667.mp4?v=0" type="video/mp4">
-        </video>
-    </div>
-    <div class="container mx-auto px-4 h-full flex items-center relative z-10">
-        <div class="max-w-md">
-            <h1 id="heroHeading" class="text-5xl font-bold text-white mb-4">KEEP THE LOOK, LOSE THE WORRY.</h1>
-            <p id="heroParagraph" class="text-xl text-white mb-8">Protect your device with our high-quality cases.</p>
-            <button id="heroButton" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-full">Shop Now</button>
+        <!-- Video Container -->
+        <div class="absolute inset-0 w-full h-full">
+            <video id="heroVideo" class="w-full h-full object-cover" autoplay muted loop>
+                <source src="https://pikkme.com/cdn/shop/videos/c/vp/8bd6813624eb4be19540154a990ac332/8bd6813624eb4be19540154a990ac332.HD-720p-4.5Mbps-39202667.mp4?v=0" type="video/mp4">
+            </video>
         </div>
-    </div>
-    <!-- Slider Indicators -->
-    <div class="absolute inset-y-0 left-0 flex items-center z-20">
-        <button id="heroPrevBtn" class="text-white bg-black bg-opacity-50 hover:bg-opacity-75 p-2 rounded-full">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-            </svg>
-        </button>
-    </div>
-    <div class="absolute inset-y-0 right-0 flex items-center z-20">
-        <button id="heroNextBtn" class="text-white bg-black bg-opacity-50 hover:bg-opacity-75 p-2 rounded-full">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-            </svg>
-        </button>
-    </div>
-</section>
-
-    <!-- New Launch Section -->
-   <section class="py-12 bg-[#EFE8D6]">
-    <div class="container mx-auto px-4">
-        <h2 class="text-4xl font-bold mb-8">New Launch</h2>
-        <div class="relative">
-            <%
-  // Deduplicate products by productId
-  const seenProductIds = new Set();
-  const uniqueProducts = products.filter(product => {
-    if (seenProductIds.has(product.productId)) {
-      return false;
-    }
-    seenProductIds.add(product.productId);
-    return true;
-  });
-%>
-
-<div id="newLaunchSlider" class="flex overflow-x-hidden space-x-6 scroll-smooth pb-4">
-  <% for (let i = 0; i < uniqueProducts.length; i++) { 
-      const product = uniqueProducts[i]; 
-      const category = product.category;
-  %>
-  <a href="/products">
-    <!-- Product Card -->
-    <div class="flex-shrink-0 w-64 bg-white rounded-2xl shadow-lg p-4 flex flex-col items-center">
-      <!-- Image (from category) -->
-      <img 
-        src="<%= category?.image || '/default.jpg' %>" 
-        alt="<%= product.productName %>"
-        class="w-full h-64 object-contain mb-4"
-      >
-      <!-- Product Name -->
-      <h3 class="text-lg font-bold text-center"><%= product.productName %></h3>
-      <p><%= category?.categoryName || 'Uncategorized' %></p>
-    </div>
-    </a>
-  <% } %>
-</div>
-
-            <!-- Navigation Arrows -->
-            <button id="newLaunchPrevBtn" class="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-2 shadow-md">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div class="container mx-auto px-4 h-full flex items-center relative z-10">
+            <div class="max-w-md">
+                <h1 id="heroHeading" class="text-5xl font-bold text-white mb-4">KEEP THE LOOK, LOSE THE WORRY.</h1>
+                <p id="heroParagraph" class="text-xl text-white mb-8">Protect your device with our high-quality cases.</p>
+                <button id="heroButton" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-full">Shop Now</button>
+            </div>
+        </div>
+        <!-- Slider Indicators -->
+        <div class="absolute inset-y-0 left-0 flex items-center z-20">
+            <button id="heroPrevBtn" class="text-white bg-black bg-opacity-50 hover:bg-opacity-75 p-2 rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                 </svg>
             </button>
-            <button id="newLaunchNextBtn" class="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-2 shadow-md">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        </div>
+        <div class="absolute inset-y-0 right-0 flex items-center z-20">
+            <button id="heroNextBtn" class="text-white bg-black bg-opacity-50 hover:bg-opacity-75 p-2 rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                 </svg>
             </button>
         </div>
-    </div>
-</section>
+    </section>
 
-    <!-- Best Selling Section -->
-    <section class="py-12 bg-white">
-    <div class="container mx-auto px-4">
-        <div class="flex justify-between items-center mb-8">
-            <h2 class="text-4xl font-bold">Best Selling</h2>
-            <div class="flex space-x-4">
-                <button id="bestSellingPrevBtn" class="w-12 h-12 flex items-center justify-center bg-gray-100 rounded-full hover:bg-gray-200">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <!-- New Launch Section -->
+    <section class="py-12 bg-[#EFE8D6]">
+        <div class="container mx-auto px-4">
+            <h2 class="text-4xl font-bold mb-8">New Launch</h2>
+            <div class="relative">
+                <%
+                    // Deduplicate products by productId
+                    const seenProductIds = new Set();
+                    const uniqueProducts = products.filter(product => {
+                        if (seenProductIds.has(product.productId)) {
+                            return false;
+                        }
+                        seenProductIds.add(product.productId);
+                        return true;
+                    });
+                %>
+
+                <div id="newLaunchSlider" class="flex overflow-x-hidden space-x-6 scroll-smooth pb-4">
+                    <% for (let i = 0; i < uniqueProducts.length; i++) { 
+                        const product = uniqueProducts[i]; 
+                        const category = product.category;
+                    %>
+                    <a href="/products">
+                        <!-- Product Card - FIXED HEIGHT & TEXT TRUNCATION -->
+                        <div class="flex-shrink-0 w-64 bg-white rounded-2xl shadow-lg p-4 flex flex-col items-center h-[380px]">
+                            <img 
+                                src="<%= category?.image || '/default.jpg' %>" 
+                                alt="<%= product.productName %>"
+                                class="w-full h-64 object-contain mb-4"
+                            >
+                            <h3 class="text-lg font-bold text-center mb-1 line-clamp-2"><%= product.productName %></h3>
+                            <p class="text-sm text-gray-600 text-center line-clamp-1"><%= category?.categoryName || 'Uncategorized' %></p>
+                        </div>
+                    </a>
+                    <% } %>
+                </div>
+
+                <!-- Navigation Arrows -->
+                <button id="newLaunchPrevBtn" class="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-2 shadow-md">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                     </svg>
                 </button>
-                <button id="bestSellingNextBtn" class="w-12 h-12 flex items-center justify-center bg-gray-100 rounded-full hover:bg-gray-200">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <button id="newLaunchNextBtn" class="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-2 shadow-md">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                     </svg>
                 </button>
             </div>
         </div>
-        <div class="relative">
-          <div id="bestSellingSlider" class="flex overflow-x-hidden space-x-6 scroll-smooth pb-4">
-<% for (let i = 0; i < products.length; i++) {
-    const product = products[i];
-    const variants = Array.isArray(product.variants) ? product.variants : [product.variants];
-    for (let j = 0; j < variants.length; j++) {
-        const variant = variants[j];
-        const imageUrl = variant.images && variant.images.length > 0 
-            ? variant.images[0] 
-            : (product.category?.image || '/default.jpg');
-        const price = variant.price ? variant.price.toString() : 'N/A';
-%>
-<a href="/product?product=<%= products[i].productId %>">
-<div class="flex-shrink-0 w-64 bg-white rounded-2xl shadow-lg p-4 flex flex-col items-center">
-    <img src="<%= imageUrl %>" alt="<%= product.productName + ' - ' + variant.color %>"
-    class="w-full h-64 object-contain mb-4">
-    <h3 class="text-lg font-bold text-center"><%= product.productName %></h3>
-    <p class="text-sm text-gray-600"><%= variant.color %></p>
-    <p class="text-lg font-semibold mt-2">₹<%= price %></p>
-    <p><%= product.category.categoryName %></p>
-    </div>
-    </a>
-<% 
-    }
-} %>
-</div>
+    </section>
 
-
+    <!-- Best Selling Section -->
+    <section class="py-12 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-4xl font-bold">Best Selling</h2>
+                <div class="flex space-x-4">
+                    <button id="bestSellingPrevBtn" class="w-12 h-12 flex items-center justify-center bg-gray-100 rounded-full hover:bg-gray-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </button>
+                    <button id="bestSellingNextBtn" class="w-12 h-12 flex items-center justify-center bg-gray-100 rounded-full hover:bg-gray-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div class="relative">
+                <div id="bestSellingSlider" class="flex overflow-x-hidden space-x-6 scroll-smooth pb-4">
+                    <% for (let i = 0; i < products.length; i++) {
+                        const product = products[i];
+                        const variants = Array.isArray(product.variants) ? product.variants : [product.variants];
+                        for (let j = 0; j < variants.length; j++) {
+                            const variant = variants[j];
+                            const imageUrl = variant.images && variant.images.length > 0 
+                                ? variant.images[0] 
+                                : (product.category?.image || '/default.jpg');
+                            const price = variant.price ? variant.price.toString() : 'N/A';
+                    %>
+                    <a href="/product?product=<%= products[i].productId %>">
+                        <!-- Product Card - FIXED HEIGHT & TEXT TRUNCATION -->
+                        <div class="flex-shrink-0 w-64 bg-white rounded-2xl shadow-lg p-4 flex flex-col items-center h-[380px]">
+                            <img src="<%= imageUrl %>" alt="<%= product.productName + ' - ' + variant.color %>"
+                                class="w-full h-64 object-contain mb-4">
+                            <h3 class="text-lg font-bold text-center mb-1 line-clamp-2"><%= product.productName %></h3>
+                            <p class="text-sm text-gray-600 text-center line-clamp-1"><%= variant.color %></p>
+                            <p class="text-lg font-semibold mt-2">₹<%= price %></p>
+                            <p class="text-sm text-gray-600 text-center line-clamp-1 mt-1"><%= product.category.categoryName %></p>
+                        </div>
+                    </a>
+                    <% 
+                        }
+                    } %>
+                </div>
+            </div>
         </div>
-    </div>
-</section>
-
+    </section>
 
     <!-- Middle Warehouse Banner -->
     <section class="relative h-64 overflow-hidden" style="height: 600px;">
-    <!-- Video Background -->
-    <video playsinline muted autoplay loop preload="none" class="absolute inset-0 w-full h-full object-cover z-0">
-        <source src="//pikkme.com/cdn/shop/videos/c/vp/abbd20e3a9b347f3bed4bac5c84d8102/abbd20e3a9b347f3bed4bac5c84d8102.HD-1080p-7.2Mbps-39854340.mp4?v=0" type="video/mp4">
-        <!-- Fallback image if video fails to load -->
-        <img src="//pikkme.com/cdn/shop/files/preview_images/abbd20e3a9b347f3bed4bac5c84d8102.thumbnail.0000000000_800x.jpg?v=1734507274" loading="lazy" class="w-full h-full object-cover">
-    </video>
-    <!-- Overlay for better text readability -->
-    <div class="absolute inset-0 bg-black bg-opacity-50 z-10"></div>
-    <!-- Content -->
-    <div class="container mx-auto px-4 h-full flex items-center relative z-20">
-        <div class="max-w-md">
-            <h2 class="text-3xl font-bold text-white mb-4">Middle Warehouse Banner</h2>
-            <p class="text-xl text-white">Discover our latest collection.</p>
+        <!-- Video Background -->
+        <video playsinline muted autoplay loop preload="none" class="absolute inset-0 w-full h-full object-cover z-0">
+            <source src="//pikkme.com/cdn/shop/videos/c/vp/abbd20e3a9b347f3bed4bac5c84d8102/abbd20e3a9b347f3bed4bac5c84d8102.HD-1080p-7.2Mbps-39854340.mp4?v=0" type="video/mp4">
+            <!-- Fallback image if video fails to load -->
+            <img src="//pikkme.com/cdn/shop/files/preview_images/abbd20e3a9b347f3bed4bac5c84d8102.thumbnail.0000000000_800x.jpg?v=1734507274" loading="lazy" class="w-full h-full object-cover">
+        </video>
+        <!-- Overlay for better text readability -->
+        <div class="absolute inset-0 bg-black bg-opacity-50 z-10"></div>
+        <!-- Content -->
+        <div class="container mx-auto px-4 h-full flex items-center relative z-20">
+            <div class="max-w-md">
+                <h2 class="text-3xl font-bold text-white mb-4">Middle Warehouse Banner</h2>
+                <p class="text-xl text-white">Discover our latest collection.</p>
+            </div>
         </div>
-    </div>
-</section>
-
+    </section>
 
     <!-- Category Feature Grid -->
     <section class="py-12 bg-white">
-    <div class="container mx-auto px-4">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <!-- Over 200 Phone Models -->
-            <div class="relative rounded-2xl overflow-hidden group" style="height: 500px;">
-                <img
-                    src="//pikkme.com/cdn/shop/files/4-set-image.png?v=1734605975"
-                    alt="Over 200 phone models"
-                    class="w-full h-full object-cover"
-                >
-                <div class="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-start p-8">
-                    <h3 class="text-2xl font-bold text-white">Over 200 Phone Models</h3>
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Over 200 Phone Models -->
+                <div class="relative rounded-2xl overflow-hidden group" style="height: 500px;">
+                    <img
+                        src="//pikkme.com/cdn/shop/files/4-set-image.png?v=1734605975"
+                        alt="Over 200 phone models"
+                        class="w-full h-full object-cover"
+                    >
+                    <div class="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-start p-8">
+                        <h3 class="text-2xl font-bold text-white">Over 200 Phone Models</h3>
+                    </div>
                 </div>
-            </div>
 
-            <!-- Glass That Goes Beyond -->
-            <div class="relative rounded-2xl overflow-hidden group" style="height: 500px;">
-                <img
-                    src="//pikkme.com/cdn/shop/files/Tempered-4-side-image-set2.jpg?v=1734696686"
-                    alt="Glass That Goes Beyond"
-                    class="w-full h-full object-cover"
-                >
-                <div class="absolute inset-0 bg-black bg-opacity-30 flex items-end justify-start p-8">
-                    <h3 class="text-2xl font-bold text-white">Glass That Goes Beyond</h3>
+                <!-- Glass That Goes Beyond -->
+                <div class="relative rounded-2xl overflow-hidden group" style="height: 500px;">
+                    <img
+                        src="//pikkme.com/cdn/shop/files/Tempered-4-side-image-set2.jpg?v=1734696686"
+                        alt="Glass That Goes Beyond"
+                        class="w-full h-full object-cover"
+                    >
+                    <div class="absolute inset-0 bg-black bg-opacity-30 flex items-end justify-start p-8">
+                        <h3 class="text-2xl font-bold text-white">Glass That Goes Beyond</h3>
+                    </div>
                 </div>
-            </div>
 
-            <!-- Shop Trendy iPad Covers -->
-            <div class="relative rounded-2xl overflow-hidden group" style="height: 500px;">
-                <img
-                    src="//pikkme.com/cdn/shop/files/Tablet-4-side-image-set3.jpg?v=1734695844"
-                    alt="Shop Trendy iPad Covers"
-                    class="w-full h-full object-cover"
-                >
-                <div class="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-start p-8">
-                    <h3 class="text-2xl font-bold text-white">Shop Trendy iPad Covers</h3>
+                <!-- Shop Trendy iPad Covers -->
+                <div class="relative rounded-2xl overflow-hidden group" style="height: 500px;">
+                    <img
+                        src="//pikkme.com/cdn/shop/files/Tablet-4-side-image-set3.jpg?v=1734695844"
+                        alt="Shop Trendy iPad Covers"
+                        class="w-full h-full object-cover"
+                    >
+                    <div class="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-start p-8">
+                        <h3 class="text-2xl font-bold text-white">Shop Trendy iPad Covers</h3>
+                    </div>
                 </div>
-            </div>
 
-            <!-- Protect Your AirPods in Style -->
-            <div class="relative rounded-2xl overflow-hidden group" style="height: 500px;">
-                <img
-                    src="//pikkme.com/cdn/shop/files/1_2_7ff173e9-04ce-460b-aee5-40178270725d.png?v=1734096222"
-                    alt="Protect Your AirPods in Style"
-                    class="w-full h-full object-cover"
-                >
-                <div class="absolute inset-0 bg-black bg-opacity-30 flex items-end justify-end p-8">
-                    <h3 class="text-2xl font-bold text-white">Protect Your AirPods in Style</h3>
+                <!-- Protect Your AirPods in Style -->
+                <div class="relative rounded-2xl overflow-hidden group" style="height: 500px;">
+                    <img
+                        src="//pikkme.com/cdn/shop/files/1_2_7ff173e9-04ce-460b-aee5-40178270725d.png?v=1734096222"
+                        alt="Protect Your AirPods in Style"
+                        class="w-full h-full object-cover"
+                    >
+                    <div class="absolute inset-0 bg-black bg-opacity-30 flex items-end justify-end p-8">
+                        <h3 class="text-2xl font-bold text-white">Protect Your AirPods in Style</h3>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-</section>
-
-
+    </section>
 
     <!-- Red "Gear Up Your Device" Banner -->
     <div class="section section--padding section--divider">
-  <style>
-    .section--padding {
-      padding-top: 52px;
-      padding-bottom: 72px;
-    }
+        <style>
+            .section--padding {
+                padding-top: 52px;
+                padding-bottom: 72px;
+            }
 
-    .banner {
-      position: relative;
-      width: 100%;
-      height: 100%;
-    }
+            .banner {
+                position: relative;
+                width: 100%;
+                height: 100%;
+            }
 
-    .banner__media {
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-    }
+            .banner__media {
+                width: 100%;
+                height: 100%;
+                overflow: hidden;
+            }
 
-    .banner__image {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
+            .banner__image {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
 
-    .banner__content {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 2;
+            .banner__content {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                z-index: 2;
 
-      display: flex;
-      align-items: center;
-      justify-content: flex-start;
-      padding-left: 5%;
-    }
+                display: flex;
+                align-items: center;
+                justify-content: flex-start;
+                padding-left: 5%;
+            }
 
-    .banner__box {
-      max-width: 430px;
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      text-align: left;
-    }
+            .banner__box {
+                max-width: 430px;
+                display: flex;
+                flex-direction: column;
+                align-items: flex-start;
+                text-align: left;
+            }
 
-    .banner__title {
-      font-size: 3rem;
-      font-weight: 700;
-      margin-bottom: 1rem;
-      line-height: 1.1;
-      color: #fff;
-    }
+            .banner__title {
+                font-size: 3rem;
+                font-weight: 700;
+                margin-bottom: 1rem;
+                line-height: 1.1;
+                color: #fff;
+            }
 
-    .split-words {
-      display: flex;
-      flex-wrap: wrap;
-    }
+            .split-words {
+                display: flex;
+                flex-wrap: wrap;
+            }
 
-    .single-word {
-      margin-right: 0.5rem;
-    }
+            .single-word {
+                margin-right: 0.5rem;
+            }
 
-    .rte {
-      font-size: 1.6rem;
-      color: #fff;
-      margin-bottom: 2rem;
-    }
+            .rte {
+                font-size: 1.6rem;
+                color: #fff;
+                margin-bottom: 2rem;
+            }
 
-    .button {
-      display: inline-flex;
-      align-items: center;
-      background-color: #fff;
-      color: #000;
-      padding: 12px 24px;
-      border-radius: 25px;
-      text-decoration: none;
-      font-weight: 500;
-      transition: 0.3s ease;
-    }
+            .button {
+                display: inline-flex;
+                align-items: center;
+                background-color: #fff;
+                color: #000;
+                padding: 12px 24px;
+                border-radius: 25px;
+                text-decoration: none;
+                font-weight: 500;
+                transition: 0.3s ease;
+            }
 
-    .button:hover {
-      background-color: #f0f0f0;
-    }
+            .button:hover {
+                background-color: #f0f0f0;
+            }
 
-    .icon-arrow-right {
-      width: 20px;
-      height: 20px;
-      margin-left: 8px;
-    }
+            .icon-arrow-right {
+                width: 20px;
+                height: 20px;
+                margin-left: 8px;
+            }
 
-    @media (max-width: 767px) {
-      .banner__title {
-        font-size: 2rem;
-      }
-      .rte {
-        font-size: 1.2rem;
-      }
-      .banner__content {
-        padding-left: 20px;
-        padding-right: 20px;
-        justify-content: center;
-        text-align: center;
-      }
-      .banner__box {
-        align-items: center;
-      }
-    }
-  </style>
+            @media (max-width: 767px) {
+                .banner__title {
+                    font-size: 2rem;
+                }
+                .rte {
+                    font-size: 1.2rem;
+                }
+                .banner__content {
+                    padding-left: 20px;
+                    padding-right: 20px;
+                    justify-content: center;
+                    text-align: center;
+                }
+                .banner__box {
+                    align-items: center;
+                }
+            }
+        </style>
 
-  <div class="relative">
-    <div class="banner media--500px mobile:media--500px relative">
+        <div class="relative">
+            <div class="banner media--500px mobile:media--500px relative">
 
-      <!-- IMAGE -->
-      <div class="banner__media">
-        <picture>
-          <source media="(max-width: 767px)"
-            srcset="//pikkme.com/cdn/shop/files/Accesories-banner-phone-view-v2.jpg?v=1735632675&width=600">
-          <img src="//pikkme.com/cdn/shop/files/accesories-banner-v8.jpg?v=1735627090"
-               alt=""
-               class="banner__image">
-        </picture>
-      </div>
+                <!-- IMAGE -->
+                <div class="banner__media">
+                    <picture>
+                        <source media="(max-width: 767px)"
+                            srcset="//pikkme.com/cdn/shop/files/Accesories-banner-phone-view-v2.jpg?v=1735632675&width=600">
+                        <img src="//pikkme.com/cdn/shop/files/accesories-banner-v8.jpg?v=1735627090"
+                             alt=""
+                             class="banner__image">
+                    </picture>
+                </div>
 
-      <!-- TEXT CONTENT -->
-      <div class="banner__content">
-        <div class="banner__box banner__box--small">
-          
-          <h2 class="banner__title">
-            <div class="split-words">
-              <div class="single-word">Gear</div>
-              <div class="single-word">Up</div>
-              <div class="single-word">Your</div>
-              <div class="single-word">Device.</div>
+                <!-- TEXT CONTENT -->
+                <div class="banner__content">
+                    <div class="banner__box banner__box--small">
+                        
+                        <h2 class="banner__title">
+                            <div class="split-words">
+                                <div class="single-word">Gear</div>
+                                <div class="single-word">Up</div>
+                                <div class="single-word">Your</div>
+                                <div class="single-word">Device.</div>
+                            </div>
+                        </h2>
+
+                        <div class="rte">
+                            <p>Explore Our Accessories Collection.</p>
+                        </div>
+
+                        <a class="button" href="/collections/accessories">
+                            Explore
+                            <svg class="icon icon-arrow-right" viewBox="0 0 21 20" stroke="currentColor" fill="none">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M3 10H18M18 10L12.1667 4.16675M18 10L12.1667 15.8334"></path>
+                            </svg>
+                        </a>
+
+                    </div>
+                </div>
+
             </div>
-          </h2>
-
-          <div class="rte">
-            <p>Explore Our Accessories Collection.</p>
-          </div>
-
-          <a class="button" href="/collections/accessories">
-            Explore
-            <svg class="icon icon-arrow-right" viewBox="0 0 21 20" stroke="currentColor" fill="none">
-              <path stroke-linecap="round" stroke-linejoin="round"
-                d="M3 10H18M18 10L12.1667 4.16675M18 10L12.1667 15.8334"></path>
-            </svg>
-          </a>
-
         </div>
-      </div>
-
     </div>
-  </div>
-</div>
-
-
-
-
 
     <!-- Free Shipping Strip -->
     <section class="py-8 bg-white">
@@ -600,98 +580,97 @@
     </footer>
 
     <script>
-    const heroVideo = document.getElementById('heroVideo');
-    const heroPrevBtn = document.getElementById('heroPrevBtn');
-    const heroNextBtn = document.getElementById('heroNextBtn');
-    const heroHeading = document.getElementById('heroHeading');
-    const heroParagraph = document.getElementById('heroParagraph');
-    const heroButton = document.getElementById('heroButton');
+        const heroVideo = document.getElementById('heroVideo');
+        const heroPrevBtn = document.getElementById('heroPrevBtn');
+        const heroNextBtn = document.getElementById('heroNextBtn');
+        const heroHeading = document.getElementById('heroHeading');
+        const heroParagraph = document.getElementById('heroParagraph');
+        const heroButton = document.getElementById('heroButton');
 
-    const videoSources = [
-        {
-            src: 'https://pikkme.com/cdn/shop/videos/c/vp/8bd6813624eb4be19540154a990ac332/8bd6813624eb4be19540154a990ac332.HD-720p-4.5Mbps-39202667.mp4?v=0',
-            heading: 'KEEP THE LOOK, LOSE THE WORRY.',
-            paragraph: 'Protect your device with our high-quality cases.',
-            buttonText: 'Shop Now',
-            textColor: 'text-black',
-            buttonColor: 'bg-red-500 hover:bg-red-600'
-        },
-        {
-            src: 'https://pikkme.com/cdn/shop/videos/c/vp/de9f58e918fb47d194dea4a7aac0f672/de9f58e918fb47d194dea4a7aac0f672.SD-480p-1.5Mbps-37802307.mp4?v=0',
-            heading: 'STYLE MEETS PROTECTION.',
-            paragraph: 'Explore our trendy and durable phone cases.',
-            buttonText: 'Explore Now',
-            textColor: 'text-black',
-            buttonColor: 'bg-yellow-500 hover:bg-yellow-600'
-        },
-        {
-            src: 'https://pikkme.com/cdn/shop/videos/c/vp/df107368865c42b8b5e8f2526024db1c/df107368865c42b8b5e8f2526024db1c.HD-720p-4.5Mbps-36100798.mp4?v=0',
-            heading: 'PREMIUM QUALITY, AFFORDABLE PRICES.',
-            paragraph: 'Get the best protection without breaking the bank.',
-            buttonText: 'Discover More',
-            textColor: 'text-black',
-            buttonColor: 'bg-blue-500 hover:bg-blue-600'
+        const videoSources = [
+            {
+                src: 'https://pikkme.com/cdn/shop/videos/c/vp/8bd6813624eb4be19540154a990ac332/8bd6813624eb4be19540154a990ac332.HD-720p-4.5Mbps-39202667.mp4?v=0',
+                heading: 'KEEP THE LOOK, LOSE THE WORRY.',
+                paragraph: 'Protect your device with our high-quality cases.',
+                buttonText: 'Shop Now',
+                textColor: 'text-black',
+                buttonColor: 'bg-red-500 hover:bg-red-600'
+            },
+            {
+                src: 'https://pikkme.com/cdn/shop/videos/c/vp/de9f58e918fb47d194dea4a7aac0f672/de9f58e918fb47d194dea4a7aac0f672.SD-480p-1.5Mbps-37802307.mp4?v=0',
+                heading: 'STYLE MEETS PROTECTION.',
+                paragraph: 'Explore our trendy and durable phone cases.',
+                buttonText: 'Explore Now',
+                textColor: 'text-black',
+                buttonColor: 'bg-yellow-500 hover:bg-yellow-600'
+            },
+            {
+                src: 'https://pikkme.com/cdn/shop/videos/c/vp/df107368865c42b8b5e8f2526024db1c/df107368865c42b8b5e8f2526024db1c.HD-720p-4.5Mbps-36100798.mp4?v=0',
+                heading: 'PREMIUM QUALITY, AFFORDABLE PRICES.',
+                paragraph: 'Get the best protection without breaking the bank.',
+                buttonText: 'Discover More',
+                textColor: 'text-blue',
+                buttonColor: 'bg-blue-500 hover:bg-blue-600'
+            }
+        ];
+
+        let currentVideoIndex = 0;
+
+        function updateHeroContent(index) {
+            heroVideo.src = videoSources[index].src;
+            heroVideo.load();
+            heroVideo.play();
+            heroHeading.textContent = videoSources[index].heading;
+            heroParagraph.textContent = videoSources[index].paragraph;
+            heroButton.textContent = videoSources[index].buttonText;
+            heroHeading.className = `text-5xl font-bold ${videoSources[index].textColor} mb-4`;
+            heroParagraph.className = `text-xl ${videoSources[index].textColor} mb-8`;
+            heroButton.className = `${videoSources[index].buttonColor} text-white px-4 py-2 rounded-full`;
         }
-    ];
 
-    let currentVideoIndex = 0;
+        heroPrevBtn.addEventListener('click', () => {
+            currentVideoIndex = (currentVideoIndex - 1 + videoSources.length) % videoSources.length;
+            updateHeroContent(currentVideoIndex);
+        });
 
-    function updateHeroContent(index) {
-        heroVideo.src = videoSources[index].src;
-        heroVideo.load();
-        heroVideo.play();
-        heroHeading.textContent = videoSources[index].heading;
-        heroParagraph.textContent = videoSources[index].paragraph;
-        heroButton.textContent = videoSources[index].buttonText;
-        heroHeading.className = `text-5xl font-bold ${videoSources[index].textColor} mb-4`;
-        heroParagraph.className = `text-xl ${videoSources[index].textColor} mb-8`;
-        heroButton.className = `${videoSources[index].buttonColor} text-white px-4 py-2 rounded-full`;
-    }
+        heroNextBtn.addEventListener('click', () => {
+            currentVideoIndex = (currentVideoIndex + 1) % videoSources.length;
+            updateHeroContent(currentVideoIndex);
+        });
 
-    heroPrevBtn.addEventListener('click', () => {
-        currentVideoIndex = (currentVideoIndex - 1 + videoSources.length) % videoSources.length;
         updateHeroContent(currentVideoIndex);
-    });
+    </script>
 
-    heroNextBtn.addEventListener('click', () => {
-        currentVideoIndex = (currentVideoIndex + 1) % videoSources.length;
-        updateHeroContent(currentVideoIndex);
-    });
+    <script>
+        const slider = document.getElementById('newLaunchSlider');
+        const prevBtn = document.getElementById('newLaunchPrevBtn');
+        const nextBtn = document.getElementById('newLaunchNextBtn');
 
-    updateHeroContent(currentVideoIndex);
-</script>
+        const scrollAmount = 280;
 
-<script>
-    const slider = document.getElementById('newLaunchSlider');
-    const prevBtn = document.getElementById('newLaunchPrevBtn');
-    const nextBtn = document.getElementById('newLaunchNextBtn');
+        prevBtn.addEventListener('click', () => {
+            slider.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+        });
 
-    const scrollAmount = 280;
+        nextBtn.addEventListener('click', () => {
+            slider.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+        });
+    </script>
 
-    prevBtn.addEventListener('click', () => {
-        slider.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
-    });
+    <script>
+        const slider1 = document.getElementById('bestSellingSlider');
+        const prevBtn1 = document.getElementById('bestSellingPrevBtn');
+        const nextBtn1 = document.getElementById('bestSellingNextBtn');
 
-    nextBtn.addEventListener('click', () => {
-        slider.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-    });
-</script>
+        const scrollAmount1 = 280;
 
-<script>
-    const slider1 = document.getElementById('bestSellingSlider');
-    const prevBtn1 = document.getElementById('bestSellingPrevBtn');
-    const nextBtn1 = document.getElementById('bestSellingNextBtn');
+        prevBtn1.addEventListener('click', () => {
+            slider1.scrollBy({ left: -scrollAmount1, behavior: 'smooth' });
+        });
 
-    const scrollAmount1 = 280;
-
-    prevBtn1.addEventListener('click', () => {
-        slider1.scrollBy({ left: -scrollAmount1, behavior: 'smooth' });
-    });
-
-    nextBtn1.addEventListener('click', () => {
-        slider1.scrollBy({ left: scrollAmount1, behavior: 'smooth' });
-    });
-</script>
-
+        nextBtn1.addEventListener('click', () => {
+            slider1.scrollBy({ left: scrollAmount1, behavior: 'smooth' });
+        });
+    </script>
 </body>
 </html>

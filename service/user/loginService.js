@@ -52,6 +52,7 @@ export const forgotPassReset = async (email) => {
         }
 
         const newOtp = generateOtp()
+        const otpExpiresAt = Date.now() + 2 * 60 * 1000
 
         let otpUser = await otpCollection.findOne({email: forgotPassEmail})
 
@@ -59,6 +60,7 @@ export const forgotPassReset = async (email) => {
             otpUser = new otpCollection({email: forgotPassEmail, otp: newOtp})
         }else{
             otpUser.otp = newOtp
+            otpUser.otpExpiresAt = otpExpiresAt
         }
         await otpUser.save()
 
@@ -77,6 +79,7 @@ export const otpVerifyForgot = async (otp, email) => {
         const newOtp = ('' + forgotBox1 + forgotBox2 + forgotBox3 + forgotBox4 + forgotBox5 + forgotBox6)
 
         const otpRecord = await otpCollection.findOne({email})
+
         
         if(!otpRecord) {
             return {status: "Not Found"}
@@ -85,6 +88,13 @@ export const otpVerifyForgot = async (otp, email) => {
         if(otpRecord.otp !== newOtp) {
             return {status: "Invalid Otp"}
         }
+
+        if (otpRecord.otpExpiresAt < Date.now()) {
+            await otpCollection.deleteOne({ email })
+            return { status: "OTP expired" }
+        }
+
+        // console.log(otpRecord.otpExpiresAt < Date.now())
 
 
         return {status: "success"}
