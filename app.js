@@ -8,7 +8,6 @@ import adminRouter from "./routes/adminRoute.js"
 import userRouter from "./routes/userRoute.js";
 import methodOverride from 'method-override'
 import passport from './config/passport.js';
-import upload from "./middlewares/multer.js";
 
 dotenv.config();
 const app = express()

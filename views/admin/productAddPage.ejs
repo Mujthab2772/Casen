@@ -3,10 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/logoTab.png">
   <title>Add New Product</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Alpine.js for interactivity (optional) -->
+  <!-- Alpine.js for interactivity -->
   <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
   <!-- Cropper.js CDN -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet"/>
@@ -15,7 +16,7 @@
 <body class="bg-gray-100 p-6">
   <div class="max-w-3xl mx-auto bg-white p-6 rounded shadow">
     <a href="/admin/products" class="inline-flex items-center text-gray-600 hover:text-gray-900 mb-4 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
-      <!-- Back arrow icon (inline SVG) -->
+      <!-- Back arrow icon -->
       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
       </svg>
@@ -30,16 +31,30 @@
       action="/admin/addProducts" 
       method="post" 
       enctype="multipart/form-data" 
-      x-data="{ variants: [], isLoading: false }"
+      x-data="{
+        variants: [],
+        isLoading: false,
+        addVariant() {
+          this.variants.push({
+            color: '',
+            price: '',
+            stock: '',
+            images: [null, null, null],
+          });
+        },
+        removeVariant(index) {
+          this.variants.splice(index, 1);
+        }
+      }"
       @submit="isLoading = true"
     >
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <% if (error) { %>
-  <div class="text-red-500 mb-4"><%= error %></div>
-<% } %>
+          <div class="md:col-span-2 text-red-500 mb-4"><%= error %></div>
+        <% } %>
         <div class="md:col-span-2">
           <label for="product-name" class="block text-sm font-medium text-gray-700">Product Name</label>
-          <input id="product-name" type="text" name="productname" rows="4" class="mt-1 block w-full border border-gray-300 rounded-md p-2" placeholder="Enter product name" />
+          <input id="product-name" type="text" name="productname" class="mt-1 block w-full border border-gray-300 rounded-md p-2" placeholder="Enter product name" />
         </div>
         
         <div class="md:col-span-2">
@@ -59,9 +74,7 @@
             >
               <option value="">-- Select Category --</option>
               <% categories.forEach(category => { %>
-                <option value="<%= category._id %>" class="bg-white text-gray-900 hover:bg-gray-100">
-                  <%= category.categoryName %>
-                </option>
+                <option value="<%= category._id %>"><%= category.categoryName %></option>
               <% }) %>
             </select>
             <svg class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -73,22 +86,7 @@
 
       <!-- Variations Section -->
       <h2 class="text-xl font-semibold mb-3 text-gray-900">Variations</h2>
-      <div x-data="{
-        variants: [],
-        defaultVariant: null,
-        addVariant() {
-          this.variants.push({
-            color: '',
-            price: '',
-            stock: '',
-            images: [null, null, null],
-          });
-        },
-        removeVariant(index) {
-          this.variants.splice(index, 1);
-          if (this.defaultVariant === index) this.defaultVariant = null;
-        }
-      }" class="mb-6 space-y-6">
+      <div class="mb-6 space-y-6">
         <template x-for="(variant, index) in variants" :key="index">
           <div class="border rounded-lg p-4 bg-gray-50 space-y-4 shadow-sm">
             <div class="flex justify-between items-center">
@@ -153,18 +151,33 @@
                         <span class="text-sm font-medium">Upload</span>
                       </div>
                     </template>
+                    <!-- ✅ VALIDATED FILE INPUT -->
                     <input 
                       type="file"
-                      :name="`variantImages_${index}`"
-                      accept="image/*"
+                      :name="`variantImages_${index}_${i - 1}`"
+                      accept="image/jpeg,image/jpg,image/png,image/webp"
                       class="hidden"
                       @change="event => {
                         const file = event.target.files[0];
-                        if (file) {
-                          const reader = new FileReader();
-                          reader.onload = e => variant.images[i - 1] = e.target.result;
-                          reader.readAsDataURL(file);
+                        if (!file) return;
+
+                        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+                        if (!allowedTypes.includes(file.type)) {
+                          alert('Only JPEG, JPG, PNG, or WEBP images are allowed.');
+                          event.target.value = ''; // Clear selection
+                          return;
                         }
+
+                        // Optional: limit file size (5MB)
+                        if (file.size > 5 * 1024 * 1024) {
+                          alert('File size must be under 5MB.');
+                          event.target.value = '';
+                          return;
+                        }
+
+                        const reader = new FileReader();
+                        reader.onload = e => variant.images[i - 1] = e.target.result;
+                        reader.readAsDataURL(file);
                       }"
                     />
                   </div>
@@ -184,107 +197,28 @@
 
       <!-- Form Actions -->
       <div class="flex justify-end space-x-2">
-  <button type="button" class="px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-100" onclick="history.back()">
-    Cancel
-  </button>
-  <button 
-    type="submit" 
-    class="px-4 py-2 bg-black text-white rounded hover:bg-gray-900 flex items-center justify-center min-w-[120px] transition-opacity"
-    :disabled="isLoading"
-    :class="{ 'opacity-75 cursor-not-allowed': isLoading }"
-  >
-    <template x-if="!isLoading">
-      <span>+ Add Product</span>
-    </template>
-    <template x-if="isLoading">
-      <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-      </svg>
-      <span>Adding...</span>
-    </template>
-  </button>
-</div>
+        <button type="button" class="px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-100" onclick="history.back()">
+          Cancel
+        </button>
+        <button 
+          type="submit" 
+          class="px-4 py-2 bg-black text-white rounded hover:bg-gray-900 flex items-center justify-center min-w-[120px] transition-opacity"
+          :disabled="isLoading"
+          :class="{ 'opacity-75 cursor-not-allowed': isLoading }"
+        >
+          <template x-if="!isLoading">
+            <span>+ Add Product</span>
+          </template>
+          <template x-if="isLoading">
+            <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span>Adding...</span>
+          </template>
+        </button>
+      </div>
     </form>
   </div>
-
-  <script>
-    function multiImageUploader(limit = 3) {
-      return {
-        imageSlots: Array.from({ length: limit }, () => ({ file: null, preview: null })),
-        showCropper: false,
-        cropper: null,
-        currentIndex: null,
-
-        openFile(index) {
-          document.getElementById(`imageInput${index}`).click();
-        },
-
-        handleFile(event, index) {
-          const file = event.target.files[0];
-          if (!file) return;
-          const preview = URL.createObjectURL(file);
-          this.imageSlots[index] = { file, preview };
-        },
-
-        dropFile(event, index) {
-          const file = event.dataTransfer.files[0];
-          if (!file) return;
-          const preview = URL.createObjectURL(file);
-          this.imageSlots[index] = { file, preview };
-        },
-
-        openCropper(index) {
-          this.currentIndex = index;
-          this.showCropper = true;
-          this.$nextTick(() => {
-            const img = this.$refs.cropImage;
-            img.src = this.imageSlots[index].preview;
-            this.cropper = new Cropper(img, {
-              aspectRatio: NaN,
-              viewMode: 1,
-              autoCropArea: 1,
-              movable: true,
-              zoomable: true,
-              rotatable: true,
-              scalable: true,
-              background: false,
-            });
-          });
-        },
-
-        cancelCrop() {
-          if (this.cropper) this.cropper.destroy();
-          this.cropper = null;
-          this.showCropper = false;
-        },
-
-        applyCrop() {
-          const canvas = this.cropper.getCroppedCanvas({ width: 400, height: 400 });
-          canvas.toBlob((blob) => {
-            const croppedFile = new File([blob], this.imageSlots[this.currentIndex].file.name, { type: "image/png" });
-            const preview = URL.createObjectURL(croppedFile);
-            this.imageSlots[this.currentIndex] = { file: croppedFile, preview };
-
-            const dataTransfer = new DataTransfer();
-            this.imageSlots.forEach((item) => {
-              if (item.file) dataTransfer.items.add(item.file);
-            });
-            document.querySelectorAll("input[name='productimages']").forEach(input => {
-              input.files = dataTransfer.files;
-            });
-
-            this.cropper.destroy();
-            this.cropper = null;
-            this.showCropper = false;
-          });
-        },
-
-        removeFile(index) {
-          this.imageSlots[index] = { file: null, preview: null };
-        },
-      };
-    }
-  </script>
 </body>
 </html>

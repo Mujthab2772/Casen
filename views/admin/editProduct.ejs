@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/logoTab.png">
   <title>Edit Product</title>
 
   <link href="https://cdn.jsdelivr.net/npm/cropperjs@1.5.13/dist/cropper.min.css" rel="stylesheet"/>
@@ -68,7 +69,7 @@
       <div id="hiddenFileInputs" class="hidden"></div>
 
       <div class="flex justify-end space-x-2">
-        <button type="button" onclick="history.back()" class="px-4 py-2 border rounded">Cancel</button>
+        <button type="button" onclick="window.location.href='/admin/products'" class="px-4 py-2 border rounded">Cancel</button>
         <button type="submit" class="px-4 py-2 bg-black text-white rounded">Save Product</button>
       </div>
     </form>

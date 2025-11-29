@@ -27,8 +27,9 @@ passport.use(
             return done(null, false, {message: "User is blocked"})
           }
 
-
-          user.profilePic = profile.photos?.[0]?.value || "default.jpg";
+          if(!user.profilePic) {
+            user.profilePic = profile.photos?.[0]?.value || null;
+          }
           await user.save();
           return done(null, user);
         }
@@ -39,7 +40,7 @@ passport.use(
             firstName: profile.name?.givenName || "Unknown",
             lastName: profile.name?.familyName || "",
             email,
-            profilePic: profile.photos?.[0]?.value || "default.jpg",
+            profilePic: profile.photos?.[0]?.value || null,
             isVerified: true,
             authProvider: "google",
             isActive: true

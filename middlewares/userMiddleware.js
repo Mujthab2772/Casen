@@ -10,6 +10,19 @@ export const preventAuthAccess = (req, res, next) => {
   return next();
 };
 
+export const userProfile = (req, res, next) => {
+  try {
+    if(req.session.isAuthenticated) {
+      return next()
+    }
+
+    return res.redirect('/')
+  } catch (error) {
+    console.log(`error from userProfile ${error}`);
+    return res.redirect('/')
+  }
+}
+
 
 export const requireActiveUser = async (req, res, next) => {
   if(!req.session.isAuthenticated || !req.session.userEmail) {
@@ -30,7 +43,7 @@ export const requireActiveUser = async (req, res, next) => {
       })
       return
     }
-
+    
     next()
   } catch (error) {
     console.log(`error from requireActiveUser ${error}`);

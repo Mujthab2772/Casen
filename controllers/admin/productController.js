@@ -19,12 +19,14 @@ export const productsPage = async (req, res) => {
 export const addProductPage = async (req, res) => {
     try {
         const result = await categoryDetails()
+        const error = req.session.productErr
+        req.session.productErr = null
 
         if(result.status === "No Category Available") {
             return res.redirect('/admin/addProducts')
         }
 
-        res.render('productAddPage', {categories: result.options, error: req.session.productErr})
+        res.render('productAddPage', {categories: result.options, error: error})
     } catch (error) {
         console.log(`error from addProductPage`);
         res.redirect('/admin/products')
@@ -47,6 +49,8 @@ export const editProduct = async (req, res) => {
     const productid = req.query.productid;
     const data = await editProductDetails(productid);
     const categories = await categoryDetails();
+    const error = req.session.productErr
+    req.session.productErr = null
 
     if (!data || data.length === 0) {
       return res.redirect('/admin/products');
@@ -69,7 +73,7 @@ export const editProduct = async (req, res) => {
     res.status(STATUS_CODE.OK).render('editProduct', {
       product: { data: product }, // ← only this
       categories: categories.options || [],
-      error: req.session.productErr
+      error: error
     });
   } catch (error) {
     console.error(`editProduct error:`, error);

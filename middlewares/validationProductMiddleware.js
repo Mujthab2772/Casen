@@ -28,7 +28,7 @@ if (trimmedName.length < 2 || trimmedName.length > 100) {
 }
 
 // 🔒 Letters only — no numbers or special chars (except space, -, ')
-const nameRegex = /^[a-zA-Z\s\-']+$/;
+const nameRegex = /^[a-zA-Z0-9\s\-']+$/;
 if (!nameRegex.test(trimmedName)) {
     req.session.productErr = "Product name can only contain letters, spaces, hyphens, and apostrophes.";
     return res.status(STATUS_CODE.BAD_REQUEST).redirect(`/admin/addProduct?productid=${req.query.productid}&success=false`);
@@ -40,13 +40,13 @@ if (!nameRegex.test(trimmedName)) {
         return res.status(STATUS_CODE.BAD_REQUEST).redirect("/admin/addProduct?success=false");
     }
 
-    // === Description ===
+    // // === Description ===
     if (!productdescription || productdescription.trim() === "") {
         req.session.productErr = "Description cannot be empty.";
         return res.status(STATUS_CODE.BAD_REQUEST).redirect("/admin/addProduct?success=false");
     }
-    if (productdescription.trim().length > 50) {
-        req.session.productErr = "Description must not exceed 50 characters.";
+    if (productdescription.length > 50) {
+        req.session.productErr = "Description must be less than 50 characters.";
         return res.status(STATUS_CODE.BAD_REQUEST).redirect("/admin/addProduct?success=false");
     }
 
@@ -106,40 +106,41 @@ if (!nameRegex.test(trimmedName)) {
 export const validateEditProduct = async (req, res, next) => {
     const { productname, productdescription, categoryId } = req.body;
 
+
     // Same validations as add, except we allow partial updates
     if (!productname || productname.trim() === "") {
         req.session.productErr = "Product name cannot be empty.";
-        return res.status(STATUS_CODE.BAD_REQUEST).redirect(`/admin/editProduct?productid=${req.query.productid}&success=false`);
+        return res.status(STATUS_CODE.BAD_REQUEST).redirect(`/admin/editProduct?productid=${req.params.productid}&success=false`);
     }
     const trimmedName = productname.trim();
     if (trimmedName.length < 2 || trimmedName.length > 100) {
         req.session.productErr = "Product name must be 2–100 characters.";
-        return res.status(STATUS_CODE.BAD_REQUEST).redirect(`/admin/editProduct?productid=${req.query.productid}&success=false`);
+        return res.status(STATUS_CODE.BAD_REQUEST).redirect(`/admin/editProduct?productid=${req.params.productid}&success=false`);
     }
 
     if (!/^[a-zA-Z0-9\s\-',.()]+$/.test(trimmedName)) {
         req.session.productErr = "Product name contains invalid characters.";
-        return res.status(STATUS_CODE.BAD_REQUEST).redirect(`/admin/editProduct?productid=${req.query.productid}&success=false`);
+        return res.status(STATUS_CODE.BAD_REQUEST).redirect(`/admin/editProduct?productid=${req.params.productid}&success=false`);
     }
 
     if (!productdescription || productdescription.trim() === "") {
         req.session.productErr = "Description cannot be empty.";
-        return res.status(STATUS_CODE.BAD_REQUEST).redirect(`/admin/editProduct?productid=${req.query.productid}&success=false`);
+        return res.status(STATUS_CODE.BAD_REQUEST).redirect(`/admin/editProduct?productid=${req.params.productid}&success=false`);
     }
     if (productdescription.trim().length > 50) {
         req.session.productErr = "Description must not exceed 50 characters.";
-        return res.status(STATUS_CODE.BAD_REQUEST).redirect(`/admin/editProduct?productid=${req.query.productid}&success=false`);
+        return res.status(STATUS_CODE.BAD_REQUEST).redirect(`/admin/editProduct?productid=${req.params.productid}&success=false`);
     }
 
     if (!categoryId) {
         req.session.productErr = "Please select a category.";
-        return res.status(STATUS_CODE.BAD_REQUEST).redirect(`/admin/editProduct?productid=${req.query.productid}&success=false`);
+        return res.status(STATUS_CODE.BAD_REQUEST).redirect(`/admin/editProduct?productid=${req.params.productid}&success=false`);
     }
 
     const category = await categoryCollection.findOne({ _id: categoryId, isValid: true });
     if (!category) {
         req.session.productErr = "Selected category is invalid or inactive.";
-        return res.status(STATUS_CODE.BAD_REQUEST).redirect(`/admin/editProduct?productid=${req.query.productid}&success=false`);
+        return res.status(STATUS_CODE.BAD_REQUEST).redirect(`/admin/editProduct?productid=${req.params.productid}&success=false`);
     }
 
     // === Variants ===
@@ -161,25 +162,25 @@ export const validateEditProduct = async (req, res, next) => {
 
         if (!color) {
             req.session.productErr = `Variant ${i + 1}: Color is required.`;
-            return res.status(STATUS_CODE.BAD_REQUEST).redirect(`/admin/editProduct?productid=${req.query.productid}&success=false`);
+            return res.status(STATUS_CODE.BAD_REQUEST).redirect(`/admin/editProduct?productid=${req.params.productid}&success=false`);
         }
         if (color.length > 100) {
             req.session.productErr = `Variant ${i + 1}: Color must be under 100 characters.`;
-            return res.status(STATUS_CODE.BAD_REQUEST).redirect(`/admin/editProduct?productid=${req.query.productid}&success=false`);
+            return res.status(STATUS_CODE.BAD_REQUEST).redirect(`/admin/editProduct?productid=${req.params.productid}&success=false`);
         }
         if (!price || !isValidPositiveNumber(price)) {
             req.session.productErr = `Variant ${i + 1}: Price must be a valid positive number.`;
-            return res.status(STATUS_CODE.BAD_REQUEST).redirect(`/admin/editProduct?productid=${req.query.productid}&success=false`);
+            return res.status(STATUS_CODE.BAD_REQUEST).redirect(`/admin/editProduct?productid=${req.params.productid}&success=false`);
         }
         if (stock === undefined || stock === null || !isValidNonNegativeInt(stock)) {
             req.session.productErr = `Variant ${i + 1}: Stock must be a non-negative integer.`;
-            return res.status(STATUS_CODE.BAD_REQUEST).redirect(`/admin/editProduct?productid=${req.query.productid}&success=false`);
+            return res.status(STATUS_CODE.BAD_REQUEST).redirect(`/admin/editProduct?productid=${req.params.productid}&success=false`);
         }
     }
 
     if (!hasAtLeastOneValidVariant) {
         req.session.productErr = "At least one valid variant is required.";
-        return res.status(STATUS_CODE.BAD_REQUEST).redirect(`/admin/editProduct?productid=${req.query.productid}&success=false`);
+        return res.status(STATUS_CODE.BAD_REQUEST).redirect(`/admin/editProduct?productid=${req.params.productid}&success=false`);
     }
 
     req.session.productErr = null;

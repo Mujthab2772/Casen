@@ -41,7 +41,7 @@ const userSchema = new mongoose.Schema(
     },
     profilePic: {
       type: String,
-      default: "default.jpg",
+      default: null,
     },
     isVerified: {
       type: Boolean, // true only after OTP verification
