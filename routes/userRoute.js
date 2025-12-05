@@ -10,6 +10,12 @@ import { editProfile, ProfileUser, updateProfile } from "../controllers/user/pro
 import upload from "../middlewares/multer.js"
 import { address, addressEdit, addressEditUpdate, addressFetch, addressNew, deleteAddress } from "../controllers/user/addressController.js"
 import { validateAddress } from "../middlewares/addressMiddleware.js"
+import { cart, newCart, removeCart, updateCart } from "../controllers/user/cartController.js"
+import { checkout, checkoutDatas } from "../controllers/user/checkoutController.js"
+import { payment, paymentProcess, paymentSuccess } from "../controllers/user/paymentController.js"
+import { exitsCheckout } from "../middlewares/checkoutMiddleware.js"
+import { cancelItem, orderListing } from "../controllers/user/orderController.js"
+
 
 
 const router = express.Router()
@@ -78,6 +84,39 @@ router.get('/profile/editAddress', userProfile, addressEdit)
 router.put('/profile/editAddress/update', userProfile, validateAddress, addressEditUpdate)
 
 router.delete('/profile/deleteAddress', userProfile, deleteAddress)
+
+// cart 
+
+router.get('/cart', userProfile, cart)
+
+router.post('/cart/add', userProfile, newCart)
+
+router.put('/cart/update', userProfile, updateCart)
+
+router.delete('/cart/remove', userProfile, removeCart)
+
+// checkout
+
+router.get('/checkout', userProfile, checkout)
+
+router.post('/checkout/process', userProfile, checkoutDatas)
+
+
+// payment 
+
+router.get('/payment', userProfile, exitsCheckout, payment)
+
+router.post('/payment/process', userProfile, paymentProcess)
+
+// success payment 
+
+router.get('/payment/success', userProfile, paymentSuccess)
+
+// order Profile 
+
+router.get('/profile/orders', userProfile, orderListing)
+
+router.delete('/profile/orders/:orderId/items/:itemIndex/cancel', userProfile, cancelItem)
 
 
 export default router

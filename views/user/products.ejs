@@ -75,7 +75,7 @@
         </button>
 
         <!-- Cart -->
-        <button class="p-2 rounded-full hover:bg-gray-100 transition-colors relative">
+        <button class="p-2 rounded-full hover:bg-gray-100 transition-colors relative" onclick="window.location.href='/cart'">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
           </svg>
@@ -220,96 +220,66 @@
         </div>
 
         <!-- Category Filter -->
-        <div class="mb-6">
-          <h3 class="font-medium mb-3">Category</h3>
-          <div class="space-y-2">
-            <%
-              var uniqueCategories = [];
-              var seenCats = {};
-              for (var i = 0; i < products.length; i++) {
-                if (products[i].category && products[i].category.categoryName) {
-                  var catName = products[i].category.categoryName;
-                  if (!seenCats[catName]) {
-                    uniqueCategories.push(catName);
-                    seenCats[catName] = true;
-                  }
-                }
-              }
-              var activeCategories = [];
-              if (query && query.category) {
-                activeCategories = (typeof query.category === 'string') ? query.category.split(',') : [];
-              }
-            %>
-            <% for (var i = 0; i < uniqueCategories.length; i++) { %>
-              <%
-                var cat = uniqueCategories[i];
-                var isChecked = '';
-                for (var j = 0; j < activeCategories.length; j++) {
-                  if (activeCategories[j] === cat) {
-                    isChecked = ' checked';
-                    break;
-                  }
-                }
-              %>
-              <label class="flex items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  class="form-checkbox h-4 w-4 text-blue-600 filter-checkbox"
-                  data-type="category"
-                  data-value="<%= cat %>"
-                  <%= isChecked %>
-                />
-                <%= cat %>
-              </label>
-            <% } %>
-          </div>
-        </div>
+<div class="mb-6">
+  <h3 class="font-medium mb-3">Category</h3>
+  <div class="space-y-2">
+    <% if (typeof filterCategories !== 'undefined' && Array.isArray(filterCategories)) { %>
+      <% for (var i = 0; i < filterCategories.length; i++) { %>
+        <%
+          var cat = filterCategories[i];
+          var isChecked = '';
+          if (query && query.category) {
+            var activeCats = (typeof query.category === 'string') ? query.category.split(',') : [];
+            if (activeCats.includes(cat)) {
+              isChecked = ' checked';
+            }
+          }
+        %>
+        <label class="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            class="form-checkbox h-4 w-4 text-blue-600 filter-checkbox"
+            data-type="category"
+            data-value="<%= cat %>"
+            <%= isChecked %>
+          />
+          <%= cat %>
+        </label>
+      <% } %>
+    <% } %>
+  </div>
+</div>
 
-        <!-- Product Filter -->
-        <div class="mb-6">
-          <h3 class="font-medium mb-3">Products</h3>
-          <div class="space-y-2">
-            <%
-              var uniqueProducts = [];
-              var seenProds = {};
-              for (var i = 0; i < products.length; i++) {
-                if (products[i].productName) {
-                  var pName = products[i].productName;
-                  if (!seenProds[pName]) {
-                    uniqueProducts.push(pName);
-                    seenProds[pName] = true;
-                  }
-                }
-              }
-              var activeProducts = [];
-              if (query && query.product) {
-                activeProducts = (typeof query.product === 'string') ? query.product.split(',') : [];
-              }
-            %>
-            <% for (var i = 0; i < uniqueProducts.length; i++) { %>
-              <%
-                var prod = uniqueProducts[i];
-                var isCheckedProd = '';
-                for (var j = 0; j < activeProducts.length; j++) {
-                  if (activeProducts[j] === prod) {
-                    isCheckedProd = ' checked';
-                    break;
-                  }
-                }
-              %>
-              <label class="flex items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  class="form-checkbox h-4 w-4 text-blue-600 filter-checkbox"
-                  data-type="product"
-                  data-value="<%= prod %>"
-                  <%= isCheckedProd %>
-                />
-                <%= prod %>
-              </label>
-            <% } %>
-          </div>
-        </div>
+<!-- Product Filter -->
+<div class="mb-6">
+  <h3 class="font-medium mb-3">Products</h3>
+  <div class="space-y-2">
+    <% if (typeof filterProducts !== 'undefined' && Array.isArray(filterProducts)) { %>
+      <% for (var i = 0; i < filterProducts.length; i++) { %>
+        <%
+          var prod = filterProducts[i];
+          var isCheckedProd = '';
+          if (query && query.product) {
+            var activeProds = (typeof query.product === 'string') ? query.product.split(',') : [];
+            if (activeProds.includes(prod)) {
+              isCheckedProd = ' checked';
+            }
+          }
+        %>
+        <label class="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            class="form-checkbox h-4 w-4 text-blue-600 filter-checkbox"
+            data-type="product"
+            data-value="<%= prod %>"
+            <%= isCheckedProd %>
+          />
+          <%= prod %>
+        </label>
+      <% } %>
+    <% } %>
+  </div>
+</div>
       </aside>
 
       <!-- Product Grid -->

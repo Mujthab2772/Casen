@@ -23,6 +23,9 @@
 
   <!-- Cropper.js CSS (fixed URL) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" />
+
+  <!-- SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body class="bg-gray-50 text-gray-800">
   <!-- Header -->
@@ -49,7 +52,7 @@
           </svg>
         </button>
 
-        <button class="p-2 rounded-full hover:bg-gray-100 transition-colors relative">
+        <button class="p-2 rounded-full hover:bg-gray-100 transition-colors relative" onclick="window.location.href='/cart'">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
           </svg>
@@ -122,7 +125,7 @@
           <i class="fas fa-user text-sm"></i>
           <span class="font-medium text-sm">Profile</span>
         </a>
-        <a href="/orders" class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
+        <a href="/profile/orders" class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
           <i class="fas fa-shopping-cart text-sm"></i>
           <span class="font-medium text-sm">Orders</span>
         </a>
@@ -189,13 +192,13 @@
             <i class="fas fa-camera text-xs"></i>
           </label>
 
-          <input type="file" id="profile-pic-input" accept="image/*" class="hidden" />
         </div>
       </div>
-
+      
       <!-- Form -->
-      <form action="/profile/edit?_method=PUT" method="POST" enctype="multipart/form-data" class="space-y-6">
+      <form id="profile-edit-form" action="/profile/edit?_method=PUT" method="POST" enctype="multipart/form-data" class="space-y-6">
         <!-- ⚠️ NO hidden Base64 input -->
+        <input type="file" id="profile-pic-input" name="profilePic" accept="image/*" class="hidden" />
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
@@ -359,13 +362,11 @@
       ctx.clip();
       ctx.drawImage(croppedCanvas, 0, 0, 300, 300);
 
-      // Convert to File
       circleCanvas.toBlob(blob => {
         if (!blob) return;
 
         const file = new File([blob], "profile.png", { type: "image/png" });
 
-        // Create/replace file input
         let fileInput = document.querySelector('input[name="profilePic"]');
         if (!fileInput) {
           fileInput = document.createElement('input');
@@ -379,7 +380,6 @@
         dt.items.add(file);
         fileInput.files = dt.files;
 
-        // Update preview
         const previewUrl = URL.createObjectURL(file);
         const preview = document.createElement('img');
         preview.src = previewUrl;
@@ -388,7 +388,6 @@
         wrapper.innerHTML = '';
         wrapper.appendChild(preview);
 
-        // Close modal
         document.getElementById('cropper-modal').classList.add('hidden');
         cropper.destroy();
         cropper = null;
@@ -406,6 +405,61 @@
 
     document.getElementById('zoom-in').addEventListener('click', () => { if (cropper) cropper.zoom(0.1); });
     document.getElementById('zoom-out').addEventListener('click', () => { if (cropper) cropper.zoom(-0.1); });
+
+    // SweetAlert2 form submission handler
+    document.getElementById('profile-edit-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      const formData = new FormData(this);
+
+      // Show loading alert
+      Swal.fire({
+        title: 'Saving...',
+        text: 'Please wait while we update your profile.',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
+
+      try {
+        const response = await fetch(this.action, {
+          method: 'POST',
+          body: formData,
+          headers: {
+            'Accept': 'application/json' // Optional: help backend detect JSON response if needed
+          }
+        });
+
+        const result = await response.json(); // Expect JSON from backend
+
+        if (result.success) {
+          Swal.fire({
+            icon: 'success',
+            title: 'Success!',
+            text: 'Your profile has been updated.',
+            confirmButtonText: 'OK'
+          }).then(() => {
+            window.location.href = '/profile';
+          });
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: 'Update Failed',
+            text: result.message || 'Something went wrong. Please try again.',
+            confirmButtonText: 'OK'
+          });
+        }
+      } catch (error) {
+        console.error('Submission error:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Network Error',
+          text: 'Failed to connect to the server. Please check your connection.',
+          confirmButtonText: 'OK'
+        });
+      }
+    });
   </script>
 </body>
 </html>

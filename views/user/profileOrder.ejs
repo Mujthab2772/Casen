@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Orders</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.10/dist/cdn.min.js" defer></script>
+</head>
+<body class="bg-gray-50">
+
+  <!-- Header -->
+  <header class="bg-white shadow-sm sticky top-0 z-50">
+    <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center">
+        <a href="/">
+          <img src="/logo.png" alt="Logo" class="h-8 object-contain">
+        </a>
+      </div>
+
+      <nav class="hidden md:flex space-x-5">
+        <a href="/" class="text-sm font-medium text-gray-700 hover:text-black transition">Home</a>
+        <a href="#" class="text-sm font-medium text-gray-700 hover:text-black transition">About</a>
+        <a href="/products" class="text-sm font-medium text-gray-700 hover:text-black transition">Phone Cases</a>
+        <a href="#" class="text-sm font-medium text-gray-700 hover:text-black transition">Tablet Cases</a>
+        <a href="#" class="text-sm font-medium text-gray-700 hover:text-black transition">Sale</a>
+      </nav>
+
+      <div class="flex items-center space-x-4">
+        <button class="p-2 rounded-full hover:bg-gray-100 transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+          </svg>
+        </button>
+
+        <button class="p-2 rounded-full hover:bg-gray-100 transition-colors relative" onclick="window.location.href='/cart'">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
+        </button>
+
+        <!-- Profile Menu -->
+        <% if (locals.user && user.profilePic) { %>
+        <div class="relative" x-data="{ open: false }" @click.away="open = false">
+          <button @click="open = !open" class="rounded-full overflow-hidden w-8 h-8 border border-transparent hover:border-gray-300 transition">
+            <img src="<%= user.profilePic %>" alt="Profile" class="w-full h-full object-cover" />
+          </button>
+          <div x-show="open" x-transition class="absolute right-0 mt-2 w-44 bg-white shadow-lg rounded-lg py-1 z-50">
+            <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Profile</a>
+            <form action="/logout" method="post">
+              <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Logout</button>
+            </form>
+          </div>
+        </div>
+        <% } else if (locals.user) { %>
+        <div class="relative" x-data="{ open: false }" @click.away="open = false">
+          <button @click="open = !open" class="w-8 h-8 flex items-center justify-center text-gray-600 hover:text-gray-900">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+          </button>
+          <div x-show="open" x-transition class="absolute right-0 mt-2 w-44 bg-white shadow-lg rounded-lg py-1 z-50">
+            <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Profile</a>
+            <form action="/logout" method="post">
+              <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Logout</button>
+            </form>
+          </div>
+        </div>
+        <% } else { %>
+        <a href="/login" class="text-sm font-medium text-red-600 hover:text-red-700 flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          </svg>
+          Sign In
+        </a>
+        <% } %>
+
+        <button class="md:hidden text-gray-600">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <div class="container mx-auto px-4 py-8 flex flex-col lg:flex-row gap-6">
+    <!-- Sidebar -->
+    <aside class="lg:w-60 bg-white rounded-xl shadow-sm p-4">
+      <nav class="space-y-2">
+        <a href="/profile" class="flex items-center space-x-3 px-3 py-2.5 text-gray-700 rounded-lg hover:bg-gray-50 transition">
+          <i class="fas fa-user text-sm"></i>
+          <span class="text-sm font-medium">Profile</span>
+        </a>
+        <a href="/profile/orders" class="flex items-center space-x-3 px-3 py-2.5 bg-black text-white rounded-lg">
+          <i class="fas fa-shopping-cart text-sm"></i>
+          <span class="text-sm font-medium">Orders</span>
+        </a>
+        <a href="/wishlist" class="flex items-center space-x-3 px-3 py-2.5 text-gray-700 rounded-lg hover:bg-gray-50 transition">
+          <i class="far fa-heart text-sm"></i>
+          <span class="text-sm font-medium">Wishlist</span>
+        </a>
+        <a href="/profile/address" class="flex items-center space-x-3 px-3 py-2.5 text-gray-700 rounded-lg hover:bg-gray-50 transition">
+          <i class="fas fa-home text-sm"></i>
+          <span class="text-sm font-medium">Address</span>
+        </a>
+        <a href="/password" class="flex items-center space-x-3 px-3 py-2.5 text-gray-700 rounded-lg hover:bg-gray-50 transition">
+          <i class="fas fa-lock text-sm"></i>
+          <span class="text-sm font-medium">Password</span>
+        </a>
+        <a href="/wallet" class="flex items-center space-x-3 px-3 py-2.5 text-gray-700 rounded-lg hover:bg-gray-50 transition">
+          <i class="fas fa-wallet text-sm"></i>
+          <span class="text-sm font-medium">Wallet</span>
+        </a>
+        <a href="/referral" class="flex items-center space-x-3 px-3 py-2.5 text-gray-700 rounded-lg hover:bg-gray-50 transition">
+          <i class="fas fa-users text-sm"></i>
+          <span class="text-sm font-medium">Referral</span>
+        </a>
+        <a href="#" onclick="document.getElementById('logout-form').submit();" class="flex items-center space-x-3 px-3 py-2.5 text-gray-700 rounded-lg hover:bg-gray-50 transition mt-4">
+          <i class="fas fa-sign-out-alt text-sm"></i>
+          <span class="text-sm font-medium">Logout</span>
+        </a>
+        <form id="logout-form" action="/logout" method="post" class="hidden"></form>
+      </nav>
+    </aside>
+
+    <!-- Orders Content -->
+    <main class="flex-1">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
+        <div>
+          <h1 class="text-2xl md:text-3xl font-bold text-gray-900">My Orders</h1>
+          <p class="text-gray-500 mt-1">Track and manage your recent purchases</p>
+        </div>
+      </div>
+
+      <!-- Order Filters -->
+      <div class="mb-6 border-b border-gray-200">
+        <div class="flex space-x-6 pb-2">
+          <button class="pb-2 border-b-2 border-black font-medium text-gray-900">All Orders</button>
+          <button class="pb-2 border-b-2 border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-800">Active</button>
+          <button class="pb-2 border-b-2 border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-800">Completed</button>
+          <button class="pb-2 border-b-2 border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-800">Cancelled</button>
+        </div>
+      </div>
+
+      <!-- Dynamic Order List -->
+      <div class="space-y-5">
+        <% if (locals.orders && orders.length > 0) { %>
+          <% orders.forEach(order => { %>
+            <div class="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+                 data-order='<%- JSON.stringify(order) %>'
+                 onclick="showOrderDetails(this)">
+              <div class="p-5 md:p-6">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                  <!-- Order Info -->
+                  <div>
+                    <div class="text-lg font-semibold text-gray-900">Order <%= order.orderId.slice(0,8).toUpperCase() %></div>
+                    <p class="text-gray-500 text-sm mt-1">Placed on <%= new Date(order.createdAt).toLocaleDateString() %></p>
+                  </div>
+
+                  <!-- Amount & Status -->
+                  <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                    <div class="text-lg font-bold text-gray-800">₹<%= order.totalAmount %></div>
+                    <span class="px-3 py-1 text-xs font-medium rounded-full
+                      <%= order.orderStatus === 'delivered' ? 'bg-green-100 text-green-800' : 
+                         order.orderStatus === 'cancelled' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800' %>">
+                      <%= order.orderStatus.charAt(0).toUpperCase() + order.orderStatus.slice(1) %>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          <% }); %>
+        <% } else { %>
+          <div class="bg-white rounded-xl border border-gray-200 p-12 text-center">
+            <div class="text-gray-400 mb-2">
+              <i class="fas fa-box-open text-4xl"></i>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900">No orders yet</h3>
+            <p class="text-gray-500 mt-1">Your orders will appear here once you place them.</p>
+            <a href="/products" class="mt-4 inline-block px-4 py-2 bg-black text-white text-sm rounded-lg hover:bg-gray-800 transition">Start Shopping</a>
+          </div>
+        <% } %>
+      </div>
+    </main>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <style>
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      #printable-order {
+        visibility: visible;
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+      }
+      #printable-order * {
+        visibility: visible;
+      }
+    }
+  </style>
+
+  <script>
+    // Cache for order details
+    const orderDetailsCache = {};
+    
+    // Cache order details when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+      document.querySelectorAll('[data-order]').forEach(element => {
+        const order = JSON.parse(element.dataset.order);
+        orderDetailsCache[order._id] = order;
+      });
+    });
+
+    function showOrderDetails(element) {
+      const order = JSON.parse(element.dataset.order);
+      const items = Array.isArray(order.items) ? order.items.flat() : [];
+
+      let itemsHtml = '';
+      
+      items.forEach((item, idx) => {
+        const productName = item.productName || 'Unknown Product';
+        const color = item.variantColor || '—';
+        const quantity = item.quantity || 1;
+        
+        // FIX: Properly handle Decimal128 price format
+        let price = 0;
+        if (item.price) {
+          if (item.price.$numberDecimal) {
+            price = parseFloat(item.price.$numberDecimal);
+          } else if (typeof item.price === 'string') {
+            price = parseFloat(item.price);
+          } else if (typeof item.price === 'object' && item.price.toString) {
+            price = parseFloat(item.price.toString());
+          } else {
+            price = parseFloat(item.price) || 0;
+          }
+        }
+        
+        const total = (price * quantity).toFixed(2);
+        const images = Array.isArray(item.images) ? item.images : [];
+        
+        // Only show "Cancel item" button if order has more than one item and is active
+        let itemActions = '';
+        if (
+          order.orderStatus !== 'cancelled' &&
+          order.orderStatus !== 'delivered' &&
+          items.length > 1
+        ) {
+          itemActions = `
+            <div class="mt-2 flex justify-end">
+              <button onclick="event.stopPropagation(); cancelItem('${order._id}', ${idx});" 
+                      class="text-xs text-red-600 hover:text-red-800 font-medium flex items-center">
+                <i class="fas fa-times mr-1"></i> Cancel item
+              </button>
+            </div>
+          `;
+        }
+
+        itemsHtml += `
+          <div class="flex gap-4 py-3 border-b border-gray-100 last:border-0">
+            <div class="flex-shrink-0 w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
+              ${images.length > 0 
+                ? `<img src="${images[0]}" class="w-full h-full object-contain" />` 
+                : `<span class="text-gray-400 text-lg">?</span>`}
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="font-medium text-gray-900 truncate">${productName}</p>
+              <p class="text-sm text-gray-500 mt-0.5">Color: <span class="font-medium">${color}</span></p>
+              <p class="text-sm text-gray-500 mt-0.5">Qty: ${quantity} × ₹${price.toFixed(2)}</p>
+              <p class="text-sm font-medium text-gray-900 mt-0.5">₹${total}</p>
+              ${itemActions}
+            </div>
+          </div>
+        `;
+      });
+
+      const addr = order.address;
+      const fullAddress = `${addr.fullName}<br>
+        ${addr.streetAddress}<br>
+        ${addr.city}, ${addr.state} ${addr.postalCode}<br>
+        ${addr.country}<br>
+        Phone: ${addr.phoneNumber}${addr.secondNumber ? '<br>Alt: ' + addr.secondNumber : ''}`;
+
+      // Action buttons - Updated to show download icon only
+      let actionButtons = `
+        <button onclick="downloadOrderDetails('${order._id}'); Swal.close();" 
+                title="Download Invoice" 
+                class="p-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition">
+          <i class="fas fa-download text-base"></i>
+        </button>
+      `;
+      
+      if (order.orderStatus !== 'cancelled') {
+        if (order.orderStatus === 'delivered') {
+          actionButtons += `<button onclick="confirmReturnOrder('${order._id}', '${order.orderId}'); Swal.close();" class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition">Request Return</button>`;
+        } else {
+          actionButtons += `<button onclick="confirmCancelOrder('${order._id}', '${order.orderId}'); Swal.close();" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">Cancel Entire Order</button>`;
+        }
+      }
+      actionButtons += ` <button onclick="Swal.close();" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition">Close</button>`;
+
+      Swal.fire({
+        title: `<div class="text-center text-gray-900">Order <span class="font-mono bg-gray-100 px-2 py-1 rounded">${order.orderId.toUpperCase()}</span></div>`,
+        html: `
+          <div class="text-left max-h-[60vh] overflow-y-auto space-y-5">
+            <!-- Items -->
+            <div>
+              <h4 class="font-semibold text-gray-900 mb-3">Items</h4>
+              ${itemsHtml}
+            </div>
+
+            <!-- Shipping -->
+            <div class="bg-gray-50 p-4 rounded-lg">
+              <h4 class="font-semibold text-gray-900 mb-2">Shipping Address</h4>
+              <p class="text-sm text-gray-700">${fullAddress}</p>
+            </div>
+
+            <!-- Summary -->
+            <div class="border-t pt-4">
+              <div class="flex justify-between text-sm text-gray-600">
+                <span>Subtotal</span>
+                <span>₹${order.subTotal.toFixed(2)}</span>
+              </div>
+              <div class="flex justify-between text-sm text-emerald-600 mt-1">
+                <span>Discount</span>
+                <span>- ₹${order.discountAmount.toFixed(2)}</span>
+              </div>
+              <div class="flex justify-between text-sm text-gray-600 mt-1">
+                <span>Tax</span>
+                <span>₹${order.taxAmount.toFixed(2)}</span>
+              </div>
+              <div class="flex justify-between font-bold text-lg text-gray-900 mt-3 pt-3 border-t">
+                <span>Total</span>
+                <span>₹${order.totalAmount.toFixed(2)}</span>
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex flex-wrap gap-2 justify-center pt-4">
+              ${actionButtons}
+            </div>
+          </div>
+        `,
+        showConfirmButton: false,
+        showCloseButton: false,
+        padding: '1.5rem',
+        customClass: {
+          popup: 'rounded-xl shadow-xl',
+          title: 'text-xl font-bold mb-4'
+        }
+      });
+    }
+
+    // Function to download order details as PDF (using browser print)
+    function downloadOrderDetails(orderId) {
+      if (orderDetailsCache[orderId]) {
+        generateInvoice(orderDetailsCache[orderId]);
+        return;
+      }
+      
+      fetch(`/api/orders/${orderId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.order) {
+            orderDetailsCache[orderId] = data.order;
+            generateInvoice(data.order);
+          } else {
+            Swal.fire('Error', 'Failed to fetch order details for download.', 'error');
+          }
+        })
+        .catch(error => {
+          console.error('Error fetching order details:', error);
+          Swal.fire('Error', 'Failed to fetch order details. Please try again.', 'error');
+        });
+    }
+
+    // Function to generate and show the invoice
+    function generateInvoice(order) {
+      const printableContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <title>Order Invoice - ${order.orderId}</title>
+          <style>
+            body {
+              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+              line-height: 1.6;
+              color: #333;
+              max-width: 800px;
+              margin: 0 auto;
+              padding: 20px;
+            }
+            .header {
+              text-align: center;
+              border-bottom: 2px solid #333;
+              padding-bottom: 20px;
+              margin-bottom: 30px;
+            }
+            .logo {
+              font-size: 24px;
+              font-weight: bold;
+              color: #1f2937;
+            }
+            .order-info {
+              display: flex;
+              justify-content: space-between;
+              margin-bottom: 20px;
+            }
+            .order-id {
+              font-size: 18px;
+              font-weight: bold;
+              color: #1f2937;
+            }
+            .order-date {
+              color: #6b7280;
+            }
+            .status-badge {
+              display: inline-block;
+              padding: 4px 8px;
+              border-radius: 4px;
+              font-size: 12px;
+              font-weight: 500;
+              text-transform: uppercase;
+            }
+            .status-delivered { background-color: #dcfce7; color: #15803d; }
+            .status-pending { background-color: #f3f4f6; color: #4b5563; }
+            .status-cancelled { background-color: #fee2e2; color: #b91c1c; }
+            
+            .section {
+              margin-bottom: 25px;
+            }
+            .section-title {
+              font-size: 16px;
+              font-weight: 600;
+              margin-bottom: 10px;
+              color: #1f2937;
+              border-bottom: 1px solid #e5e7eb;
+              padding-bottom: 5px;
+            }
+            
+            .items-table {
+              width: 100%;
+              border-collapse: collapse;
+            }
+            .items-table th, .items-table td {
+              padding: 10px;
+              text-align: left;
+              border-bottom: 1px solid #e5e7eb;
+            }
+            .items-table th {
+              font-weight: 600;
+              color: #4b5563;
+            }
+            .items-table .item-name {
+              font-weight: 500;
+            }
+            .items-table .item-price {
+              text-align: right;
+            }
+            
+            .summary {
+              margin-top: 20px;
+            }
+            .summary-row {
+              display: flex;
+              justify-content: space-between;
+              padding: 8px 0;
+            }
+            .summary-total {
+              font-weight: bold;
+              font-size: 18px;
+              padding-top: 10px;
+              border-top: 2px solid #333;
+            }
+            
+            .footer {
+              margin-top: 40px;
+              text-align: center;
+              color: #6b7280;
+              font-size: 14px;
+              border-top: 1px solid #e5e7eb;
+              padding-top: 20px;
+            }
+            
+            @media print {
+              body {
+                padding: 0;
+                margin: 0;
+              }
+              .no-print {
+                display: none;
+              }
+            }
+          </style>
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        </head>
+        <body>
+          <div class="header">
+            <div class="logo">CASEN</div>
+            <div class="order-info">
+              <div>
+                <div class="order-id">Order #${order.orderId.slice(0,8).toUpperCase()}</div>
+                <div class="order-date">Placed on ${new Date(order.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
+              </div>
+              <div>
+                <span class="status-badge status-${order.orderStatus.toLowerCase()}">
+                  ${order.orderStatus.charAt(0).toUpperCase() + order.orderStatus.slice(1)}
+                </span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="section">
+            <div class="section-title">Items Ordered</div>
+            <table class="items-table">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Color</th>
+                  <th>Qty</th>
+                  <th class="item-price">Price</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${(order.items || []).flat().map(item => {
+                  const productName = item.productName || 'Unknown Product';
+                  const color = item.variantColor || '—';
+                  const quantity = item.quantity || 1;
+                  let price = 0;
+                  if (item.price) {
+                    if (item.price.$numberDecimal) price = parseFloat(item.price.$numberDecimal);
+                    else if (typeof item.price === 'string') price = parseFloat(item.price);
+                    else if (typeof item.price === 'object' && item.price.toString) price = parseFloat(item.price.toString());
+                    else price = parseFloat(item.price) || 0;
+                  }
+                  const total = (price * quantity).toFixed(2);
+                  return `
+                    <tr>
+                      <td class="item-name">${productName}</td>
+                      <td>${color}</td>
+                      <td>${quantity}</td>
+                      <td class="item-price">₹${total}</td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>
+          
+          <div class="section">
+            <div class="section-title">Shipping Address</div>
+            <div>
+              ${order.address.fullName}<br>
+              ${order.address.streetAddress}<br>
+              ${order.address.city}, ${order.address.state} ${order.address.postalCode}<br>
+              ${order.address.country}<br>
+              Phone: ${order.address.phoneNumber}<br>
+              ${order.address.secondNumber ? `Alternate: ${order.address.secondNumber}<br>` : ''}
+            </div>
+          </div>
+          
+          <div class="section summary">
+            <div class="summary-row">
+              <span>Subtotal</span>
+              <span>₹${order.subTotal.toFixed(2)}</span>
+            </div>
+            <div class="summary-row" style="color: #10b981;">
+              <span>Discount</span>
+              <span>- ₹${order.discountAmount.toFixed(2)}</span>
+            </div>
+            <div class="summary-row">
+              <span>Tax</span>
+              <span>₹${order.taxAmount.toFixed(2)}</span>
+            </div>
+            <div class="summary-row summary-total">
+              <span>Total</span>
+              <span>₹${order.totalAmount.toFixed(2)}</span>
+            </div>
+          </div>
+          
+          <div class="footer">
+            <p>Thank you for your order! Your invoice has been generated on ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+            <p>This is an automatically generated invoice. No signature required.</p>
+            <p>Contact us: support@yourstore.com | +91 XXXXXXXXXX</p>
+          </div>
+          
+          <div class="no-print" style="text-align: center; margin-top: 20px; padding: 15px; background: #f8fafc; border-radius: 8px;">
+            <p><strong>Tip:</strong> Use Ctrl+P (or Cmd+P on Mac) to save as PDF or print this invoice.</p>
+            <button onclick="window.print()" style="background: #3b82f6; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-top: 10px;">
+              <i class="fas fa-print mr-2"></i> Print or Save as PDF
+            </button>
+          </div>
+        </body>
+        </html>
+      `;
+      
+      const printWindow = window.open('', '_blank', 'width=800,height=600');
+      printWindow.document.write(printableContent);
+      printWindow.document.close();
+      printWindow.focus();
+    }
+
+    function confirmCancelOrder(orderId, orderNumber) {
+      Swal.fire({
+        title: 'Cancel Entire Order?',
+        text: `Are you sure you want to cancel order #${orderNumber.slice(0,8).toUpperCase()}?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, Cancel',
+        cancelButtonText: 'Keep Order',
+        confirmButtonColor: '#ef4444',
+        reverseButtons: true
+      }).then((result) => {
+        if (result.isConfirmed) {
+          fetch(`/api/orders/${orderId}/cancel`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' }
+          })
+          .then(res => res.json())
+          .then(data => {
+            if (data.success) {
+              Swal.fire('Cancelled!', 'Your order has been cancelled.', 'success')
+                .then(() => location.reload());
+            } else {
+              Swal.fire('Error', data.message || 'Failed to cancel order.', 'error');
+            }
+          });
+        }
+      });
+    }
+
+    function confirmReturnOrder(orderId, orderNumber) {
+      Swal.fire({
+        title: 'Request a Return?',
+        text: `Would you like to return order #${orderNumber.slice(0,8).toUpperCase()}?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Request Return',
+        cancelButtonText: 'Cancel',
+        confirmButtonColor: '#10b981'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          fetch(`/api/orders/${orderId}/return`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' }
+          })
+          .then(res => res.json())
+          .then(data => {
+            if (data.success) {
+              Swal.fire('Return Requested!', "We'll contact you shortly with next steps.", 'success')
+                .then(() => location.reload());
+            } else {
+              Swal.fire('Error', data.message || 'Failed to request return.', 'error');
+            }
+          });
+        }
+      });
+    }
+
+    // Per-item cancel function
+    function cancelItem(orderId, itemIndex) {
+      Swal.fire({
+        title: 'Cancel This Item?',
+        text: 'This will remove the item from your order and refund the amount.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, Remove Item',
+        cancelButtonText: 'Keep Item',
+        confirmButtonColor: '#ef4444',
+        reverseButtons: true
+      }).then((result) => {
+        if (result.isConfirmed) {
+          fetch(`/profile/orders/${orderId}/items/${itemIndex}/cancel`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' }
+          })
+          .then(res => res.json())
+          .then(data => {
+            if (data.success) {
+              Swal.fire('Removed!', 'Item has been removed from your order.', 'success')
+                .then(() => {
+                  Swal.close();
+                  location.reload();
+                });
+            } else {
+              Swal.fire('Error', data.message || 'Could not cancel item.', 'error');
+            }
+          })
+          .catch(error => {
+            console.error('Error cancelling item:', error);
+            Swal.fire('Error', 'Failed to cancel item. Please try again.', 'error');
+          });
+        }
+      });
+    }
+  </script>
+</body>
+</html>

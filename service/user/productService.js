@@ -1,3 +1,4 @@
+import categoryModel from "../../models/categoryModel.js";
 import { Product } from "../../models/productModel.js"
 
 export const productDetails = async ({
@@ -101,6 +102,9 @@ export const productDetails = async ({
     const countRes = await Product.aggregate(countPipeline);
     const total = countRes.length ? countRes[0].total : 0;
 
+    const allCategories = await categoryModel.find({isValid: true}, {categoryName: 1}).lean()
+    const allproducts = await Product.distinct('productName', {isActive: true})
+
     return {
       data,
       pagination: {
@@ -109,7 +113,9 @@ export const productDetails = async ({
         total,
         hasNext: page < Math.ceil(total / limit),
         hasPrev: page > 1
-      }
+      },
+      allCategories,
+      allproducts
     };
   } catch (error) {
     console.error(`[productDetails] Error:`, error);

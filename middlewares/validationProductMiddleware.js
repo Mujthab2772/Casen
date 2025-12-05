@@ -127,7 +127,7 @@ export const validateEditProduct = async (req, res, next) => {
         req.session.productErr = "Description cannot be empty.";
         return res.status(STATUS_CODE.BAD_REQUEST).redirect(`/admin/editProduct?productid=${req.params.productid}&success=false`);
     }
-    if (productdescription.trim().length > 50) {
+    if (productdescription.length > 50) {
         req.session.productErr = "Description must not exceed 50 characters.";
         return res.status(STATUS_CODE.BAD_REQUEST).redirect(`/admin/editProduct?productid=${req.params.productid}&success=false`);
     }

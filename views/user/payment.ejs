@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Secure Checkout — Payment</title>
+  <!-- ✅ Fixed CDN URLs (NO TRAILING SPACES!) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.10/dist/cdn.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#4F46E5',
+            primaryLight: '#EEF2FF',
+            surface: 'rgba(255, 255, 255, 0.85)',
+          },
+          backdropBlur: {
+            xs: '2px',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+    }
+    .payment-card {
+      transition: all 0.3s ease;
+      backdrop-filter: blur(12px);
+      background: rgba(255, 255, 255, 0.7);
+      border: 1px solid rgba(229, 231, 235, 0.7);
+    }
+    .payment-card.selected {
+      border-color: #4F46E5;
+      box-shadow: 0 4px 12px -2px rgba(79, 70, 229, 0.2);
+      background: rgba(238, 242, 255, 0.7);
+    }
+    .step-active {
+      background: #4F46E5;
+      color: white;
+    }
+    .step-completed {
+      background: #10B981;
+      color: white;
+    }
+  </style>
+</head>
+<body class="text-gray-800 font-sans min-h-screen flex flex-col">
+  <!-- Header -->
+  <header class="bg-white shadow-sm sticky top-0 z-50">
+    <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center">
+        <a href="/">
+          <img src="/logo.png" alt="Logo" class="h-8 object-contain" />
+        </a>
+      </div>
+
+      <nav class="hidden md:flex space-x-5">
+        <a href="/" class="text-sm font-medium transition-opacity hover:opacity-80">Home</a>
+        <a href="#" class="text-sm font-medium transition-opacity hover:opacity-80">About</a>
+        <a href="/products" class="text-sm font-medium transition-opacity hover:opacity-80">Phone Cases</a>
+        <a href="#" class="text-sm font-medium transition-opacity hover:opacity-80">Tablet Cases</a>
+        <a href="#" class="text-sm font-medium transition-opacity hover:opacity-80">Sale</a>
+      </nav>
+
+      <div class="flex items-center space-x-4">
+        <button class="p-2 rounded-full hover:bg-gray-100 transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+          </svg>
+        </button>
+
+        <button class="p-2 rounded-full hover:bg-gray-100 transition-colors relative" onclick="window.location.href='/cart'">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
+        </button>
+
+        <!-- User Menu -->
+        <% if (locals.user && user.profilePic) { %>
+        <div class="relative" x-data="{ open: false }" @click.away="open = false">
+          <button @click="open = !open" class="rounded-full overflow-hidden w-8 h-8 border border-transparent hover:border-gray-300 transition-colors focus:outline-none">
+            <img src="<%= user.profilePic %>" alt="Profile" class="w-full h-full object-cover" />
+          </button>
+          <div x-show="open" x-transition:enter="transition ease-out duration-150"
+               x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+               x-transition:leave="transition ease-in duration-100"
+               x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+               class="absolute right-0 mt-2 w-44 bg-white shadow-lg rounded-lg py-1 z-50">
+            <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">Profile</a>
+            <form action="/logout" method="post">
+              <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">Logout</button>
+            </form>
+          </div>
+        </div>
+        <% } else if (locals.user) { %>
+        <div class="relative" x-data="{ open: false }" @click.away="open = false">
+          <button @click="open = !open" class="w-8 h-8 flex items-center justify-center text-gray-600 hover:text-gray-900 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+          </button>
+          <div x-show="open" x-transition:enter="transition ease-out duration-150"
+               x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+               x-transition:leave="transition ease-in duration-100"
+               x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+               class="absolute right-0 mt-2 w-44 bg-white shadow-lg rounded-lg py-1 z-50">
+            <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Profile</a>
+            <form action="/logout" method="post">
+              <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Logout</button>
+            </form>
+          </div>
+        </div>
+        <% } else { %>
+        <a href="/login" class="text-sm font-medium hover:transition-colors flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          </svg>
+          Sign In
+        </a>
+        <% } %>
+
+        <button class="md:hidden text-gray-600 hover:text-gray-900">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main class="flex-grow container mx-auto px-4 py-8 max-w-4xl">
+    <!-- Progress -->
+    <div class="flex justify-between items-center mb-12 relative">
+      <button onclick="window.location.href='/checkout'" class="text-gray-500 hover:text-gray-800">
+        <i class="fas fa-chevron-left mr-1"></i> Back
+      </button>
+
+      <div class="flex items-center justify-between w-full max-w-md">
+        <div class="flex flex-col items-center">
+          <div class="w-8 h-8 rounded-full border-2 border-gray-300 flex items-center justify-center text-xs font-medium text-gray-500">1</div>
+          <span class="mt-2 text-xs text-gray-500">Cart</span>
+        </div>
+        <div class="flex-1 h-px bg-gray-200 mx-2"></div>
+        <div class="flex flex-col items-center">
+          <div class="w-8 h-8 rounded-full border-2 border-gray-300 flex items-center justify-center text-xs font-medium text-gray-500">2</div>
+          <span class="mt-2 text-xs font-medium text-black">Information</span>
+        </div>
+        <div class="flex-1 h-px bg-gray-200 mx-2"></div>
+        <div class="flex flex-col items-center">
+          <div class="w-8 h-8 rounded-full bg-black flex items-center justify-center text-xs font-medium text-white">3</div>
+          <span class="mt-2 text-xs text-gray-500">Payment</span>
+        </div>
+      </div>
+
+      <div class="w-12"></div>
+    </div>
+
+    <!-- Title -->
+    <div class="text-center mb-10">
+      <h1 class="text-2xl md:text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+        Choose How to Pay
+      </h1>
+      <p class="text-gray-600 mt-2">All transactions are secure and encrypted</p>
+    </div>
+
+    <!-- Payment Options -->
+    <div class="grid lg:grid-cols-3 gap-8">
+      <div class="lg:col-span-2">
+        <form action="/payment/process" method="POST" x-data="{ selected: 'online' }">
+          <!-- Hidden input to send selection to backend -->
+          <input type="hidden" name="paymentMethod" :value="selected" />
+
+          <!-- COD -->
+          <div 
+            @click="selected = 'cash'"
+            class="payment-card rounded-2xl p-5 cursor-pointer mb-5"
+            :class="{ 'selected': selected === 'cash' }"
+          >
+            <div class="flex items-start">
+              <div class="mt-1 mr-4">
+                <div class="w-6 h-6 rounded-full border-2 flex items-center justify-center"
+                  :class="selected === 'cash' ? 'border-indigo-500 bg-indigo-500' : 'border-gray-400'">
+                  <i class="fas fa-check text-white text-xs" x-show="selected === 'cash'"></i>
+                </div>
+              </div>
+              <div>
+                <div class="font-semibold flex items-center text-gray-900">
+                  <i class="fas fa-money-bill-wave mr-3 text-gray-600" 
+                    :class="selected === 'cash' ? 'text-indigo-500' : ''"></i>
+                  Cash on Delivery
+                </div>
+                <p class="text-sm text-gray-600 mt-1">Pay with cash when your order arrives.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Online -->
+          <div 
+            @click="selected = 'online'"
+            class="payment-card rounded-2xl p-5 cursor-pointer mb-5"
+            :class="{ 'selected': selected === 'online' }"
+          >
+            <div class="flex items-start">
+              <div class="mt-1 mr-4">
+                <div class="w-6 h-6 rounded-full border-2 flex items-center justify-center"
+                  :class="selected === 'online' ? 'border-indigo-500 bg-indigo-500' : 'border-gray-400'">
+                  <i class="fas fa-check text-white text-xs" x-show="selected === 'online'"></i>
+                </div>
+              </div>
+              <div class="flex-1">
+                <div class="font-semibold flex items-center text-gray-900">
+                  <i class="fas fa-credit-card mr-3 text-gray-600"
+                    :class="selected === 'online' ? 'text-indigo-500' : ''"></i>
+                  Online Payment
+                </div>
+                <p class="text-sm text-gray-600 mt-1">Pay securely with Razorpay, PayPal, or cards.</p>
+                <div class="flex space-x-2 mt-3">
+                  <span class="text-xs px-2 py-1 bg-white border border-gray-300 rounded-md text-gray-700">Visa</span>
+                  <span class="text-xs px-2 py-1 bg-white border border-gray-300 rounded-md text-gray-700">Master</span>
+                  <span class="text-xs px-2 py-1 bg-white border border-gray-300 rounded-md text-gray-700">PayPal</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Wallet -->
+          <div 
+            @click="selected = 'wallet'"
+            class="payment-card rounded-2xl p-5 cursor-pointer mb-5"
+            :class="{ 'selected': selected === 'wallet' }"
+          >
+            <div class="flex items-start">
+              <div class="mt-1 mr-4">
+                <div class="w-6 h-6 rounded-full border-2 flex items-center justify-center"
+                  :class="selected === 'wallet' ? 'border-indigo-500 bg-indigo-500' : 'border-gray-400'">
+                  <i class="fas fa-check text-white text-xs" x-show="selected === 'wallet'"></i>
+                </div>
+              </div>
+              <div>
+                <div class="font-semibold flex items-center text-gray-900">
+                  <i class="fas fa-wallet mr-3 text-gray-600"
+                    :class="selected === 'wallet' ? 'text-indigo-500' : ''"></i>
+                  Digital Wallets
+                </div>
+                <p class="text-sm text-gray-600 mt-1">Apple Pay • Google Pay • PhonePe</p>
+                <div class="mt-2 flex space-x-1">
+                  <span class="text-xs px-2 py-1 bg-indigo-100 text-indigo-800 rounded-md"> Pay</span>
+                  <span class="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-md">G Pay</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <button type="submit" class="w-full bg-black hover:bg-indigo-700 text-white py-4 rounded-xl font-semibold mt-4 transition shadow-lg">
+            Confirm & Pay Securely
+          </button>
+          <p class="text-center text-xs text-gray-500 mt-3 flex items-center justify-center">
+            <i class="fas fa-shield-alt mr-1.5 text-green-500"></i> SSL Encrypted • No card data stored
+          </p>
+        </form>
+      </div>
+
+      <!-- Order Summary -->
+      <div class="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-gray-200 shadow-sm">
+        <h3 class="font-bold text-gray-900 mb-4">Order Summary</h3>
+        <div class="space-y-3 text-sm">
+          <div class="flex justify-between">
+            <span class="text-gray-600">Subtotal</span>
+            <span>RS. <%= checkoutDetail.orderSummary.subtotal %></span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-600">Discount</span>
+            <span>RS. <%= checkoutDetail.orderSummary.discount %></span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-600">Tax</span>
+            <span>RS. <%= checkoutDetail.orderSummary.tax %></span>
+          </div>
+          <div class="border-t border-gray-200 pt-3 mt-2">
+            <div class="flex justify-between text-lg font-bold text-gray-900">
+              <span>Total</span>
+              <span>RS. <%= checkoutDetail.orderSummary.total %></span>
+            </div>
+          </div>
+        </div>
+        <div class="mt-6 p-3 bg-green-50 rounded-lg text-center">
+          <p class="text-xs text-green-700 font-medium">✅ Free returns within 14 days</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-gray-200 py-5 bg-white/90 backdrop-blur-sm">
+    <div class="container mx-auto px-4 text-center text-xs text-gray-500">
+      <p>© 2025 Your Brand. Secure • Trusted • Fast.</p>
+      <div class="mt-1 space-x-3">
+        <a href="#" class="hover:text-gray-700">Privacy</a>
+        <a href="#" class="hover:text-gray-700">Terms</a>
+        <a href="#" class="hover:text-gray-700">Contact</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

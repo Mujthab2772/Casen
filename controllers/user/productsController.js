@@ -36,7 +36,9 @@ export const fetchProducts = async (req, res) => {
             products: result.data || [],
             pagination: result.pagination || { currentPage: 1, totalPages: 1, total: 0, hasNext: false, hasPrev: false },
             query: req.query || {},
-            user: req.session?.userDetail
+            user: req.session?.userDetail,
+            filterCategories: result.allCategories.map(c => c.categoryName).filter(Boolean),
+            filterProducts: result.allproducts.filter(Boolean)
         })
     } catch (error) {
         console.log(`error from fetchproducts ${error}`);

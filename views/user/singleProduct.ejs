@@ -5,10 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <link rel="icon" type="image/png" sizes="32x32" href="/logoTab.png">
   <title><%= product.productName %> - Casen</title>
+  <!-- ✅ FIXED: NO TRAILING SPACES -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.10/dist/cdn.min.js"></script>
   <style>
-    /* Fallback for unknown colors */
     .color-fallback-black { background-color: #000; }
     .color-fallback-white { background-color: #fff; border: 1px solid #ccc; }
     .color-fallback-wine-red { background-color: #722F37; }
@@ -19,7 +21,7 @@
     .color-fallback-orange { background-color: #f97316; }
     .color-fallback-purple { background-color: #a855f7; }
     .color-fallback-gray { background-color: #9ca3af; }
-    .color-fallback-violet { background-color: #8a2be2; } 
+    .color-fallback-violet { background-color: #8a2be2; }
 
     #zoomContainer {
       cursor: zoom-in;
@@ -32,24 +34,35 @@
       background-color: rgba(255, 255, 255, 0.2);
       box-shadow: 0 0 8px rgba(0,0,0,0.3);
       position: absolute;
-      pointer-events: none; /* Crucial: lets mouse events pass through to container */
+      pointer-events: none;
     }
   </style>
-  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.10/dist/cdn.min.js"></script>
 </head>
-<body class="bg-white text-gray-800 font-sans">
+<body class="bg-white text-gray-800 font-sans"
+      x-data="productApp({
+        productId: '<%= product._id %>',
+        productName: '<%= product.productName %>',
+        categoryName: '<%= product.category?.categoryName || '' %>',
+        description: `<%= product.description || 'No description available.' %>`,
+        isLoggedIn: <%= locals.user ? 'true' : 'false' %>,  <!-- ✅ Critical -->
+        variants: <%= JSON.stringify(product.variants.map(v => ({
+          _id: v._id.toString(),
+          color: (v.color || 'Unknown').trim(),
+          price: typeof v.price === 'number' ? v.price : (parseFloat(v.price) || 0),
+          stock: typeof v.stock === 'number' ? v.stock : (parseInt(v.stock, 10) || 0),
+          images: Array.isArray(v.images) ? v.images : ['https://placehold.co/600x600?text=No+Image']
+        }))) %>
+      })"
+      x-init="init()">
 
   <!-- Header -->
   <header class="bg-white shadow-sm sticky top-0 z-50">
     <div class="container mx-auto px-4 py-3 flex items-center justify-between">
-      <!-- Logo -->
       <div class="flex items-center">
         <a href="/">
           <img src="/logo.png" alt="Logo" class="h-8 object-contain">
         </a>
       </div>
-
-      <!-- Desktop Navigation -->
       <nav class="hidden md:flex space-x-5">
         <a href="/" class="text-sm font-medium transition-opacity hover:opacity-80">Home</a>
         <a href="#" class="text-sm font-medium transition-opacity hover:opacity-80">About</a>
@@ -57,18 +70,13 @@
         <a href="#" class="text-sm font-medium transition-opacity hover:opacity-80">Tablet Cases</a>
         <a href="#" class="text-sm font-medium transition-opacity hover:opacity-80">Sale</a>
       </nav>
-
-      <!-- Icons & Auth -->
       <div class="flex items-center space-x-4">
-        <!-- Wishlist -->
         <button class="p-2 rounded-full hover:bg-gray-100 transition-colors">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
           </svg>
         </button>
-
-        <!-- Cart -->
-        <button class="p-2 rounded-full hover:bg-gray-100 transition-colors relative">
+        <button class="p-2 rounded-full hover:bg-gray-100 transition-colors relative" onclick="window.location.href='/cart'">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
           </svg>
@@ -80,45 +88,29 @@
           <button @click="open = !open" class="rounded-full overflow-hidden w-8 h-8 border border-transparent hover:border-gray-300 transition-colors focus:outline-none">
             <img src="<%= user.profilePic %>" alt="Profile" class="w-full h-full object-cover" />
           </button>
-          <div x-show="open"
-               x-transition:enter="transition ease-out duration-150"
-               x-transition:enter-start="opacity-0 scale-95"
-               x-transition:enter-end="opacity-100 scale-100"
-               x-transition:leave="transition ease-in duration-100"
-               x-transition:leave-start="opacity-100 scale-100"
-               x-transition:leave-end="opacity-0 scale-95"
-               class="absolute right-0 mt-2 w-44 bg-white shadow-lg rounded-lg py-1 z-50">
-            <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">Profile</a>
-            <form action="/logout" method="post">
-              <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">Logout</button>
-            </form>
-          </div>
-        </div>
-
-        <% } else if (locals.user) { %>
-        <div class="relative" x-data="{ open: false }" @click.away="open = false">
-          <button @click="open = !open" class="w-8 h-8 flex items-center justify-center text-gray-600 hover:text-gray-900 transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-            </svg>
-          </button>
-          <div x-show="open"
-               x-transition:enter="transition ease-out duration-150"
-               x-transition:enter-start="opacity-0 scale-95"
-               x-transition:enter-end="opacity-100 scale-100"
-               x-transition:leave="transition ease-in duration-100"
-               x-transition:leave-start="opacity-100 scale-100"
-               x-transition:leave-end="opacity-0 scale-95"
-               class="absolute right-0 mt-2 w-44 bg-white shadow-lg rounded-lg py-1 z-50">
+          <div x-show="open" x-transition class="absolute right-0 mt-2 w-44 bg-white shadow-lg rounded-lg py-1 z-50">
             <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Profile</a>
             <form action="/logout" method="post">
               <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Logout</button>
             </form>
           </div>
         </div>
-
+        <% } else if (locals.user) { %>
+        <div class="relative" x-data="{ open: false }" @click.away="open = false">
+          <button @click="open = !open" class="w-8 h-8 flex items-center justify-center text-gray-600 hover:text-gray-900">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+          </button>
+          <div x-show="open" x-transition class="absolute right-0 mt-2 w-44 bg-white shadow-lg rounded-lg py-1 z-50">
+            <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Profile</a>
+            <form action="/logout" method="post">
+              <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Logout</button>
+            </form>
+          </div>
+        </div>
         <% } else { %>
-        <a href="/login" class="text-sm font-medium hover: transition-colors flex items-center">
+        <a href="/login" class="text-sm font-medium flex items-center">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
           </svg>
@@ -126,7 +118,6 @@
         </a>
         <% } %>
 
-        <!-- Mobile Menu Button -->
         <button class="md:hidden text-gray-600 hover:text-gray-900">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
@@ -136,7 +127,6 @@
     </div>
   </header>
 
-  <!-- Breadcrumb -->
   <nav aria-label="breadcrumb" class="container mx-auto px-4 mt-4">
     <ol class="flex items-center space-x-2 text-sm text-gray-500">
       <li><a href="/" class="hover:text-gray-700">Home</a></li>
@@ -147,64 +137,38 @@
     </ol>
   </nav>
 
-  <!-- Main Content -->
   <main class="container mx-auto px-4 py-8">
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-      
-      <!-- Product Image Gallery -->
+      <!-- Image Gallery -->
       <div class="space-y-3">
-        <!-- Main Image Container with Zoom -->
         <div class="relative w-full aspect-square bg-gray-100 rounded-lg overflow-hidden group" id="zoomContainer">
-          <img 
-            id="mainImage" 
-            src="<%= product.variants.length > 0 ? (product.variants[0].images && product.variants[0].images[0] ? product.variants[0].images[0] : 'https://placehold.co/600x600?text=No+Image') : 'https://placehold.co/600x600?text=No+Variants' %>" 
-            alt="<%= product.productName %>" 
+          <img id="mainImage"
+            :src="selectedVariant.images[0] || 'https://placehold.co/600x600?text=No+Image'"
+            :alt="productName"
             class="w-full h-full object-contain transition-transform duration-200 ease-out"
           />
-          <!-- Zoom lens -->
           <div id="zoomLens" class="hidden w-32 h-32 rounded-full absolute top-0 left-0"></div>
         </div>
 
-        <!-- Thumbnail Gallery -->
-        <div id="thumbnailGallery" class="flex space-x-2 overflow-x-auto pb-1"></div>
-
-        <!-- Color Selection -->
-        <div class="bg-gray-50 p-4 rounded-lg">
-          <h3 class="font-semibold mb-3">Color - <span id="selectedColor"><%= product.variants.length > 0 ? product.variants[0].color : 'N/A' %></span></h3>
-          <div class="flex space-x-3" id="colorOptions">
-            <% product.variants.forEach((variant, index) => { 
-                const colorLower = variant.color.toLowerCase();
-                let fallbackClass = 'color-fallback-gray';
-                if (colorLower.includes('wine') || colorLower.includes('burgundy')) fallbackClass = 'color-fallback-wine-red';
-                else if (colorLower.includes('black')) fallbackClass = 'color-fallback-black';
-                else if (colorLower.includes('white')) fallbackClass = 'color-fallback-white';
-                else if (colorLower.includes('purple')) fallbackClass = 'color-fallback-purple';
-                else if (colorLower.includes('red')) fallbackClass = 'color-fallback-red';
-                else if (colorLower.includes('blue')) fallbackClass = 'color-fallback-blue';
-                else if (colorLower.includes('green')) fallbackClass = 'color-fallback-green';
-                else if (colorLower.includes('pink')) fallbackClass = 'color-fallback-pink';
-                else if (colorLower.includes('orange')) fallbackClass = 'color-fallback-orange';
-                else if (colorLower.includes('grape') || colorLower.includes('violet')) fallbackClass = 'color-fallback-violet';
-            %>
-              <div 
-                class="w-10 h-10 rounded-full cursor-pointer border-2 <%= index === 0 ? 'border-blue-500' : 'border-transparent' %> <%= fallbackClass %>"
-                data-color="<%= variant.color %>"
-                data-price="<%= variant.price %>"
-                data-stock="<%= variant.stock %>"
-                data-images='<%= JSON.stringify(variant.images && variant.images.length ? variant.images : ["https://placehold.co/600x600?text=No+Image"]) %>'
-                onclick="selectVariant(this)"
-              ></div>
-            <% }); %>
-          </div>
+        <div id="thumbnailGallery" class="flex space-x-2 overflow-x-auto pb-1">
+          <template x-for="img in selectedVariant.images.slice(0, 5)" :key="img">
+            <img 
+              :src="img"
+              class="w-16 h-16 object-cover border border-gray-300 rounded cursor-pointer flex-shrink-0 hover:border-blue-500 transition"
+              @click="updateMainImage(img)"
+            />
+          </template>
         </div>
+
+        
       </div>
 
       <!-- Product Details -->
       <div class="space-y-6">
         <div>
-          <p class="text-sm text-gray-500"><%= product.category.categoryName %></p>
-          <p class="text-sm text-gray-500"><%= product.productName %></p>
-          <h1 class="text-2xl font-bold mt-1"><%= product.variants.length > 0 ? product.variants[0].color : '' %></h1>
+          <p class="text-sm text-gray-500" x-text="categoryName"></p>
+          <p class="text-sm text-gray-500" x-text="productName"></p>
+          <h1 class="text-2xl font-bold mt-1" x-text="selectedVariant.color || 'Color N/A'"></h1>
         </div>
 
         <div class="flex items-center space-x-2 text-sm text-orange-500">
@@ -213,42 +177,61 @@
         </div>
 
         <div class="flex items-center space-x-4">
-          <span class="text-xl font-bold text-red-500" id="price">
-            Rs. <%= product.variants.length > 0 ? product.variants[0].price : '0' %>.00
-          </span>
+          <span class="text-xl font-bold text-red-500" x-text="`Rs. ${selectedVariant.price.toFixed(2)}`"></span>
         </div>
 
-        <div class="inline-flex items-center px-3 py-1 rounded-full text-sm" id="stockStatus">
-          <% const firstVariant = product.variants[0]; %>
-          <% if (firstVariant && firstVariant.stock > 0) { %>
+        <!-- Stock Status -->
+        <div class="inline-flex items-center px-3 py-1 rounded-full text-sm"
+             :class="selectedVariant.stock > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
+          <div x-show="selectedVariant.stock > 0" class="flex items-center">
             <div class="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
-            In stock (<%= firstVariant.stock %> available)
-          <% } else { %>
+            In stock (<span x-text="selectedVariant.stock"></span> available)
+          </div>
+          <div x-show="selectedVariant.stock <= 0" class="flex items-center">
+            <div class="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
             Out of stock
-          <% } %>
+          </div>
+        </div>
+
+        <div class="bg-gray-50 p-4 rounded-lg">
+          <h3 class="font-semibold mb-3">Color - <span x-text="selectedVariant.color || 'N/A'"></span></h3>
+          <div class="flex space-x-3">
+            <template x-for="(variant, index) in variants" :key="index">
+              <div 
+                class="w-10 h-10 rounded-full cursor-pointer border-2"
+                :class="{
+                  'border-blue-500': selectedVariantIndex === index,
+                  'border-transparent': selectedVariantIndex !== index,
+                  [getColorClass(variant.color)]: true
+                }"
+                @click="selectVariant(index)"
+                :title="variant.color"
+              ></div>
+            </template>
+          </div>
         </div>
 
         <!-- Description Accordion -->
-        <div class="border-t border-gray-200 pt-4">
-          <div class="flex justify-between items-center cursor-pointer" onclick="toggleAccordion('description')">
+        <div class="border-t border-gray-200 pt-4" @click="toggleAccordion('description')">
+          <div class="flex justify-between items-center cursor-pointer">
             <h3 class="font-semibold">Description</h3>
-            <i id="descIcon" class="fas fa-chevron-down text-sm"></i>
+            <i class="fas" :class="openSections.description ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
           </div>
-          <div id="description" class="mt-3 text-sm text-gray-600 hidden">
-            <p><%= product.description || 'No description available.' %></p>
+          <div x-show="openSections.description" class="mt-3 text-sm text-gray-600">
+            <p x-text="description"></p>
           </div>
         </div>
 
         <!-- Tech Spec Accordion -->
-        <div class="border-t border-gray-200 pt-4">
-          <div class="flex justify-between items-center cursor-pointer" onclick="toggleAccordion('spec')">
+        <div class="border-t border-gray-200 pt-4" @click="toggleAccordion('spec')">
+          <div class="flex justify-between items-center cursor-pointer">
             <h3 class="font-semibold">Technical Specification</h3>
-            <i id="specIcon" class="fas fa-chevron-down text-sm"></i>
+            <i class="fas" :class="openSections.spec ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
           </div>
-          <div id="spec" class="mt-3 text-sm text-gray-600 hidden">
+          <div x-show="openSections.spec" class="mt-3 text-sm text-gray-600">
             <div class="mb-3">
               <h4 class="font-medium mb-1">Material:</h4>
-              <p><%= product.category?.categoryName || 'N/A' %></p>
+              <p x-text="categoryName || 'N/A'"></p>
             </div>
           </div>
         </div>
@@ -256,12 +239,29 @@
         <!-- Actions -->
         <div class="flex flex-col space-y-3">
           <div class="flex items-center space-x-4">
-            <div class="flex items-center border border-gray-300 rounded-full">
-              <button class="px-3 py-1 text-gray-600 hover:bg-gray-100" onclick="updateQuantity(-1)">-</button>
-              <span class="px-3 py-1" id="quantity">1</span>
-              <button class="px-3 py-1 text-gray-600 hover:bg-gray-100" onclick="updateQuantity(1)">+</button>
+            <div class="flex items-center">
+              <button 
+                class="w-10 h-10 rounded-full bg-gray-100 text-gray-700 flex items-center justify-center 
+                   hover:bg-gray-200 hover:shadow-sm transition-all duration-200 active:scale-95"
+                @click="updateQuantity(-1)"
+                :disabled="quantity <= 1"
+              >
+                <i class="fas fa-minus text-sm"></i>
+              </button>
+              <span class="mx-4 w-8 text-center text-lg font-medium text-gray-800" x-text="quantity"></span>
+              <button 
+                class="w-10 h-10 rounded-full bg-gray-100 text-gray-700 flex items-center justify-center 
+                   hover:bg-gray-200 hover:shadow-sm transition-all duration-200 active:scale-95"
+                @click="updateQuantity(1)"
+                :disabled="selectedVariant.stock > 0 && quantity >= selectedVariant.stock"
+              >
+                <i class="fas fa-plus text-sm"></i>
+              </button>
             </div>
-            <button class="flex-1 bg-black text-white py-3 rounded-full font-medium hover:bg-gray-800 transition">
+            <button 
+              class="flex-1 bg-black text-white py-3 rounded-full font-medium hover:bg-gray-800 transition"
+              @click="addToCart"
+            >
               Add to cart
             </button>
           </div>
@@ -271,7 +271,6 @@
           </button>
         </div>
 
-        <!-- Share -->
         <div class="flex items-center space-x-4 text-sm">
           <span class="font-medium">Share:</span>
           <button class="text-gray-600 hover:text-blue-600"><i class="fab fa-facebook-f"></i></button>
@@ -286,223 +285,252 @@
     </div>
 
     <!-- Recommendations -->
-    <section class="mt-16 bg-gradient-to-r from-yellow-50 to-orange-50 py-12 rounded-2xl">
+    <section class="mt-16 bg-gradient-to-r from-yellow-50 to-orange-50 py-12 rounded-2xl relative">
       <div class="container mx-auto px-4">
         <h2 class="text-3xl font-bold mb-8">You May Also Like</h2>
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6">
-          <% for (let i = 0; i < allproducts.length && i < 6; i++) { %>
-            <div class="bg-white rounded-lg overflow-hidden shadow-sm">
-              <a href="/product?product=<%= allproducts[i].productId %>" class="block">
-                <div class="relative">
-                  <img src="<%= allproducts[i].variants.images[0] %>" class="w-full h-48 object-contain" />
-                </div>
-                <div class="p-4">
-                  <div class="text-xs text-gray-500 mb-1">Casen</div>
-                  <div class="text-sm mb-2"><%= allproducts[i].productName %></div>
-                  <div class="flex items-center justify-between">
-                    <span class="text-sm font-bold text-red-500"><%= allproducts[i].variants.price %></span>
+        <button id="scroll-left" class="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-md hidden md:block opacity-70 hover:opacity-100 transition">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+          </svg>
+        </button>
+        <button id="scroll-right" class="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-md hidden md:block opacity-70 hover:opacity-100 transition">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+          </svg>
+        </button>
+        <div id="product-carousel" class="overflow-x-auto pb-4 space-x-4 scrollbar-hide flex">
+          <div class="flex space-x-4 min-w-max px-2">
+            <% for (let i = 0; i < allproducts.length; i++) { %>
+              <div class="bg-white rounded-lg overflow-hidden shadow-sm w-48 flex-shrink-0">
+                <a href="/product?product=<%= allproducts[i].productId %>" class="block">
+                  <div class="relative">
+                    <img src="<%= allproducts[i].variants.images[0] %>" class="w-full h-48 object-contain" />
                   </div>
-                </div>
-              </a>
-            </div>
-          <% } %>
+                  <div class="p-4">
+                    <div class="text-xs text-gray-500 mb-1">Casen</div>
+                    <div class="text-sm mb-2 truncate"><%= allproducts[i].productName %></div>
+                    <div class="flex items-center justify-between">
+                      <span class="text-sm font-bold text-red-500"><%= allproducts[i].variants.price %></span>
+                    </div>
+                  </div>
+                </a>
+              </div>
+            <% } %>
+          </div>
         </div>
       </div>
     </section>
   </main>
 
-  <!-- Footer -->
   <footer class="bg-black text-white pt-12 pb-8 mt-16">
     <div class="container mx-auto px-4 text-center">
       <p>&copy; 2025 Casen. All rights reserved.</p>
     </div>
   </footer>
 
-  <!-- CONSOLIDATED SCRIPTS -->
+  <!-- Add to Cart Modal -->
+  <div 
+    x-show="showModal" 
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+    @click="showModal = false"
+    x-transition
+  >
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 relative" @click.stop>
+      <button @click="showModal = false" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+        <i class="fas fa-times"></i>
+      </button>
+      <div class="text-center py-4">
+        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <i class="fas fa-check text-green-600 text-2xl"></i>
+        </div>
+        <h3 class="text-xl font-bold mb-2">Added to Cart!</h3>
+        <p class="text-gray-600 mb-4">
+          <span x-text="productName"></span> (<span x-text="selectedVariant.color"></span>)
+        </p>
+        <div class="flex justify-center space-x-4">
+          <button @click="showModal = false" class="px-4 py-2 border border-gray-300 rounded-full text-gray-700 hover:bg-gray-50">
+            Continue Shopping
+          </button>
+          <a href="/cart" class="px-4 py-2 bg-black text-white rounded-full hover:bg-gray-800">
+            View Cart
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Alpine.js Logic -->
   <script>
-    /* Global Variables */
-    let currentQuantity = 1;
+    function productApp(initialData) {
+      return {
+        productId: initialData.productId,
+        productName: initialData.productName,
+        categoryName: initialData.categoryName,
+        description: initialData.description,
+        isLoggedIn: initialData.isLoggedIn, // ✅
+        variants: initialData.variants,
 
-    /* Initialize on DOM Ready */
+        selectedVariantIndex: 0,
+        quantity: 1,
+        showModal: false,
+        openSections: { description: false, spec: false },
+
+        get selectedVariant() {
+          return this.variants[this.selectedVariantIndex] || {};
+        },
+
+        init() {
+          this.initZoom();
+        },
+
+        getColorClass(color) {
+          if (!color) return 'color-fallback-gray';
+          const c = color.toLowerCase().trim();
+          if (c.includes('wine') || c.includes('burgundy')) return 'color-fallback-wine-red';
+          if (c.includes('black')) return 'color-fallback-black';
+          if (c.includes('white')) return 'color-fallback-white';
+          if (c.includes('purple')) return 'color-fallback-purple';
+          if (c.includes('red')) return 'color-fallback-red';
+          if (c.includes('blue')) return 'color-fallback-blue';
+          if (c.includes('green')) return 'color-fallback-green';
+          if (c.includes('pink')) return 'color-fallback-pink';
+          if (c.includes('orange')) return 'color-fallback-orange';
+          if (c.includes('violet') || c.includes('grape')) return 'color-fallback-violet';
+          return 'color-fallback-gray';
+        },
+
+        selectVariant(index) {
+          if (index >= 0 && index < this.variants.length) {
+            this.selectedVariantIndex = index;
+            this.quantity = 1;
+            this.updateMainImage(this.selectedVariant.images[0]);
+          }
+        },
+
+        updateMainImage(src) {
+          const img = document.getElementById('mainImage');
+          if (img) img.src = src;
+          this.resetZoom();
+        },
+
+        updateQuantity(change) {
+          if (this.selectedVariant.stock <= 0) return;
+          let newQty = this.quantity + change;
+          if (newQty < 1) newQty = 1;
+          if (newQty > this.selectedVariant.stock) newQty = this.selectedVariant.stock;
+          this.quantity = newQty;
+        },
+
+        // ✅ Fully updated addToCart
+        addToCart() {
+          // 🔑 Check login first
+          if (!this.isLoggedIn) {
+            Swal.fire({
+              icon: 'info',
+              title: 'Please Sign In',
+              text: 'You need to be logged in to add items to your cart.',
+              confirmButtonText: 'Go to Login',
+              showCancelButton: true,
+              cancelButtonText: 'Cancel'
+            }).then((result) => {
+              if (result.isConfirmed) {
+                window.location.href = '/login';
+              }
+            });
+            return;
+          }
+
+          // Check stock
+          if (this.selectedVariant.stock <= 0) {
+            Swal.fire({
+              icon: 'warning',
+              title: 'Out of Stock',
+              text: 'This item is currently out of stock.',
+              confirmButtonText: 'OK'
+            });
+            return;
+          }
+
+          // Show modal
+          this.showModal = true;
+
+          // Add to cart
+          fetch('/cart/add', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              productId: this.productId,
+              variantId: this.selectedVariant._id,
+              quantity: this.quantity
+            })
+          }).catch(err => {
+            console.error('Add to cart failed:', err);
+          });
+        },
+
+        toggleAccordion(section) {
+          this.openSections[section] = !this.openSections[section];
+        },
+
+        initZoom() {
+          const container = document.getElementById('zoomContainer');
+          const img = document.getElementById('mainImage');
+          const lens = document.getElementById('zoomLens');
+          if (!container || !img || !lens) return;
+
+          const zoomLevel = 2;
+          container.addEventListener('mouseenter', () => {
+            if (window.innerWidth <= 768) return;
+            lens.classList.remove('hidden');
+            container.style.cursor = 'none';
+          });
+          container.addEventListener('mouseleave', () => this.resetZoom());
+          container.addEventListener('mousemove', (e) => {
+            if (window.innerWidth <= 768) return;
+            const rect = container.getBoundingClientRect();
+            let x = e.clientX - rect.left;
+            let y = e.clientY - rect.top;
+            const lensWidth = lens.offsetWidth;
+            const lensHeight = lens.offsetHeight;
+            let lensX = Math.max(0, Math.min(x - lensWidth / 2, rect.width - lensWidth));
+            let lensY = Math.max(0, Math.min(y - lensHeight / 2, rect.height - lensHeight));
+            lens.style.left = lensX + 'px';
+            lens.style.top = lensY + 'px';
+            img.style.transformOrigin = `${x}px ${y}px`;
+            img.style.transform = `scale(${zoomLevel})`;
+          });
+        },
+
+        resetZoom() {
+          const img = document.getElementById('mainImage');
+          const lens = document.getElementById('zoomLens');
+          const container = document.getElementById('zoomContainer');
+          if (img) img.style.transform = 'scale(1)';
+          if (lens) lens.classList.add('hidden');
+          if (container) container.style.cursor = 'zoom-in';
+        }
+      };
+    }
+
+    // Carousel logic
     document.addEventListener('DOMContentLoaded', () => {
-      // 1. Initialize Zoom Logic
-      initImageZoom();
+      const carousel = document.getElementById('product-carousel');
+      const scrollLeftBtn = document.getElementById('scroll-left');
+      const scrollRightBtn = document.getElementById('scroll-right');
+      const scrollAmount = 300;
 
-      // 2. Select the first variant by default (to populate thumbnails/price)
-      const firstVariant = document.querySelector('#colorOptions > div');
-      if (firstVariant) {
-        selectVariant(firstVariant);
+      if (carousel && scrollLeftBtn && scrollRightBtn) {
+        const updateButtonVisibility = () => {
+          const maxScroll = carousel.scrollWidth - carousel.clientWidth;
+          scrollLeftBtn.classList.toggle('hidden', carousel.scrollLeft <= 0);
+          scrollRightBtn.classList.toggle('hidden', carousel.scrollLeft >= maxScroll - 1);
+        };
+        updateButtonVisibility();
+        scrollLeftBtn.addEventListener('click', () => carousel.scrollBy({ left: -scrollAmount, behavior: 'smooth' }));
+        scrollRightBtn.addEventListener('click', () => carousel.scrollBy({ left: scrollAmount, behavior: 'smooth' }));
+        carousel.addEventListener('scroll', updateButtonVisibility);
       }
     });
-
-    /* --- Variant Selection Logic --- */
-    function selectVariant(el) {
-      // Highlight selected color
-      document.querySelectorAll('#colorOptions > div').forEach(d => {
-        d.classList.remove('border-blue-500');
-        d.classList.add('border-transparent');
-      });
-      el.classList.remove('border-transparent');
-      el.classList.add('border-blue-500');
-
-      // Get Data
-      const color = el.getAttribute('data-color');
-      const price = el.getAttribute('data-price');
-      const stock = parseInt(el.getAttribute('data-stock'));
-      const images = JSON.parse(el.getAttribute('data-images'));
-
-      // Update Main Image
-      const mainImage = document.getElementById('mainImage');
-      const newSrc = images[0] || 'https://placehold.co/600x600?text=No+Image';
-      mainImage.src = newSrc;
-
-      // *** RESET ZOOM STATE ***
-      // This fixes the issue where zoom breaks after switching images
-      resetZoomState();
-
-      // Update Text Info
-      document.getElementById('selectedColor').textContent = color;
-      document.getElementById('price').textContent = 'Rs. ' + price + '.00';
-
-      // Update Stock Status
-      const stockEl = document.getElementById('stockStatus');
-      if (stock > 0) {
-        stockEl.innerHTML = `<div class="w-3 h-3 bg-green-500 rounded-full mr-2"></div> In stock (${stock} available)`;
-        stockEl.className = "inline-flex items-center px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm";
-      } else {
-        stockEl.textContent = "Out of stock";
-        stockEl.className = "inline-flex items-center px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm";
-      }
-
-      // Reset Quantity
-      currentQuantity = 1;
-      document.getElementById('quantity').textContent = currentQuantity;
-
-      // Update Thumbnail Gallery
-      const thumbnailContainer = document.getElementById('thumbnailGallery');
-      thumbnailContainer.innerHTML = ''; // Clear existing
-
-      const thumbnails = images.slice(0, 5);
-      if (thumbnails.length > 0) {
-        thumbnails.forEach(imgSrc => {
-          const thumb = document.createElement('img');
-          thumb.src = imgSrc;
-          thumb.alt = 'Thumbnail';
-          thumb.className = 'w-16 h-16 object-cover border border-gray-300 rounded cursor-pointer flex-shrink-0 hover:border-blue-500 transition';
-          thumb.onclick = () => {
-            mainImage.src = imgSrc;
-            resetZoomState(); // Reset zoom when thumbnail clicks change image
-          };
-          thumbnailContainer.appendChild(thumb);
-        });
-      }
-    }
-
-    /* --- Quantity Logic --- */
-    function updateQuantity(change) {
-      const activeVariant = document.querySelector('#colorOptions .border-blue-500');
-      // If no variant selected, assume 1 as max for safety, or just allow infinite
-      const maxStock = activeVariant ? parseInt(activeVariant.getAttribute('data-stock')) : 100;
-      
-      currentQuantity += change;
-      
-      // Clamp values
-      if (currentQuantity < 1) currentQuantity = 1;
-      if (activeVariant && currentQuantity > maxStock) currentQuantity = maxStock;
-
-      document.getElementById('quantity').textContent = currentQuantity;
-    }
-
-    /* --- Accordion Logic --- */
-    function toggleAccordion(id) {
-      const content = document.getElementById(id);
-      const icon = document.getElementById(id + 'Icon');
-      if (content.classList.contains('hidden')) {
-        content.classList.remove('hidden');
-        icon.classList.remove('fa-chevron-down');
-        icon.classList.add('fa-chevron-up');
-      } else {
-        content.classList.add('hidden');
-        icon.classList.remove('fa-chevron-up');
-        icon.classList.add('fa-chevron-down');
-      }
-    }
-
-    /* --- Image Zoom Logic --- */
-    function initImageZoom() {
-      const container = document.getElementById('zoomContainer');
-      const img = document.getElementById('mainImage');
-      const lens = document.getElementById('zoomLens');
-
-      if (!container || !img || !lens) return;
-
-      const zoomLevel = 2; // How much to scale
-
-      // Mouse Enter: Show lens, hide cursor
-      container.addEventListener('mouseenter', () => {
-        // Disable zoom on mobile
-        if (window.innerWidth <= 768) return;
-        lens.classList.remove('hidden');
-        container.style.cursor = 'none';
-      });
-
-      // Mouse Leave: Reset
-      container.addEventListener('mouseleave', () => {
-        resetZoomState();
-      });
-
-      // Mouse Move: Calculate positions
-      container.addEventListener('mousemove', (e) => {
-        if (window.innerWidth <= 768) return;
-
-        const rect = container.getBoundingClientRect();
-        
-        // Calculate mouse position relative to container
-        let x = e.clientX - rect.left;
-        let y = e.clientY - rect.top;
-
-        // Lens dimensions
-        const lensWidth = lens.offsetWidth;
-        const lensHeight = lens.offsetHeight;
-
-        // Prevent lens from going out of bounds
-        // (Visual positioning of the square lens)
-        let lensX = x - (lensWidth / 2);
-        let lensY = y - (lensHeight / 2);
-
-        // Boundary checks for the lens box
-        if (lensX < 0) lensX = 0;
-        if (lensX > rect.width - lensWidth) lensX = rect.width - lensWidth;
-        if (lensY < 0) lensY = 0;
-        if (lensY > rect.height - lensHeight) lensY = rect.height - lensHeight;
-
-        lens.style.left = lensX + 'px';
-        lens.style.top = lensY + 'px';
-
-        // Transform the image
-        // transform-origin is key here: it needs to be the mouse position
-        img.style.transformOrigin = `${x}px ${y}px`;
-        img.style.transform = `scale(${zoomLevel})`;
-      });
-    }
-
-    /* Helper to reset zoom (used by init, selectVariant, and thumbnail click) */
-    function resetZoomState() {
-      const img = document.getElementById('mainImage');
-      const lens = document.getElementById('zoomLens');
-      const container = document.getElementById('zoomContainer');
-
-      if (img) {
-        img.style.transform = 'scale(1)';
-        img.style.transformOrigin = 'center center';
-      }
-      if (lens) {
-        lens.classList.add('hidden');
-      }
-      if (container) {
-        container.style.cursor = 'zoom-in';
-      }
-    }
   </script>
 </body>
 </html>
