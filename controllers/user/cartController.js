@@ -18,6 +18,10 @@ export const newCart = async (req, res) => {
         const userId = req.session.userDetail._id
         const result = await cartNew(req.body, userId)
 
+        if(result === 'Maximum limit reached in cart') {
+            return res.status(STATUS_CODE.BAD_REQUEST).json({success: 'fail'})
+        }
+
         return res.status(STATUS_CODE.OK).json({success: 'success'})
     } catch (error) {
         console.log(`error from newCart ${error}`);

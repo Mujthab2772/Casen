@@ -44,7 +44,7 @@ export const signUpPost = async (req, res) => {
 
 export const otpPage = (req, res) => {
     try {
-        res.status(STATUS_CODE.OK).render('otpVerificationPage', {otpErr: req.session.otpInvalid})
+        res.status(STATUS_CODE.OK).render('otpVerificationPage', {otpErr: req.session.otpInvalid, path: "signupVerify"})
     } catch (error) {
         console.log(`error from otpPage`);   
         res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).redirect('/signUpPage')     

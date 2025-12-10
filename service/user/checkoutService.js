@@ -42,7 +42,8 @@ export const tempOrder = async (userid, datas) => {
                         { "products.product": { $ne: null } },        // product exists
                         { "products.variant": { $ne: null } },        // variant exists
                         { "products.product.isActive": { $ne: false } }, // product not blocked
-                        { "products.variant.isActive": { $ne: false } }  // variant not blocked
+                        { "products.variant.isActive": { $ne: false } },  // variant not blocked
+                        { "products.variant.stock": { $gt: 0 } }
 
                     ]
                 }

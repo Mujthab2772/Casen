@@ -101,15 +101,21 @@ const orderSchema = new mongoose.Schema({
     totalAmount: { type: Number, required: true, min: 0 },
     orderStatus: {
         type: String,
-        enum: ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled', 'returned'],
+        enum: ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'requestingReturn', 'cancelled', 'returned'],
         default: 'pending',
+    },
+    returnReason: {
+        type: String,
+        default: null
     },
     paymentStatus: {
         type: String,
         enum: ['pending', 'paid', 'failed', 'refunded'],
         default: 'pending',
     },
-    paymentId: { type: String }
+    paymentId: { type: String },
+    returnRequestedAt: { type: Date },
+    returnApprovedAt: { type: Date }
 }, {
     timestamps: true,
 });

@@ -14,7 +14,7 @@ export const loginValidate = async (loginUser) => {
             return {status: "User Not Found"}
         }
 
-        if(checkUser.authProvider === 'google') {
+        if(checkUser.authProvider === 'google' && !checkUser.password) {
             return {status: "Login with Google"}
         }
 
@@ -117,9 +117,11 @@ export const resetPasswordService = async (email, password) => {
             return {status: "User not found"}
         }
         
-        const checkPass = await comparePassword(password, resetPasswordUser.password)
-        if(checkPass) {
-           return {status: "Current Password and new Password cannot be same"} 
+        if(resetPasswordUser.password) {
+            const checkPass = await comparePassword(password, resetPasswordUser.password)
+            if(checkPass) {
+               return {status: "Current Password and new Password cannot be same"} 
+            }
         }
 
 

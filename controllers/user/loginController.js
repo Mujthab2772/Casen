@@ -180,17 +180,3 @@ export const resetPasswordVerify = async (req, res) => {
         res.redirect('/resetPasswordPage')
     }
 }
-
-// signin with google
-// already blocked or not 
-// duplicate ano 
-// login 
-// serviec 
-
-// nortmal 
-/**
- * email duplicate 
- * google 
- * duplicatge 
- * 
- */

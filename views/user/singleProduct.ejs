@@ -1,27 +1,63 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="icon" type="image/png" sizes="32x32" href="/logoTab.png">
-  <title><%= product.productName %> - Casen</title>
+  <title>
+    <%= product.productName %> - Casen
+  </title>
   <!-- ✅ FIXED: NO TRAILING SPACES -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.10/dist/cdn.min.js"></script>
   <style>
-    .color-fallback-black { background-color: #000; }
-    .color-fallback-white { background-color: #fff; border: 1px solid #ccc; }
-    .color-fallback-wine-red { background-color: #722F37; }
-    .color-fallback-red { background-color: #ef4444; }
-    .color-fallback-blue { background-color: #3b82f6; }
-    .color-fallback-green { background-color: #10b981; }
-    .color-fallback-pink { background-color: #ec4899; }
-    .color-fallback-orange { background-color: #f97316; }
-    .color-fallback-purple { background-color: #a855f7; }
-    .color-fallback-gray { background-color: #9ca3af; }
-    .color-fallback-violet { background-color: #8a2be2; }
+    .color-fallback-black {
+      background-color: #000;
+    }
+
+    .color-fallback-white {
+      background-color: #fff;
+      border: 1px solid #ccc;
+    }
+
+    .color-fallback-wine-red {
+      background-color: #722F37;
+    }
+
+    .color-fallback-red {
+      background-color: #ef4444;
+    }
+
+    .color-fallback-blue {
+      background-color: #3b82f6;
+    }
+
+    .color-fallback-green {
+      background-color: #10b981;
+    }
+
+    .color-fallback-pink {
+      background-color: #ec4899;
+    }
+
+    .color-fallback-orange {
+      background-color: #f97316;
+    }
+
+    .color-fallback-purple {
+      background-color: #a855f7;
+    }
+
+    .color-fallback-gray {
+      background-color: #9ca3af;
+    }
+
+    .color-fallback-violet {
+      background-color: #8a2be2;
+    }
 
     #zoomContainer {
       cursor: zoom-in;
@@ -29,17 +65,18 @@
       position: relative;
       overflow: hidden;
     }
+
     #zoomLens {
       border: 1px solid rgba(255, 255, 255, 0.5);
       background-color: rgba(255, 255, 255, 0.2);
-      box-shadow: 0 0 8px rgba(0,0,0,0.3);
+      box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
       position: absolute;
       pointer-events: none;
     }
   </style>
 </head>
-<body class="bg-white text-gray-800 font-sans"
-      x-data="productApp({
+
+<body class="bg-white text-gray-800 font-sans" x-data="productApp({
         productId: '<%= product._id %>',
         productName: '<%= product.productName %>',
         categoryName: '<%= product.category?.categoryName || '' %>',
@@ -52,8 +89,7 @@
           stock: typeof v.stock === 'number' ? v.stock : (parseInt(v.stock, 10) || 0),
           images: Array.isArray(v.images) ? v.images : ['https://placehold.co/600x600?text=No+Image']
         }))) %>
-      })"
-      x-init="init()">
+      })" x-init="init()">
 
   <!-- Header -->
   <header class="bg-white shadow-sm sticky top-0 z-50">
@@ -73,56 +109,69 @@
       <div class="flex items-center space-x-4">
         <button class="p-2 rounded-full hover:bg-gray-100 transition-colors">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
           </svg>
         </button>
-        <button class="p-2 rounded-full hover:bg-gray-100 transition-colors relative" onclick="window.location.href='/cart'">
+        <button class="p-2 rounded-full hover:bg-gray-100 transition-colors relative"
+          onclick="window.location.href='/cart'">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
           </svg>
         </button>
 
         <!-- User Menu -->
         <% if (locals.user && user.profilePic) { %>
-        <div class="relative" x-data="{ open: false }" @click.away="open = false">
-          <button @click="open = !open" class="rounded-full overflow-hidden w-8 h-8 border border-transparent hover:border-gray-300 transition-colors focus:outline-none">
-            <img src="<%= user.profilePic %>" alt="Profile" class="w-full h-full object-cover" />
-          </button>
-          <div x-show="open" x-transition class="absolute right-0 mt-2 w-44 bg-white shadow-lg rounded-lg py-1 z-50">
-            <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Profile</a>
-            <form action="/logout" method="post">
-              <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Logout</button>
-            </form>
+          <div class="relative" x-data="{ open: false }" @click.away="open = false">
+            <button @click="open = !open"
+              class="rounded-full overflow-hidden w-8 h-8 border border-transparent hover:border-gray-300 transition-colors focus:outline-none">
+              <img src="<%= user.profilePic %>" alt="Profile" class="w-full h-full object-cover" />
+            </button>
+            <div x-show="open" x-transition class="absolute right-0 mt-2 w-44 bg-white shadow-lg rounded-lg py-1 z-50">
+              <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Profile</a>
+              <form action="/logout" method="post">
+                <button type="submit"
+                  class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Logout</button>
+              </form>
+            </div>
           </div>
-        </div>
-        <% } else if (locals.user) { %>
-        <div class="relative" x-data="{ open: false }" @click.away="open = false">
-          <button @click="open = !open" class="w-8 h-8 flex items-center justify-center text-gray-600 hover:text-gray-900">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-            </svg>
-          </button>
-          <div x-show="open" x-transition class="absolute right-0 mt-2 w-44 bg-white shadow-lg rounded-lg py-1 z-50">
-            <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Profile</a>
-            <form action="/logout" method="post">
-              <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Logout</button>
-            </form>
-          </div>
-        </div>
-        <% } else { %>
-        <a href="/login" class="text-sm font-medium flex items-center">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-          </svg>
-          Sign In
-        </a>
-        <% } %>
+          <% } else if (locals.user) { %>
+            <div class="relative" x-data="{ open: false }" @click.away="open = false">
+              <button @click="open = !open"
+                class="w-8 h-8 flex items-center justify-center text-gray-600 hover:text-gray-900">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                  stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              </button>
+              <div x-show="open" x-transition
+                class="absolute right-0 mt-2 w-44 bg-white shadow-lg rounded-lg py-1 z-50">
+                <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Profile</a>
+                <form action="/logout" method="post">
+                  <button type="submit"
+                    class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Logout</button>
+                </form>
+              </div>
+            </div>
+            <% } else { %>
+              <a href="/login" class="text-sm font-medium flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24"
+                  stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                Sign In
+              </a>
+              <% } %>
 
-        <button class="md:hidden text-gray-600 hover:text-gray-900">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        </button>
+                <button class="md:hidden text-gray-600 hover:text-gray-900">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                </button>
       </div>
     </div>
   </header>
@@ -133,7 +182,9 @@
       <li><span class="mx-1">/</span></li>
       <li><a href="/products" class="hover:text-gray-700">Products</a></li>
       <li><span class="mx-1">/</span></li>
-      <li class="text-gray-900"><%= product.productName %></li>
+      <li class="text-gray-900">
+        <%= product.productName %>
+      </li>
     </ol>
   </nav>
 
@@ -142,25 +193,20 @@
       <!-- Image Gallery -->
       <div class="space-y-3">
         <div class="relative w-full aspect-square bg-gray-100 rounded-lg overflow-hidden group" id="zoomContainer">
-          <img id="mainImage"
-            :src="selectedVariant.images[0] || 'https://placehold.co/600x600?text=No+Image'"
-            :alt="productName"
-            class="w-full h-full object-contain transition-transform duration-200 ease-out"
-          />
+          <img id="mainImage" :src="selectedVariant.images[0] || 'https://placehold.co/600x600?text=No+Image'"
+            :alt="productName" class="w-full h-full object-contain transition-transform duration-200 ease-out" />
           <div id="zoomLens" class="hidden w-32 h-32 rounded-full absolute top-0 left-0"></div>
         </div>
 
         <div id="thumbnailGallery" class="flex space-x-2 overflow-x-auto pb-1">
           <template x-for="img in selectedVariant.images.slice(0, 5)" :key="img">
-            <img 
-              :src="img"
+            <img :src="img"
               class="w-16 h-16 object-cover border border-gray-300 rounded cursor-pointer flex-shrink-0 hover:border-blue-500 transition"
-              @click="updateMainImage(img)"
-            />
+              @click="updateMainImage(img)" />
           </template>
         </div>
 
-        
+
       </div>
 
       <!-- Product Details -->
@@ -182,7 +228,7 @@
 
         <!-- Stock Status -->
         <div class="inline-flex items-center px-3 py-1 rounded-full text-sm"
-             :class="selectedVariant.stock > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
+          :class="selectedVariant.stock > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
           <div x-show="selectedVariant.stock > 0" class="flex items-center">
             <div class="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
             In stock (<span x-text="selectedVariant.stock"></span> available)
@@ -197,16 +243,11 @@
           <h3 class="font-semibold mb-3">Color - <span x-text="selectedVariant.color || 'N/A'"></span></h3>
           <div class="flex space-x-3">
             <template x-for="(variant, index) in variants" :key="index">
-              <div 
-                class="w-10 h-10 rounded-full cursor-pointer border-2"
-                :class="{
+              <div class="w-10 h-10 rounded-full cursor-pointer border-2" :class="{
                   'border-blue-500': selectedVariantIndex === index,
                   'border-transparent': selectedVariantIndex !== index,
                   [getColorClass(variant.color)]: true
-                }"
-                @click="selectVariant(index)"
-                :title="variant.color"
-              ></div>
+                }" @click="selectVariant(index)" :title="variant.color"></div>
             </template>
           </div>
         </div>
@@ -240,32 +281,25 @@
         <div class="flex flex-col space-y-3">
           <div class="flex items-center space-x-4">
             <div class="flex items-center">
-              <button 
-                class="w-10 h-10 rounded-full bg-gray-100 text-gray-700 flex items-center justify-center 
+              <button class="w-10 h-10 rounded-full bg-gray-100 text-gray-700 flex items-center justify-center 
                    hover:bg-gray-200 hover:shadow-sm transition-all duration-200 active:scale-95"
-                @click="updateQuantity(-1)"
-                :disabled="quantity <= 1"
-              >
+                @click="updateQuantity(-1)" :disabled="quantity <= 1">
                 <i class="fas fa-minus text-sm"></i>
               </button>
               <span class="mx-4 w-8 text-center text-lg font-medium text-gray-800" x-text="quantity"></span>
-              <button 
-                class="w-10 h-10 rounded-full bg-gray-100 text-gray-700 flex items-center justify-center 
+              <button class="w-10 h-10 rounded-full bg-gray-100 text-gray-700 flex items-center justify-center 
                    hover:bg-gray-200 hover:shadow-sm transition-all duration-200 active:scale-95"
-                @click="updateQuantity(1)"
-                :disabled="selectedVariant.stock > 0 && quantity >= selectedVariant.stock"
-              >
+                @click="updateQuantity(1)" :disabled="selectedVariant.stock > 0 && quantity >= selectedVariant.stock">
                 <i class="fas fa-plus text-sm"></i>
               </button>
             </div>
-            <button 
-              class="flex-1 bg-black text-white py-3 rounded-full font-medium hover:bg-gray-800 transition"
-              @click="addToCart"
-            >
+            <button class="flex-1 bg-black text-white py-3 rounded-full font-medium hover:bg-gray-800 transition"
+              @click="addToCart">
               Add to cart
             </button>
           </div>
-          <button class="flex items-center justify-center space-x-2 border border-gray-300 text-gray-700 py-3 rounded-full font-medium hover:bg-gray-50 transition">
+          <button
+            class="flex items-center justify-center space-x-2 border border-gray-300 text-gray-700 py-3 rounded-full font-medium hover:bg-gray-50 transition">
             <i class="far fa-heart"></i>
             <span>Add to Wishlist</span>
           </button>
@@ -288,19 +322,25 @@
     <section class="mt-16 bg-gradient-to-r from-yellow-50 to-orange-50 py-12 rounded-2xl relative">
       <div class="container mx-auto px-4">
         <h2 class="text-3xl font-bold mb-8">You May Also Like</h2>
-        <button id="scroll-left" class="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-md hidden md:block opacity-70 hover:opacity-100 transition">
+        <button id="scroll-left"
+          class="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-md hidden md:block opacity-70 hover:opacity-100 transition">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+            <path fill-rule="evenodd"
+              d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+              clip-rule="evenodd" />
           </svg>
         </button>
-        <button id="scroll-right" class="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-md hidden md:block opacity-70 hover:opacity-100 transition">
+        <button id="scroll-right"
+          class="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-md hidden md:block opacity-70 hover:opacity-100 transition">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+            <path fill-rule="evenodd"
+              d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+              clip-rule="evenodd" />
           </svg>
         </button>
         <div id="product-carousel" class="overflow-x-auto pb-4 space-x-4 scrollbar-hide flex">
           <div class="flex space-x-4 min-w-max px-2">
-            <% for (let i = 0; i < allproducts.length; i++) { %>
+            <% for (let i=0; i < allproducts.length; i++) { %>
               <div class="bg-white rounded-lg overflow-hidden shadow-sm w-48 flex-shrink-0">
                 <a href="/product?product=<%= allproducts[i].productId %>" class="block">
                   <div class="relative">
@@ -308,14 +348,18 @@
                   </div>
                   <div class="p-4">
                     <div class="text-xs text-gray-500 mb-1">Casen</div>
-                    <div class="text-sm mb-2 truncate"><%= allproducts[i].productName %></div>
+                    <div class="text-sm mb-2 truncate">
+                      <%= allproducts[i].productName %>
+                    </div>
                     <div class="flex items-center justify-between">
-                      <span class="text-sm font-bold text-red-500"><%= allproducts[i].variants.price %></span>
+                      <span class="text-sm font-bold text-red-500">
+                        <%= allproducts[i].variants.price %>
+                      </span>
                     </div>
                   </div>
                 </a>
               </div>
-            <% } %>
+              <% } %>
           </div>
         </div>
       </div>
@@ -329,12 +373,8 @@
   </footer>
 
   <!-- Add to Cart Modal -->
-  <div 
-    x-show="showModal" 
-    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-    @click="showModal = false"
-    x-transition
-  >
+  <div x-show="showModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+    @click="showModal = false" x-transition>
     <div class="bg-white rounded-2xl max-w-md w-full p-6 relative" @click.stop>
       <button @click="showModal = false" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
         <i class="fas fa-times"></i>
@@ -348,7 +388,8 @@
           <span x-text="productName"></span> (<span x-text="selectedVariant.color"></span>)
         </p>
         <div class="flex justify-center space-x-4">
-          <button @click="showModal = false" class="px-4 py-2 border border-gray-300 rounded-full text-gray-700 hover:bg-gray-50">
+          <button @click="showModal = false"
+            class="px-4 py-2 border border-gray-300 rounded-full text-gray-700 hover:bg-gray-50">
             Continue Shopping
           </button>
           <a href="/cart" class="px-4 py-2 bg-black text-white rounded-full hover:bg-gray-800">
@@ -414,59 +455,94 @@
         },
 
         updateQuantity(change) {
-          if (this.selectedVariant.stock <= 0) return;
+          // Enforce max 10 per variant, even if stock is higher
+          const maxAllowed = Math.min(this.selectedVariant.stock, 10);
+          if (maxAllowed <= 0) return;
+
           let newQty = this.quantity + change;
           if (newQty < 1) newQty = 1;
-          if (newQty > this.selectedVariant.stock) newQty = this.selectedVariant.stock;
+          if (newQty > maxAllowed) newQty = maxAllowed;
+
           this.quantity = newQty;
         },
 
-        // ✅ Fully updated addToCart
         addToCart() {
-          // 🔑 Check login first
-          if (!this.isLoggedIn) {
-            Swal.fire({
-              icon: 'info',
-              title: 'Please Sign In',
-              text: 'You need to be logged in to add items to your cart.',
-              confirmButtonText: 'Go to Login',
-              showCancelButton: true,
-              cancelButtonText: 'Cancel'
-            }).then((result) => {
-              if (result.isConfirmed) {
-                window.location.href = '/login';
-              }
-            });
-            return;
-          }
+  // 🔑 Check login first
+  if (!this.isLoggedIn) {
+    Swal.fire({
+      icon: 'info',
+      title: 'Please Sign In',
+      text: 'You need to be logged in to add items to your cart.',
+      confirmButtonText: 'Go to Login',
+      showCancelButton: true,
+      cancelButtonText: 'Cancel'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        window.location.href = '/login';
+      }
+    });
+    return;
+  }
 
-          // Check stock
-          if (this.selectedVariant.stock <= 0) {
-            Swal.fire({
-              icon: 'warning',
-              title: 'Out of Stock',
-              text: 'This item is currently out of stock.',
-              confirmButtonText: 'OK'
-            });
-            return;
-          }
+  // Check stock
+  if (this.selectedVariant.stock <= 0) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Out of Stock',
+      text: 'This item is currently out of stock.',
+      confirmButtonText: 'OK'
+    });
+    return;
+  }
 
-          // Show modal
-          this.showModal = true;
+  // Optional: client-side quantity validation (but rely on backend too)
+  if (this.quantity > 10) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Maximum Limit Reached',
+      text: 'You can add up to 10 items of this product per order.',
+      confirmButtonText: 'OK'
+    });
+    return;
+  }
 
-          // Add to cart
-          fetch('/cart/add', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              productId: this.productId,
-              variantId: this.selectedVariant._id,
-              quantity: this.quantity
-            })
-          }).catch(err => {
-            console.error('Add to cart failed:', err);
-          });
-        },
+  // Send to backend
+  fetch('/cart/add', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      productId: this.productId,
+      variantId: this.selectedVariant._id,
+      quantity: this.quantity
+    })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success === 'success') {
+      // Show success modal
+      this.showModal = true;
+    } else if (data.success === 'fail') {
+      // Backend blocked due to cart limit (e.g., total > 10 for variant)
+      Swal.fire({
+        icon: 'warning',
+        title: 'Maximum Limit Reached',
+        text: 'You can add up to 10 items of this product per order.',
+        confirmButtonText: 'OK'
+      });
+    } else {
+      throw new Error('Invalid response');
+    }
+  })
+  .catch(err => {
+    console.error('Add to cart failed:', err);
+    Swal.fire({
+      icon: 'error',
+      title: 'Oops...',
+      text: 'Failed to add item to cart. Please try again.',
+      confirmButtonText: 'OK'
+    });
+  });
+},
 
         toggleAccordion(section) {
           this.openSections[section] = !this.openSections[section];
@@ -533,4 +609,5 @@
     });
   </script>
 </body>
+
 </html>

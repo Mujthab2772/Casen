@@ -31,15 +31,37 @@ export const addressAdd = async (details, userId) => {
     }
 }
 
-export const addressDetails = async (userId) => {
-    try {
-        const details = await addressCollection.find({userId: userId}).sort({isDefault: -1, createdAt: -1})
-        return details
-    } catch (error) {
-        console.log(`error from addressDetails ${error}`);
-        throw error
-    }
-}
+// service/user/addressService.js
+
+export const addressDetails = async (userId, page = 1, limit = 3) => {
+  try {
+    const skip = (page - 1) * limit;
+
+    const totalAddresses = await addressCollection.countDocuments({ userId });
+    const totalPages = Math.ceil(totalAddresses / limit);
+
+    const addresses = await addressCollection
+      .find({ userId })
+      .sort({ isDefault: -1, createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    return {
+      addresses,
+      pagination: {
+        currentPage: page,
+        totalPages,
+        totalAddresses,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
+        limit
+      }
+    };
+  } catch (error) {
+    console.log(`error from addressDetails ${error}`);
+    throw error;
+  }
+};
 
 export const editAddressDetails = async (addressId) => {
     try {

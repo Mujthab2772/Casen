@@ -48,6 +48,7 @@ export const userDetail = async (useremail) => {
             phoneNumber: 1,
             profilePic: 1,
             isActive: 1,
+            password: 1,
             createdAt: 1,
             updatedAt: 1
         })

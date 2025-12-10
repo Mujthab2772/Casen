@@ -12,7 +12,7 @@ export const checkout = async (req, res) => {
         const userAddresses = await addressDetails(userId)
         
 
-        return res.render('checkout', {user, cartProducts, userAddresses})
+        return res.render('checkout', {user, cartProducts, userAddresses: userAddresses.addresses})
     } catch (error) {
         console.log(`error from checkout ${error}`);
         return res.redirect('/cart')

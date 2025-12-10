@@ -80,7 +80,7 @@ export const otpverify = async (email, otp) => {
 
         await otpCollection.deleteOne({email})
 
-        return {status: "success"}
+        return {status: "success", user}
     } catch (error) {
         console.log(`error from otpverify ${error}`);      
         throw error  

@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Your Cart - Casen</title>
-    <!-- ✅ FIXED: NO TRAILING SPACES IN CDN URLs -->
+    <!-- Tailwind & Dependencies -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.10/dist/cdn.min.js"></script>
@@ -53,11 +53,7 @@
                     <button @click="open = !open" class="rounded-full overflow-hidden w-8 h-8 border border-transparent hover:border-gray-300 transition-colors focus:outline-none">
                         <img src="<%= user.profilePic %>" alt="Profile" class="w-full h-full object-cover" />
                     </button>
-                    <div x-show="open" x-transition:enter="transition ease-out duration-150"
-                        x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
-                        x-transition:leave="transition ease-in duration-100"
-                        x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
-                        class="absolute right-0 mt-2 w-44 bg-white shadow-lg rounded-lg py-1 z-50">
+                    <div x-show="open" x-transition class="absolute right-0 mt-2 w-44 bg-white shadow-lg rounded-lg py-1 z-50">
                         <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">Profile</a>
                         <form action="/logout" method="post">
                             <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">Logout</button>
@@ -71,11 +67,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
                     </button>
-                    <div x-show="open" x-transition:enter="transition ease-out duration-150"
-                        x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
-                        x-transition:leave="transition ease-in duration-100"
-                        x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
-                        class="absolute right-0 mt-2 w-44 bg-white shadow-lg rounded-lg py-1 z-50">
+                    <div x-show="open" x-transition class="absolute right-0 mt-2 w-44 bg-white shadow-lg rounded-lg py-1 z-50">
                         <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Profile</a>
                         <form action="/logout" method="post">
                             <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Logout</button>
@@ -103,35 +95,34 @@
     <!-- Main Content -->
     <main class="container mx-auto px-4 py-8">
         <div class="flex items-center justify-between mb-12">
-      <button onclick="window.location.href='/products'" class="flex items-center text-sm font-medium text-gray-700 hover:text-black transition-colors">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-        </svg>
-        Continue Shopping
-      </button>
+            <button onclick="window.location.href='/products'" class="flex items-center text-sm font-medium text-gray-700 hover:text-black transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Continue Shopping
+            </button>
 
-      <div class="flex items-center justify-between w-full max-w-md">
-        <div class="flex flex-col items-center">
-          <div class="w-8 h-8 rounded-full bg-black flex items-center justify-center text-xs font-medium text-white">1</div>
-          <span class="mt-2 text-xs text-gray-500">Cart</span>
-        </div>
-        <div class="flex-1 h-px bg-gray-200 mx-2"></div>
-        <div class="flex flex-col items-center">
-          <div class="w-8 h-8 rounded-full border-2 border-gray-300 flex items-center justify-center text-xs font-medium text-gray-500">2</div>
-          <span class="mt-2 text-xs font-medium text-black">Information</span>
-        </div>
-        <div class="flex-1 h-px bg-gray-200 mx-2"></div>
-        <div class="flex flex-col items-center">
-          <div class="w-8 h-8 rounded-full border-2 border-gray-300 flex items-center justify-center text-xs font-medium text-gray-500">3</div>
-          <span class="mt-2 text-xs text-gray-500">Payment</span>
-        </div>
-      </div>
+            <div class="flex items-center justify-between w-full max-w-md">
+                <div class="flex flex-col items-center">
+                    <div class="w-8 h-8 rounded-full bg-black flex items-center justify-center text-xs font-medium text-white">1</div>
+                    <span class="mt-2 text-xs text-gray-500">Cart</span>
+                </div>
+                <div class="flex-1 h-px bg-gray-200 mx-2"></div>
+                <div class="flex flex-col items-center">
+                    <div class="w-8 h-8 rounded-full border-2 border-gray-300 flex items-center justify-center text-xs font-medium text-gray-500">2</div>
+                    <span class="mt-2 text-xs font-medium text-black">Information</span>
+                </div>
+                <div class="flex-1 h-px bg-gray-200 mx-2"></div>
+                <div class="flex flex-col items-center">
+                    <div class="w-8 h-8 rounded-full border-2 border-gray-300 flex items-center justify-center text-xs font-medium text-gray-500">3</div>
+                    <span class="mt-2 text-xs text-gray-500">Payment</span>
+                </div>
+            </div>
 
-      <div class="w-[96px]"></div>
-    </div>
+            <div class="w-[96px]"></div>
+        </div>
         <div class="flex justify-between items-center mb-8">
             <h1 class="text-5xl font-bold">Your cart</h1>
-            
         </div>
 
         <div class="flex flex-col lg:flex-row gap-8">
@@ -143,15 +134,16 @@
                     <% } else { %>
                         <% for (let i = 0; i < cart.length; i++) { 
                             const item = cart[i].products;
-                            const inStock = item.variant.stock;
+                            const trueStock = item.variant.stock;
+                            const maxAllowedQty = Math.min(trueStock, 10);
                             const qty = item.quantity;
-                            const isOutOfStock = qty > inStock;
+                            const isOverLimit = qty > maxAllowedQty;
                         %>
                             <div class="flex items-center py-4 border-b border-gray-200"
                                 data-cart-product-id="<%= item.cartProductId %>"
                                 data-unit-price="<%= item.variant.price %>"
-                                data-max-qty="<%= inStock %>"
-                                data-is-out-of-stock="<%= isOutOfStock ? 'true' : 'false' %>">
+                                data-max-qty="<%= maxAllowedQty %>"
+                                data-is-out-of-stock="<%= isOverLimit ? 'true' : 'false' %>">
                                 <img src="<%= item.variant.images[0] %>"
                                     alt="<%= item.product.productName %>" class="w-20 h-20 object-cover mr-4" />
                                 <div class="flex-grow">
@@ -160,9 +152,12 @@
                                     </a>
                                     <p class="text-sm text-gray-600"><%= item.variant.color %></p>
                                     <p class="text-sm text-gray-600">Rs. <%= item.variant.price %></p>
-                                    <!-- ✅ Added class for dynamic update -->
-                                    <p class="stock-status-text text-xs <%= isOutOfStock ? 'text-red-600 font-semibold' : 'text-gray-500' %>">
-                                        <%= isOutOfStock ? 'Not in stock' : 'In stock' %>: <%= inStock %>
+                                    <p class="stock-status-text text-xs <%= isOverLimit ? 'text-red-600 font-semibold' : 'text-gray-500' %>">
+                                        <% if (isOverLimit) { %>
+                                            <%= qty > trueStock ? 'Out of stock' : 'Max 10 per order' %>
+                                        <% } else { %>
+                                            In stock: <%= trueStock %>
+                                        <% } %>
                                     </p>
                                 </div>
 
@@ -173,13 +168,13 @@
                                     <span class="qty-value w-6 text-center text-sm"><%= qty %></span>
                                     <button class="qty-btn increase-btn w-6 h-6 flex items-center justify-center text-gray-600 hover:text-black text-sm font-medium border border-gray-300 rounded-sm transition-colors"
                                         data-action="increase"
-                                        <%= qty >= inStock ? 'disabled' : '' %>>+</button>
+                                        <%= qty >= maxAllowedQty ? 'disabled' : '' %>>+</button>
                                 </div>
 
                                 <button class="remove-item text-xs text-gray-500 hover:text-red-500 transition-colors whitespace-nowrap"
                                     data-cart-product-id="<%= item.cartProductId %>">Remove</button>
 
-                                <% if (!isOutOfStock) { %>
+                                <% if (!isOverLimit) { %>
                                     <div class="item-total font-medium ml-4">Rs.<%= (item.variant.price * qty).toFixed(2) %></div>
                                 <% } else { %>
                                     <div class="item-total font-medium ml-4 text-red-600">—</div>
@@ -199,7 +194,8 @@
                         let validItemCount = 0;
                         for (let i = 0; i < cart.length; i++) {
                             const item = cart[i].products;
-                            if (item.quantity <= item.variant.stock) {
+                            const maxAllowedQty = Math.min(item.variant.stock, 10);
+                            if (item.quantity <= maxAllowedQty) {
                                 subtotal += item.variant.price * item.quantity;
                                 validItemCount++;
                             }
@@ -302,10 +298,7 @@
     <!-- Footer -->
     <footer class="bg-black text-white pt-8 pb-4">
         <div class="container mx-auto px-4">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-8"></div>
-        </div>
-        <div class="border-t border-gray-800 mt-8 pt-4">
-            <div class="container mx-auto px-4">
+            <div class="border-t border-gray-800 mt-8 pt-4">
                 <p class="text-xs text-gray-500">© 2025 Casen.</p>
             </div>
         </div>
@@ -345,8 +338,7 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-        console.log("Cart JS loaded ✅");
-
+        // Quantity buttons
         document.querySelectorAll('.qty-btn:not([data-enhanced])').forEach(button => {
             button.setAttribute('data-enhanced', 'true');
             button.addEventListener('click', async (e) => {
@@ -367,22 +359,24 @@
                 if (action === 'increase' && currentQty >= maxQty) return;
 
                 const newQty = action === 'increase' ? currentQty + 1 : currentQty - 1;
-
                 qtyValueEl.textContent = newQty;
+                const isNowOverLimit = newQty > maxQty;
+                cartItem.dataset.isOutOfStock = isNowOverLimit ? 'true' : 'false';
 
-                const isNowOutOfStock = newQty > maxQty;
-                cartItem.dataset.isOutOfStock = isNowOutOfStock ? 'true' : 'false';
-
-                // ✅ UPDATE STOCK STATUS TEXT
+                // Update stock status text
                 const stockStatusEl = cartItem.querySelector('.stock-status-text');
                 if (stockStatusEl) {
-                    stockStatusEl.textContent = (isNowOutOfStock ? 'Not in stock' : 'In stock') + ': ' + maxQty;
-                    stockStatusEl.className = 'stock-status-text text-xs ' + (isNowOutOfStock ? 'text-red-600 font-semibold' : 'text-gray-500');
+                    const trueStock = parseInt(stockStatusEl.textContent.split(':').pop(), 10);
+                    if (!isNaN(trueStock)) {
+                        stockStatusEl.textContent = (isNowOverLimit ? (newQty > trueStock ? 'Out of stock' : 'Max 10 per order') : 'In stock') + ': ' + trueStock;
+                        stockStatusEl.className = 'stock-status-text text-xs ' + (isNowOverLimit ? 'text-red-600 font-semibold' : 'text-gray-500');
+                    }
                 }
 
+                // Update total
                 const totalEl = cartItem.querySelector('.item-total');
                 if (totalEl) {
-                    if (isNowOutOfStock) {
+                    if (isNowOverLimit) {
                         totalEl.textContent = '—';
                         totalEl.classList.add('text-red-600');
                     } else {
@@ -391,11 +385,13 @@
                     }
                 }
 
+                // Update button states
                 const decBtn = cartItem.querySelector('.decrease-btn');
                 const incBtn = cartItem.querySelector('.increase-btn');
                 if (decBtn) decBtn.disabled = newQty <= 1;
                 if (incBtn) incBtn.disabled = newQty >= maxQty;
 
+                // Update backend
                 try {
                     const res = await fetch(`/cart/update`, {
                         method: 'PUT',
@@ -406,18 +402,16 @@
                     if (!res.ok) throw new Error('Update failed');
                     recalculateTotals();
                 } catch (err) {
+                    // Revert UI on error
                     qtyValueEl.textContent = currentQty;
-                    const wasOutOfStock = currentQty > maxQty;
-                    cartItem.dataset.isOutOfStock = wasOutOfStock ? 'true' : 'false';
-
-                    // Revert stock status text
-                    if (stockStatusEl) {
-                        stockStatusEl.textContent = (wasOutOfStock ? 'Not in stock' : 'In stock') + ': ' + maxQty;
-                        stockStatusEl.className = 'stock-status-text text-xs ' + (wasOutOfStock ? 'text-red-600 font-semibold' : 'text-gray-500');
+                    const wasOverLimit = currentQty > maxQty;
+                    cartItem.dataset.isOutOfStock = wasOverLimit ? 'true' : 'false';
+                    if (stockStatusEl && !isNaN(trueStock)) {
+                        stockStatusEl.textContent = (wasOverLimit ? (currentQty > trueStock ? 'Out of stock' : 'Max 10 per order') : 'In stock') + ': ' + trueStock;
+                        stockStatusEl.className = 'stock-status-text text-xs ' + (wasOverLimit ? 'text-red-600 font-semibold' : 'text-gray-500');
                     }
-
                     if (totalEl) {
-                        if (wasOutOfStock) {
+                        if (wasOverLimit) {
                             totalEl.textContent = '—';
                             totalEl.classList.add('text-red-600');
                         } else {
@@ -434,7 +428,7 @@
             });
         });
 
-        // Remove item (unchanged)
+        // Remove item
         document.querySelectorAll('.remove-item').forEach(button => {
             button.addEventListener('click', async (e) => {
                 const cartProductId = e.currentTarget.dataset.cartProductId;
@@ -463,8 +457,8 @@
                         });
                         if (res.ok) {
                             cartItem.remove();
-                            window.location.href='/cart'
                             recalculateTotals();
+                            window.location.href = '/cart'
                         } else {
                             showAlert('Error', 'Failed to remove item', 'error');
                         }
@@ -475,22 +469,48 @@
             });
         });
 
-        // Handle checkout button click
+        // ✅ ENHANCED CHECKOUT VALIDATION
         const checkoutButton = document.getElementById('checkout-button');
         if (checkoutButton) {
-            checkoutButton.addEventListener('click', function(e) {
+            checkoutButton.addEventListener('click', function (e) {
                 const cartItems = document.querySelectorAll('[data-cart-product-id]');
-                
-                // Check if cart is empty (either server-side or client-side)
-                const isCartEmpty = document.querySelectorAll('[data-cart-product-id]').length === 0;
-                
-                if (isCartEmpty || cartItems.length === 0) {
+                const isCartEmpty = cartItems.length === 0;
+
+                if (isCartEmpty) {
                     e.preventDefault();
                     showEmptyCartAlert();
                     return;
                 }
-                
-                // Proceed to checkout if cart has items
+
+                let hasInvalidQuantity = false;
+                let invalidProductName = '';
+
+                for (const item of cartItems) {
+                    const qtyEl = item.querySelector('.qty-value');
+                    const maxQty = parseInt(item.dataset.maxQty, 10);
+                    const currentQty = parseInt(qtyEl?.textContent.trim(), 10);
+                    const productName = item.querySelector('p.font-medium')?.textContent || 'this item';
+
+                    if (currentQty > maxQty) {
+                        hasInvalidQuantity = true;
+                        invalidProductName = productName;
+                        break;
+                    }
+                }
+
+                if (hasInvalidQuantity) {
+                    e.preventDefault();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Invalid Quantity',
+                        text: `The quantity for "${invalidProductName}" exceeds available stock or the 10-item limit.`,
+                        confirmButtonText: 'OK',
+                        confirmButtonColor: '#000'
+                    });
+                    return;
+                }
+
+                // ✅ Proceed to checkout
                 window.location.href = '/checkout';
             });
         }
@@ -500,9 +520,9 @@
             const qtyEl = item.querySelector('.qty-value');
             const maxQty = parseInt(item.dataset.maxQty, 10) || 10;
             const qty = parseInt(qtyEl?.textContent.trim(), 10);
-            const decBtn = item.querySelector('.decrease-btn');
-            const incBtn = item.querySelector('.increase-btn');
             if (!isNaN(qty)) {
+                const decBtn = item.querySelector('.decrease-btn');
+                const incBtn = item.querySelector('.increase-btn');
                 if (decBtn) decBtn.disabled = qty <= 1;
                 if (incBtn) incBtn.disabled = qty >= maxQty;
             }
@@ -514,8 +534,8 @@
             const items = document.querySelectorAll('[data-cart-product-id]');
 
             items.forEach(item => {
-                const isOutOfStock = item.dataset.isOutOfStock === 'true';
-                if (isOutOfStock) return;
+                const isOverLimit = item.dataset.isOutOfStock === 'true';
+                if (isOverLimit) return;
 
                 const price = parseFloat(item.dataset.unitPrice);
                 const qtyEl = item.querySelector('.qty-value');
@@ -535,7 +555,7 @@
             document.getElementById('subtotal').textContent = `Rs. ${subtotal.toFixed(2)}`;
             document.getElementById('discount').textContent = `Rs. ${discount.toFixed(2)}`;
             document.getElementById('shipping').textContent = shipping;
-            document.getElementById('total-price').querySelector('span:last-child').textContent = `Rs. ${total.toFixed(2)}`;
+            document.querySelector('#total-price span:last-child').textContent = `Rs. ${total.toFixed(2)}`;
         }
     });
     </script>

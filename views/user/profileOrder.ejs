@@ -4,12 +4,16 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>My Orders</title>
+  <!-- ✅ Fixed CDN URLs: NO TRAILING SPACES -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.10/dist/cdn.min.js" defer></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.10/dist/cdn.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+  </style>
 </head>
 <body class="bg-gray-50">
-
   <!-- Header -->
   <header class="bg-white shadow-sm sticky top-0 z-50">
     <div class="container mx-auto px-4 py-3 flex items-center justify-between">
@@ -18,7 +22,6 @@
           <img src="/logo.png" alt="Logo" class="h-8 object-contain">
         </a>
       </div>
-
       <nav class="hidden md:flex space-x-5">
         <a href="/" class="text-sm font-medium text-gray-700 hover:text-black transition">Home</a>
         <a href="#" class="text-sm font-medium text-gray-700 hover:text-black transition">About</a>
@@ -26,20 +29,17 @@
         <a href="#" class="text-sm font-medium text-gray-700 hover:text-black transition">Tablet Cases</a>
         <a href="#" class="text-sm font-medium text-gray-700 hover:text-black transition">Sale</a>
       </nav>
-
       <div class="flex items-center space-x-4">
         <button class="p-2 rounded-full hover:bg-gray-100 transition-colors">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
           </svg>
         </button>
-
         <button class="p-2 rounded-full hover:bg-gray-100 transition-colors relative" onclick="window.location.href='/cart'">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
           </svg>
         </button>
-
         <!-- Profile Menu -->
         <% if (locals.user && user.profilePic) { %>
         <div class="relative" x-data="{ open: false }" @click.away="open = false">
@@ -75,7 +75,6 @@
           Sign In
         </a>
         <% } %>
-
         <button class="md:hidden text-gray-600">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
@@ -85,7 +84,6 @@
     </div>
   </header>
 
-  <!-- Main Content -->
   <div class="container mx-auto px-4 py-8 flex flex-col lg:flex-row gap-6">
     <!-- Sidebar -->
     <aside class="lg:w-60 bg-white rounded-xl shadow-sm p-4">
@@ -106,7 +104,7 @@
           <i class="fas fa-home text-sm"></i>
           <span class="text-sm font-medium">Address</span>
         </a>
-        <a href="/password" class="flex items-center space-x-3 px-3 py-2.5 text-gray-700 rounded-lg hover:bg-gray-50 transition">
+        <a href="/profile/newPassword" class="flex items-center space-x-3 px-3 py-2.5 text-gray-700 rounded-lg hover:bg-gray-50 transition">
           <i class="fas fa-lock text-sm"></i>
           <span class="text-sm font-medium">Password</span>
         </a>
@@ -135,13 +133,38 @@
         </div>
       </div>
 
+      <!-- Order Search -->
+      <div class="mb-6">
+        <form method="GET" class="max-w-md">
+          <div class="relative">
+            <input
+              type="text"
+              name="search"
+              placeholder="Search by Order ID (e.g. ABC123...)"
+              class="w-full px-4 py-2 pl-10 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:outline-none"
+              value="<%= typeof currentSearch !== 'undefined' ? currentSearch : '' %>"
+            />
+            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+            <% if (locals.currentSearch && currentSearch) { %>
+              <a href="?<%= locals.pagination && locals.pagination.status && locals.pagination.status !== 'all' ? `status=${pagination.status}&` : '' %>page=1"
+                 class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700">
+                <i class="fas fa-times"></i>
+              </a>
+            <% } %>
+          </div>
+          <% if (locals.currentStatus && currentStatus && currentStatus !== 'all') { %>
+            <input type="hidden" name="status" value="<%= currentStatus %>" />
+          <% } %>
+        </form>
+      </div>
+
       <!-- Order Filters -->
       <div class="mb-6 border-b border-gray-200">
         <div class="flex space-x-6 pb-2">
-          <button class="pb-2 border-b-2 border-black font-medium text-gray-900">All Orders</button>
-          <button class="pb-2 border-b-2 border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-800">Active</button>
-          <button class="pb-2 border-b-2 border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-800">Completed</button>
-          <button class="pb-2 border-b-2 border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-800">Cancelled</button>
+          <a href="?status=all<%= locals.currentSearch ? '&search=' + encodeURIComponent(currentSearch) : '' %>" class="pb-2 border-b-2 <%= (!locals.currentStatus || locals.currentStatus === 'all') ? 'border-black font-medium text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-800' %>">All Orders</a>
+          <a href="?status=active<%= locals.currentSearch ? '&search=' + encodeURIComponent(currentSearch) : '' %>" class="pb-2 border-b-2 <%= locals.currentStatus === 'active' ? 'border-black font-medium text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-800' %>">Active</a>
+          <a href="?status=delivered<%= locals.currentSearch ? '&search=' + encodeURIComponent(currentSearch) : '' %>" class="pb-2 border-b-2 <%= locals.currentStatus === 'delivered' ? 'border-black font-medium text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-800' %>">Completed</a>
+          <a href="?status=cancelled<%= locals.currentSearch ? '&search=' + encodeURIComponent(currentSearch) : '' %>" class="pb-2 border-b-2 <%= locals.currentStatus === 'cancelled' ? 'border-black font-medium text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-800' %>">Cancelled</a>
         </div>
       </div>
 
@@ -149,23 +172,42 @@
       <div class="space-y-5">
         <% if (locals.orders && orders.length > 0) { %>
           <% orders.forEach(order => { %>
+            <%
+              let effectiveTotal = 0;
+              if (order.items) {
+                for (let item of order.items.flat()) {
+                  if (item.orderStatus !== 'cancelled') {
+                    let price = 0;
+                    if (item.price) {
+                      if (item.price.$numberDecimal) price = parseFloat(item.price.$numberDecimal);
+                      else if (typeof item.price === 'string') price = parseFloat(item.price);
+                      else price = parseFloat(item.price) || 0;
+                    }
+                    effectiveTotal += price * (item.quantity || 1);
+                  }
+                }
+              }
+              let statusClass = '';
+              const os = (order.orderStatus || '').toLowerCase();
+              if (os === 'delivered') statusClass = 'bg-green-100 text-green-800';
+              else if (os === 'cancelled') statusClass = 'bg-red-100 text-red-800';
+              else if (os === 'shipped') statusClass = 'bg-purple-100 text-purple-800';
+              else if (os === 'returned' || os === 'return requested') statusClass = 'bg-amber-100 text-amber-800';
+              else if (['pending', 'processing', 'active'].includes(os)) statusClass = 'bg-blue-100 text-blue-800';
+              else statusClass = 'bg-gray-100 text-gray-800';
+            %>
             <div class="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
                  data-order='<%- JSON.stringify(order) %>'
                  onclick="showOrderDetails(this)">
               <div class="p-5 md:p-6">
                 <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                  <!-- Order Info -->
                   <div>
                     <div class="text-lg font-semibold text-gray-900">Order <%= order.orderId.slice(0,8).toUpperCase() %></div>
                     <p class="text-gray-500 text-sm mt-1">Placed on <%= new Date(order.createdAt).toLocaleDateString() %></p>
                   </div>
-
-                  <!-- Amount & Status -->
                   <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                    <div class="text-lg font-bold text-gray-800">₹<%= order.totalAmount %></div>
-                    <span class="px-3 py-1 text-xs font-medium rounded-full
-                      <%= order.orderStatus === 'delivered' ? 'bg-green-100 text-green-800' : 
-                         order.orderStatus === 'cancelled' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800' %>">
+                    <div class="text-lg font-bold text-gray-800">₹<%= effectiveTotal.toFixed(2) %></div>
+                    <span class="px-3 py-1 text-xs font-medium rounded-full <%= statusClass %>">
                       <%= order.orderStatus.charAt(0).toUpperCase() + order.orderStatus.slice(1) %>
                     </span>
                   </div>
@@ -178,104 +220,141 @@
             <div class="text-gray-400 mb-2">
               <i class="fas fa-box-open text-4xl"></i>
             </div>
-            <h3 class="text-lg font-medium text-gray-900">No orders yet</h3>
-            <p class="text-gray-500 mt-1">Your orders will appear here once you place them.</p>
+            <h3 class="text-lg font-medium text-gray-900">No orders found</h3>
+            <p class="text-gray-500 mt-1">Try adjusting your search or filter.</p>
             <a href="/products" class="mt-4 inline-block px-4 py-2 bg-black text-white text-sm rounded-lg hover:bg-gray-800 transition">Start Shopping</a>
           </div>
         <% } %>
       </div>
+
+      <!-- PAGINATION -->
+      <% if (locals.pagination && pagination.totalPages > 1) { %>
+        <div class="mt-8 flex items-center justify-between">
+          <div class="text-sm text-gray-500">
+            Showing 
+            <%= (pagination.currentPage - 1) * pagination.limit + 1 %> 
+            to 
+            <%= Math.min(pagination.currentPage * pagination.limit, pagination.totalOrders) %> 
+            of <%= pagination.totalOrders %> orders
+          </div>
+          <div class="flex space-x-2">
+            <% 
+              const urlParams = new URLSearchParams();
+              if (pagination.status && pagination.status !== 'all') urlParams.set('status', pagination.status);
+              if (pagination.search) urlParams.set('search', pagination.search);
+            %>
+
+            <% if (pagination.hasPrevPage) { %>
+              <%
+                urlParams.set('page', pagination.currentPage - 1);
+              %>
+              <a href="?<%= urlParams.toString() %>" class="px-3 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition">
+                <i class="fas fa-chevron-left"></i>
+              </a>
+            <% } else { %>
+              <span class="px-3 py-2 rounded-lg border border-gray-200 text-gray-400 cursor-not-allowed">
+                <i class="fas fa-chevron-left"></i>
+              </span>
+            <% } %>
+
+            <% for (let i = Math.max(1, pagination.currentPage - 1); i <= Math.min(pagination.totalPages, pagination.currentPage + 1); i++) { %>
+              <%
+                urlParams.set('page', i);
+              %>
+              <a href="?<%= urlParams.toString() %>" 
+                 class="px-3 py-2 rounded-lg border 
+                        <%= i === pagination.currentPage ? 'bg-black text-white border-black' : 'border-gray-300 text-gray-700 hover:bg-gray-50' %> 
+                        transition">
+                <%= i %>
+              </a>
+            <% } %>
+
+            <% if (pagination.hasNextPage) { %>
+              <%
+                urlParams.set('page', pagination.currentPage + 1);
+              %>
+              <a href="?<%= urlParams.toString() %>" class="px-3 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition">
+                <i class="fas fa-chevron-right"></i>
+              </a>
+            <% } else { %>
+              <span class="px-3 py-2 rounded-lg border border-gray-200 text-gray-400 cursor-not-allowed">
+                <i class="fas fa-chevron-right"></i>
+              </span>
+            <% } %>
+          </div>
+        </div>
+      <% } %>
     </main>
   </div>
 
-  <!-- Scripts -->
+  <!-- ✅ SweetAlert2 CDN (no space!) -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
   <style>
     @media print {
-      body * {
-        visibility: hidden;
-      }
-      #printable-order {
-        visibility: visible;
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 100%;
-      }
-      #printable-order * {
-        visibility: visible;
-      }
+      body * { visibility: hidden; }
+      #printable-order { visibility: visible; position: absolute; left: 0; top: 0; width: 100%; }
+      #printable-order * { visibility: visible; }
     }
   </style>
 
   <script>
-    // Cache for order details
+    function getOrderStatusClass(status) {
+      const s = (status || '').toLowerCase();
+      if (s === 'delivered') return 'bg-green-100 text-green-800';
+      if (s === 'cancelled') return 'bg-red-100 text-red-800';
+      if (s === 'shipped') return 'bg-purple-100 text-purple-800';
+      if (s === 'returned' || s === 'return requested') return 'bg-amber-100 text-amber-800';
+      if (['pending', 'processing', 'active'].includes(s)) return 'bg-blue-100 text-blue-800';
+      return 'bg-gray-100 text-gray-800';
+    }
+    function getOrderStatusLabel(status) {
+      return (status || '').charAt(0).toUpperCase() + (status || '').slice(1);
+    }
+
     const orderDetailsCache = {};
-    
-    // Cache order details when page loads
     document.addEventListener('DOMContentLoaded', function() {
-      document.querySelectorAll('[data-order]').forEach(element => {
-        const order = JSON.parse(element.dataset.order);
+      document.querySelectorAll('[data-order]').forEach(el => {
+        const order = JSON.parse(el.dataset.order);
         orderDetailsCache[order._id] = order;
       });
     });
 
-    function showOrderDetails(element) {
-      const order = JSON.parse(element.dataset.order);
+    function showOrderDetails(el) {
+      const order = JSON.parse(el.dataset.order);
       const items = Array.isArray(order.items) ? order.items.flat() : [];
-
       let itemsHtml = '';
-      
+      let effectiveSubtotal = 0;
       items.forEach((item, idx) => {
         const productName = item.productName || 'Unknown Product';
         const color = item.variantColor || '—';
         const quantity = item.quantity || 1;
-        
-        // FIX: Properly handle Decimal128 price format
         let price = 0;
         if (item.price) {
-          if (item.price.$numberDecimal) {
-            price = parseFloat(item.price.$numberDecimal);
-          } else if (typeof item.price === 'string') {
-            price = parseFloat(item.price);
-          } else if (typeof item.price === 'object' && item.price.toString) {
-            price = parseFloat(item.price.toString());
-          } else {
-            price = parseFloat(item.price) || 0;
-          }
+          if (item.price.$numberDecimal) price = parseFloat(item.price.$numberDecimal);
+          else if (typeof item.price === 'string') price = parseFloat(item.price);
+          else price = parseFloat(item.price) || 0;
         }
-        
+        const isCancelled = item.orderStatus === 'cancelled';
         const total = (price * quantity).toFixed(2);
+        if (!isCancelled) effectiveSubtotal += price * quantity;
         const images = Array.isArray(item.images) ? item.images : [];
-        
-        // Only show "Cancel item" button if order has more than one item and is active
         let itemActions = '';
-        if (
-          order.orderStatus !== 'cancelled' &&
-          order.orderStatus !== 'delivered' &&
-          items.length > 1
-        ) {
-          itemActions = `
-            <div class="mt-2 flex justify-end">
-              <button onclick="event.stopPropagation(); cancelItem('${order._id}', ${idx});" 
-                      class="text-xs text-red-600 hover:text-red-800 font-medium flex items-center">
-                <i class="fas fa-times mr-1"></i> Cancel item
-              </button>
-            </div>
-          `;
+        if (!isCancelled && order.orderStatus !== 'cancelled' && order.orderStatus !== 'delivered' && items.length > 1) {
+          itemActions = `<div class="mt-2 flex justify-end"><button onclick="event.stopPropagation(); cancelItem('${order._id}', ${idx});" class="text-xs text-red-600 hover:text-red-800 font-medium flex items-center"><i class="fas fa-times mr-1"></i> Cancel item</button></div>`;
         }
-
+        const itemClasses = isCancelled ? 'opacity-60' : '';
+        const textClasses = isCancelled ? 'line-through text-gray-500' : 'text-gray-900';
         itemsHtml += `
-          <div class="flex gap-4 py-3 border-b border-gray-100 last:border-0">
+          <div class="flex gap-4 py-3 border-b border-gray-100 last:border-0 ${itemClasses}">
             <div class="flex-shrink-0 w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
-              ${images.length > 0 
-                ? `<img src="${images[0]}" class="w-full h-full object-contain" />` 
-                : `<span class="text-gray-400 text-lg">?</span>`}
+              ${images.length > 0 ? `<img src="${images[0]}" class="w-full h-full object-contain" />` : `<span class="text-gray-400 text-lg">?</span>`}
             </div>
             <div class="flex-1 min-w-0">
-              <p class="font-medium text-gray-900 truncate">${productName}</p>
-              <p class="text-sm text-gray-500 mt-0.5">Color: <span class="font-medium">${color}</span></p>
-              <p class="text-sm text-gray-500 mt-0.5">Qty: ${quantity} × ₹${price.toFixed(2)}</p>
-              <p class="text-sm font-medium text-gray-900 mt-0.5">₹${total}</p>
+              <p class="font-medium ${textClasses} truncate">${productName}</p>
+              <p class="text-sm ${isCancelled ? 'text-gray-400' : 'text-gray-500'} mt-0.5">Color: <span class="font-medium">${color}</span></p>
+              <p class="text-sm ${isCancelled ? 'text-gray-400' : 'text-gray-500'} mt-0.5">Qty: ${quantity} × ₹${price.toFixed(2)}</p>
+              <p class="text-sm font-medium ${textClasses} mt-0.5">₹${total}</p>
               ${itemActions}
             </div>
           </div>
@@ -283,90 +362,197 @@
       });
 
       const addr = order.address;
-      const fullAddress = `${addr.fullName}<br>
-        ${addr.streetAddress}<br>
-        ${addr.city}, ${addr.state} ${addr.postalCode}<br>
-        ${addr.country}<br>
-        Phone: ${addr.phoneNumber}${addr.secondNumber ? '<br>Alt: ' + addr.secondNumber : ''}`;
+      const fullAddress = `${addr.fullName}<br>${addr.streetAddress}<br>${addr.city}, ${addr.state} ${addr.postalCode}<br>${addr.country}<br>Phone: ${addr.phoneNumber}${addr.secondNumber ? '<br>Alt: ' + addr.secondNumber : ''}`;
+      const effectiveTotal = effectiveSubtotal;
 
-      // Action buttons - Updated to show download icon only
-      let actionButtons = `
-        <button onclick="downloadOrderDetails('${order._id}'); Swal.close();" 
-                title="Download Invoice" 
-                class="p-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition">
-          <i class="fas fa-download text-base"></i>
-        </button>
+      // ✅ BUTTON LAYOUT FIX: flex gap, aligned to right
+      let actionButtonsHtml = `
+        <div class="flex gap-2">
+          <button onclick="downloadOrderDetails('${order._id}'); Swal.close();" title="Download Invoice" class="p-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition">
+            <i class="fas fa-download"></i>
+          </button>
+          ${order.orderStatus !== 'cancelled' ? 
+            (order.orderStatus === 'delivered' 
+              ? `<button onclick="confirmReturnOrder('${order._id}', '${order.orderId}');" class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition">Request Return</button>`
+              : `<button onclick="confirmCancelOrder('${order._id}', '${order.orderId}')" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">Cancel Entire Order</button>`)
+            : ''
+          }
+          <button onclick="Swal.close();" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition">Close</button>
+        </div>
       `;
-      
-      if (order.orderStatus !== 'cancelled') {
-        if (order.orderStatus === 'delivered') {
-          actionButtons += `<button onclick="confirmReturnOrder('${order._id}', '${order.orderId}'); Swal.close();" class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition">Request Return</button>`;
-        } else {
-          actionButtons += `<button onclick="confirmCancelOrder('${order._id}', '${order.orderId}'); Swal.close();" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">Cancel Entire Order</button>`;
-        }
-      }
-      actionButtons += ` <button onclick="Swal.close();" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition">Close</button>`;
+
+      const statusClass = getOrderStatusClass(order.orderStatus);
+      const statusLabel = getOrderStatusLabel(order.orderStatus);
 
       Swal.fire({
-        title: `<div class="text-center text-gray-900">Order <span class="font-mono bg-gray-100 px-2 py-1 rounded">${order.orderId.toUpperCase()}</span></div>`,
+        title: `<div class="text-center">
+          <div class="text-gray-900 text-xl font-bold">Order <span class="font-mono bg-gray-100 px-2 py-1 rounded">${order.orderId.toUpperCase()}</span></div>
+          <span class="mt-1 inline-block px-2 py-1 text-xs font-medium rounded-full ${statusClass}">${statusLabel}</span>
+        </div>`,
         html: `
           <div class="text-left max-h-[60vh] overflow-y-auto space-y-5">
-            <!-- Items -->
-            <div>
-              <h4 class="font-semibold text-gray-900 mb-3">Items</h4>
-              ${itemsHtml}
-            </div>
-
-            <!-- Shipping -->
+            <div><h4 class="font-semibold text-gray-900 mb-3">Items</h4>${itemsHtml}</div>
             <div class="bg-gray-50 p-4 rounded-lg">
               <h4 class="font-semibold text-gray-900 mb-2">Shipping Address</h4>
               <p class="text-sm text-gray-700">${fullAddress}</p>
             </div>
-
-            <!-- Summary -->
             <div class="border-t pt-4">
-              <div class="flex justify-between text-sm text-gray-600">
-                <span>Subtotal</span>
-                <span>₹${order.subTotal.toFixed(2)}</span>
-              </div>
-              <div class="flex justify-between text-sm text-emerald-600 mt-1">
-                <span>Discount</span>
-                <span>- ₹${order.discountAmount.toFixed(2)}</span>
-              </div>
-              <div class="flex justify-between text-sm text-gray-600 mt-1">
-                <span>Tax</span>
-                <span>₹${order.taxAmount.toFixed(2)}</span>
-              </div>
-              <div class="flex justify-between font-bold text-lg text-gray-900 mt-3 pt-3 border-t">
-                <span>Total</span>
-                <span>₹${order.totalAmount.toFixed(2)}</span>
-              </div>
+              <div class="flex justify-between text-sm text-gray-600"><span>Subtotal</span><span>₹${effectiveSubtotal.toFixed(2)}</span></div>
+              <div class="flex justify-between font-bold text-lg text-gray-900 mt-3 pt-3 border-t"><span>Total</span><span>₹${effectiveTotal.toFixed(2)}</span></div>
             </div>
-
-            <!-- Actions -->
-            <div class="flex flex-wrap gap-2 justify-center pt-4">
-              ${actionButtons}
-            </div>
+            <div class="pt-4">${actionButtonsHtml}</div>
           </div>
         `,
         showConfirmButton: false,
         showCloseButton: false,
         padding: '1.5rem',
-        customClass: {
-          popup: 'rounded-xl shadow-xl',
-          title: 'text-xl font-bold mb-4'
+        customClass: { 
+          popup: 'rounded-xl shadow-xl', 
+          title: 'mb-4' 
         }
       });
     }
 
-    // Function to download order details as PDF (using browser print)
+    // --- Rest of your functions remain unchanged ---
+    function confirmCancelOrder(orderId, orderNumber) {
+      Swal.close();
+      Swal.fire({
+        title: 'Cancel Entire Order?',
+        text: `Are you sure you want to cancel order #${orderNumber.slice(0,8).toUpperCase()}?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, Cancel',
+        cancelButtonText: 'Keep Order',
+        confirmButtonColor: '#ef4444',
+        reverseButtons: true
+      }).then((result) => {
+        if (result.isConfirmed) {
+          fetch(`/profile/orders/${orderId}/cancel`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' }
+          })
+          .then(res => res.json())
+          .then(data => {
+            if (data.success) {
+              Swal.fire('Cancelled!', 'Your order has been cancelled.', 'success').then(() => location.reload());
+            } else {
+              Swal.fire('Error', data.message || 'Failed to cancel order.', 'error');
+            }
+          })
+          .catch(err => {
+            console.error('Cancel error:', err);
+            Swal.fire('Error', 'Network error. Please try again.', 'error');
+          });
+        }
+      });
+    }
+
+    function confirmReturnOrder(orderId, orderNumber) {
+      Swal.fire({
+        title: 'Request a Return?',
+        html: `
+          <p class="text-gray-700 mb-3">Order #${orderNumber.slice(0,8).toUpperCase()}</p>
+          <textarea 
+            id="return-reason" 
+            class="swal2-input" 
+            placeholder="Please provide a reason for return (required)"
+            rows="3"
+            style="width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 0.5rem;"
+          ></textarea>
+          <small class="text-red-600" id="return-error" style="display:none;"></small>
+        `,
+        showCancelButton: true,
+        confirmButtonText: 'Submit Return Request',
+        cancelButtonText: 'Cancel',
+        confirmButtonColor: '#10b981',
+        preConfirm: () => {
+          const reason = document.getElementById('return-reason').value.trim();
+          const errorEl = document.getElementById('return-error');
+          errorEl.style.display = 'none';
+          if (!reason) {
+            errorEl.textContent = 'Reason is required.';
+            errorEl.style.display = 'block';
+            return false;
+          }
+          if (reason.length < 5) {
+            errorEl.textContent = 'Reason must be at least 5 characters long.';
+            errorEl.style.display = 'block';
+            return false;
+          }
+          if (/^[\d\s,.'-]+$/i.test(reason)) {
+            errorEl.textContent = 'Reason must contain actual descriptive text.';
+            errorEl.style.display = 'block';
+            return false;
+          }
+          return reason;
+        },
+        didOpen: () => {
+          document.getElementById('return-reason').addEventListener('input', () => {
+            document.getElementById('return-error').style.display = 'none';
+          });
+        }
+      }).then((result) => {
+        if (result.isConfirmed) {
+          const reason = result.value;
+          fetch(`/profile/orders/${orderId}/return`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ reason })
+          })
+          .then(res => res.json())
+          .then(data => {
+            if (data.success) {
+              Swal.fire('Return Requested!', "We'll contact you shortly with next steps.", 'success').then(() => location.reload());
+            } else {
+              Swal.fire('Error', data.message || 'Failed to request return.', 'error');
+            }
+          })
+          .catch(err => {
+            console.error('Return error:', err);
+            Swal.fire('Error', 'Network error. Please try again.', 'error');
+          });
+        }
+      });
+    }
+
+    function cancelItem(orderId, itemIndex) {
+      Swal.fire({
+        title: 'Cancel This Item?',
+        text: 'This will cancel the item from your order and restore stock.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, Cancel Item',
+        cancelButtonText: 'Keep Item',
+        confirmButtonButtonColor: '#ef4444',
+        reverseButtons: true
+      }).then((result) => {
+        if (result.isConfirmed) {
+          fetch(`/profile/orders/${orderId}/items/${itemIndex}/cancel`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' }
+          })
+          .then(res => res.json())
+          .then(data => {
+            if (data.success) {
+              Swal.fire('Cancelled!', 'Item has been cancelled from your order.', 'success').then(() => location.reload());
+            } else {
+              Swal.fire('Error', data.message || 'Could not cancel item.', 'error');
+            }
+          })
+          .catch(err => {
+            console.error('Error cancelling item:', err);
+            Swal.fire('Error', 'Failed to cancel item. Please try again.', 'error');
+          });
+        }
+      });
+    }
+
     function downloadOrderDetails(orderId) {
       if (orderDetailsCache[orderId]) {
         generateInvoice(orderDetailsCache[orderId]);
         return;
       }
-      
-      fetch(`/api/orders/${orderId}`)
+      fetch(`/profile/orders/${orderId}`)
         .then(res => res.json())
         .then(data => {
           if (data.order) {
@@ -376,13 +562,12 @@
             Swal.fire('Error', 'Failed to fetch order details for download.', 'error');
           }
         })
-        .catch(error => {
-          console.error('Error fetching order details:', error);
+        .catch(err => {
+          console.error('Error fetching order details:', err);
           Swal.fire('Error', 'Failed to fetch order details. Please try again.', 'error');
         });
     }
 
-    // Function to generate and show the invoice
     function generateInvoice(order) {
       const printableContent = `
         <!DOCTYPE html>
@@ -432,9 +617,13 @@
               text-transform: uppercase;
             }
             .status-delivered { background-color: #dcfce7; color: #15803d; }
-            .status-pending { background-color: #f3f4f6; color: #4b5563; }
+            .status-pending,
+            .status-processing,
+            .status-active { background-color: #dbeafe; color: #1d4ed8; }
+            .status-shipped { background-color: #ede9fe; color: #6d28d9; }
             .status-cancelled { background-color: #fee2e2; color: #b91c1c; }
-            
+            .status-returned,
+            .status-return-requested { background-color: #fef3c7; color: #b45309; }
             .section {
               margin-bottom: 25px;
             }
@@ -446,7 +635,6 @@
               border-bottom: 1px solid #e5e7eb;
               padding-bottom: 5px;
             }
-            
             .items-table {
               width: 100%;
               border-collapse: collapse;
@@ -466,7 +654,6 @@
             .items-table .item-price {
               text-align: right;
             }
-            
             .summary {
               margin-top: 20px;
             }
@@ -481,7 +668,6 @@
               padding-top: 10px;
               border-top: 2px solid #333;
             }
-            
             .footer {
               margin-top: 40px;
               text-align: center;
@@ -489,16 +675,6 @@
               font-size: 14px;
               border-top: 1px solid #e5e7eb;
               padding-top: 20px;
-            }
-            
-            @media print {
-              body {
-                padding: 0;
-                margin: 0;
-              }
-              .no-print {
-                display: none;
-              }
             }
           </style>
           <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -512,13 +688,12 @@
                 <div class="order-date">Placed on ${new Date(order.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
               </div>
               <div>
-                <span class="status-badge status-${order.orderStatus.toLowerCase()}">
-                  ${order.orderStatus.charAt(0).toUpperCase() + order.orderStatus.slice(1)}
+                <span class="status-badge status-${order.orderStatus.toLowerCase().replace(' ', '-')}">
+                  ${getOrderStatusLabel(order.orderStatus)}
                 </span>
               </div>
             </div>
           </div>
-          
           <div class="section">
             <div class="section-title">Items Ordered</div>
             <table class="items-table">
@@ -539,23 +714,24 @@
                   if (item.price) {
                     if (item.price.$numberDecimal) price = parseFloat(item.price.$numberDecimal);
                     else if (typeof item.price === 'string') price = parseFloat(item.price);
-                    else if (typeof item.price === 'object' && item.price.toString) price = parseFloat(item.price.toString());
                     else price = parseFloat(item.price) || 0;
                   }
                   const total = (price * quantity).toFixed(2);
+                  const isCancelled = item.orderStatus === 'cancelled';
+                  const nameStyle = isCancelled ? 'text-decoration: line-through; color: #9ca3af;' : '';
+                  const priceStyle = isCancelled ? 'text-decoration: line-through; color: #9ca3af; text-align: right;' : 'text-align: right;';
                   return `
                     <tr>
-                      <td class="item-name">${productName}</td>
-                      <td>${color}</td>
-                      <td>${quantity}</td>
-                      <td class="item-price">₹${total}</td>
+                      <td class="item-name" style="${nameStyle}">${productName}</td>
+                      <td style="${isCancelled ? 'color: #9ca3af;' : ''}">${color}</td>
+                      <td style="${isCancelled ? 'color: #9ca3af;' : ''}">${quantity}</td>
+                      <td class="item-price" style="${priceStyle}">₹${total}</td>
                     </tr>
                   `;
                 }).join('')}
               </tbody>
             </table>
           </div>
-          
           <div class="section">
             <div class="section-title">Shipping Address</div>
             <div>
@@ -567,7 +743,6 @@
               ${order.address.secondNumber ? `Alternate: ${order.address.secondNumber}<br>` : ''}
             </div>
           </div>
-          
           <div class="section summary">
             <div class="summary-row">
               <span>Subtotal</span>
@@ -586,13 +761,11 @@
               <span>₹${order.totalAmount.toFixed(2)}</span>
             </div>
           </div>
-          
           <div class="footer">
             <p>Thank you for your order! Your invoice has been generated on ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
             <p>This is an automatically generated invoice. No signature required.</p>
             <p>Contact us: support@yourstore.com | +91 XXXXXXXXXX</p>
           </div>
-          
           <div class="no-print" style="text-align: center; margin-top: 20px; padding: 15px; background: #f8fafc; border-radius: 8px;">
             <p><strong>Tip:</strong> Use Ctrl+P (or Cmd+P on Mac) to save as PDF or print this invoice.</p>
             <button onclick="window.print()" style="background: #3b82f6; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-top: 10px;">
@@ -602,105 +775,10 @@
         </body>
         </html>
       `;
-      
       const printWindow = window.open('', '_blank', 'width=800,height=600');
       printWindow.document.write(printableContent);
       printWindow.document.close();
       printWindow.focus();
-    }
-
-    function confirmCancelOrder(orderId, orderNumber) {
-      Swal.fire({
-        title: 'Cancel Entire Order?',
-        text: `Are you sure you want to cancel order #${orderNumber.slice(0,8).toUpperCase()}?`,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Yes, Cancel',
-        cancelButtonText: 'Keep Order',
-        confirmButtonColor: '#ef4444',
-        reverseButtons: true
-      }).then((result) => {
-        if (result.isConfirmed) {
-          fetch(`/api/orders/${orderId}/cancel`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' }
-          })
-          .then(res => res.json())
-          .then(data => {
-            if (data.success) {
-              Swal.fire('Cancelled!', 'Your order has been cancelled.', 'success')
-                .then(() => location.reload());
-            } else {
-              Swal.fire('Error', data.message || 'Failed to cancel order.', 'error');
-            }
-          });
-        }
-      });
-    }
-
-    function confirmReturnOrder(orderId, orderNumber) {
-      Swal.fire({
-        title: 'Request a Return?',
-        text: `Would you like to return order #${orderNumber.slice(0,8).toUpperCase()}?`,
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonText: 'Request Return',
-        cancelButtonText: 'Cancel',
-        confirmButtonColor: '#10b981'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          fetch(`/api/orders/${orderId}/return`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' }
-          })
-          .then(res => res.json())
-          .then(data => {
-            if (data.success) {
-              Swal.fire('Return Requested!', "We'll contact you shortly with next steps.", 'success')
-                .then(() => location.reload());
-            } else {
-              Swal.fire('Error', data.message || 'Failed to request return.', 'error');
-            }
-          });
-        }
-      });
-    }
-
-    // Per-item cancel function
-    function cancelItem(orderId, itemIndex) {
-      Swal.fire({
-        title: 'Cancel This Item?',
-        text: 'This will remove the item from your order and refund the amount.',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Yes, Remove Item',
-        cancelButtonText: 'Keep Item',
-        confirmButtonColor: '#ef4444',
-        reverseButtons: true
-      }).then((result) => {
-        if (result.isConfirmed) {
-          fetch(`/profile/orders/${orderId}/items/${itemIndex}/cancel`, {
-            method: 'DELETE',
-            headers: { 'Content-Type': 'application/json' }
-          })
-          .then(res => res.json())
-          .then(data => {
-            if (data.success) {
-              Swal.fire('Removed!', 'Item has been removed from your order.', 'success')
-                .then(() => {
-                  Swal.close();
-                  location.reload();
-                });
-            } else {
-              Swal.fire('Error', data.message || 'Could not cancel item.', 'error');
-            }
-          })
-          .catch(error => {
-            console.error('Error cancelling item:', error);
-            Swal.fire('Error', 'Failed to cancel item. Please try again.', 'error');
-          });
-        }
-      });
     }
   </script>
 </body>

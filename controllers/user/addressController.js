@@ -1,14 +1,27 @@
 import { addressAdd, addressDelete, addressDetails, editAddressDetails, editAddressDetailsUpdate } from "../../service/user/addressService.js";
 import { STATUS_CODE } from "../../util/statusCodes.js";
 
+// controller/user/addressController.js
+
 export const address = async (req, res) => {
   try {
     const user = req.session.userDetail;
     if (!user || !user._id) {
-      return res.redirect('/login'); // or appropriate fallback
+      return res.redirect('/login');
     }
-    const userAddresses = await addressDetails(user._id);
-    res.render('address', { user, addresses: userAddresses }); // pass addresses to template
+
+    const page = parseInt(req.query.page) || 1;
+    const limit = 3; // adjustable
+
+    const result = await addressDetails(user._id, page, limit);
+
+    
+
+    res.render('address', {
+      user,
+      addresses: result.addresses,
+      pagination: result.pagination
+    });
   } catch (error) {
     console.log(`error from address ${error}`);
     res.redirect('/profile');

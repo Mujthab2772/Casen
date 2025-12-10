@@ -19,6 +19,10 @@ const otpSchema = new mongoose.Schema(
     password: {
       type: String,
     },
+    profilePic: {
+      type: String,
+      default: null
+    },
     otp: {
       type: String,
       required: true,

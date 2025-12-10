@@ -6,7 +6,7 @@ import { forgotOtpPage, forgotOtpVerify, forgotPass, forgotPassResetPost, login,
 import { landingPage, logout } from "../controllers/user/landingPage.js"
 import { fetchProducts, singleProduct } from "../controllers/user/productsController.js"
 import { preventAuthAccess, requireActiveUser, userProfile } from "../middlewares/userMiddleware.js"
-import { editProfile, ProfileUser, updateProfile } from "../controllers/user/profileController.js"
+import { editProfile, newPassword, otpResend, otpVerify, ProfileUser, setNewPass, updateProfile, verifyEmail } from "../controllers/user/profileController.js"
 import upload from "../middlewares/multer.js"
 import { address, addressEdit, addressEditUpdate, addressFetch, addressNew, deleteAddress } from "../controllers/user/addressController.js"
 import { validateAddress } from "../middlewares/addressMiddleware.js"
@@ -14,7 +14,8 @@ import { cart, newCart, removeCart, updateCart } from "../controllers/user/cartC
 import { checkout, checkoutDatas } from "../controllers/user/checkoutController.js"
 import { payment, paymentProcess, paymentSuccess } from "../controllers/user/paymentController.js"
 import { exitsCheckout } from "../middlewares/checkoutMiddleware.js"
-import { cancelItem, orderListing } from "../controllers/user/orderController.js"
+import { cancelItem, cancelOrder, orderListing, returnProduct } from "../controllers/user/orderController.js"
+import { validateProfileUpdate } from "../middlewares/validateProfileUpdate.js"
 
 
 
@@ -26,9 +27,9 @@ router.post('/signup', preventAuthAccess,validateSignUp, signUpPost)
 
 router.get('/signUpOtp',preventAuthAccess, otpPage)
 
-router.post('/otpverify',preventAuthAccess, otpPagePost)
+router.post('/otpverify/signupVerify',preventAuthAccess, otpPagePost)
 
-router.post('/resendOtp',preventAuthAccess, resendOtp)
+router.post('/resendOtp/signupVerify',preventAuthAccess, resendOtp)
 
 router.get('/auth/google',preventAuthAccess, googleAuth)
 
@@ -69,7 +70,13 @@ router.get('/profile', userProfile, ProfileUser)
 
 router.get('/profile/edit', userProfile, editProfile)
 
-router.put('/profile/edit', userProfile, upload.single("profilePic"), updateProfile)
+router.put('/profile/edit', userProfile, upload.single("profilePic"), validateProfileUpdate, updateProfile)
+
+router.get('/profile/email/otp', userProfile, verifyEmail)
+
+router.post('/otpverify/emailVerify', userProfile, otpVerify)
+
+router.post('/resendOtp/emailVerify',userProfile, otpResend)
 
 //address
 
@@ -116,7 +123,17 @@ router.get('/payment/success', userProfile, paymentSuccess)
 
 router.get('/profile/orders', userProfile, orderListing)
 
-router.delete('/profile/orders/:orderId/items/:itemIndex/cancel', userProfile, cancelItem)
+router.put('/profile/orders/:orderId/items/:itemIndex/cancel', userProfile, cancelItem)
+
+router.patch('/profile/orders/:orderId/cancel', userProfile, cancelOrder)
+
+router.patch('/profile/orders/:orderId/return', userProfile, returnProduct)
 
 
-export default router
+// password 
+
+router.get('/profile/newPassword', userProfile, newPassword)
+
+router.put('/password', userProfile, setNewPass)
+
+export default router 

@@ -14,6 +14,13 @@ export const payment = async (req, res) => {
     // (This is the same logic you use in checkoutDatas)
     const recalculated = await tempOrder(userId, req.session.checkout);
 
+    if (!recalculated?.productList?.length) {
+  req.session.checkout = null;
+  req.session.items = null;
+  req.session.address = null;
+  return res.redirect('/cart'); // ✅ Safe here
+}
+
     const checkoutDetail = await orderCalculation(recalculated, req)
 
     // console.log(req.session.items);

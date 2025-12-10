@@ -128,7 +128,7 @@
           <i class="fas fa-home text-sm"></i>
           <span class="font-medium text-sm">Address</span>
         </a>
-        <a href="/password" class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
+        <a href="/profile/newPassword" class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
           <i class="fas fa-lock text-sm"></i>
           <span class="font-medium text-sm">Password</span>
         </a>
@@ -149,59 +149,116 @@
     </aside>
 
     <!-- Address Management Content -->
-    <main class="flex-1">
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
-        <div>
-          <h1 class="text-3xl font-bold text-gray-900">Address Management</h1>
-          <p class="text-gray-500 mt-1">Manage your shipping and billing addresses.</p>
+    <!-- Address Management Content -->
+<main class="flex-1">
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900">Address Management</h1>
+      <p class="text-gray-500 mt-1">Manage your shipping and billing addresses.</p>
+    </div>
+    <button class="mt-4 sm:mt-0 bg-black text-white px-5 py-2 rounded-lg font-medium flex items-center space-x-2 hover:bg-gray-800 transition-colors" onclick="window.location.href='/profile/newAddress'">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+      </svg>
+      <span>Add New Address</span>
+    </button>
+  </div>
+
+  <!-- Address Cards -->
+  <div class="space-y-6">
+    <% if (locals.addresses && addresses.length > 0) { %>
+      <% for (let i = 0; i < addresses.length; i++) { %>
+      <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+        <div class="flex items-start justify-between mb-4">
+          <div>
+            <h3 class="text-xl font-semibold text-gray-900"><%= addresses[i].fullName %></h3>
+            <% if (addresses[i].isDefault) { %>
+            <span class="ml-2 inline-block bg-black text-white text-xs px-2 py-1 rounded-full">Default</span>
+            <% } %>
+          </div>
+          <div class="flex space-x-2">
+            <button class="text-gray-500 hover:text-gray-700" onclick="window.location.href='/profile/editAddress?addressId=<%= addresses[i].addressId %>'">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-5.414a2 2 0 012.828 0L18 10.586l-1.414 1.414-6 6a2 2 0 01-2.828 0A2 2 0 018 17.172V16a2 2 0 012-2h2a2 2 0 012 2v1.172a2 2 0 01-.586 1.414l-6 6z" />
+              </svg>
+            </button>
+            <button class="text-gray-500 hover:text-red-600" onclick="confirmDeleteAddress('<%= addresses[i].addressId %>')">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M19 7l-.867 12.142A1 1 0 0117.133 20H6.867A1 1 0 016 19.133L5.133 7M20 7V5a2 2 0 00-2-2h-2.343M15 7v5m-5-5v5m-5-5v5m-2 2h16v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2z" />
+              </svg>
+            </button>
+          </div>
         </div>
-        <button class="mt-4 sm:mt-0 bg-black text-white px-5 py-2 rounded-lg font-medium flex items-center space-x-2 hover:bg-gray-800 transition-colors" onclick="window.location.href='/profile/newAddress'">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-          </svg>
-          <span>Add New Address</span>
-        </button>
+        <div class="text-gray-700 space-y-1">
+          <p><%= addresses[i].streetAddress %></p>
+          <p><%= addresses[i].city %>, <%= addresses[i].state %> <%= addresses[i].postalCode %></p>
+          <p><%= addresses[i].country %></p>
+          <p><%= addresses[i].phoneNumber %></p>
+          <% if (addresses[i].secondNumber) { %>
+            <p>Alt: <%= addresses[i].secondNumber %></p>
+          <% } %>
+        </div>
+      </div>
+      <% } %>
+    <% } else { %>
+      <div class="bg-white rounded-xl border border-gray-200 p-12 text-center">
+        <div class="text-gray-400 mb-2">
+          <i class="fas fa-map-marker-alt text-4xl"></i>
+        </div>
+        <h3 class="text-lg font-medium text-gray-900">No addresses yet</h3>
+        <p class="text-gray-500 mt-1">Add a new shipping or billing address.</p>
+        <button onclick="window.location.href='/profile/newAddress'" class="mt-4 inline-block px-4 py-2 bg-black text-white text-sm rounded-lg hover:bg-gray-800 transition">Add Address</button>
+      </div>
+    <% } %>
+  </div>
+
+  <!-- ✅ PAGINATION -->
+  <% if (locals.pagination && pagination.totalPages > 1) { %>
+    <div class="mt-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div class="text-sm text-gray-500">
+        Showing 
+        <%= (pagination.currentPage - 1) * pagination.limit + 1 %> 
+        to 
+        <%= Math.min(pagination.currentPage * pagination.limit, pagination.totalAddresses) %> 
+        of <%= pagination.totalAddresses %> addresses
       </div>
 
-      <!-- Address Cards -->
-      <div class="space-y-6">
-
-        <!-- Address Card 1 - Default -->
-         <% for (let i = 0; i < addresses.length; i++) { %>
-        <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-          <div class="flex items-start justify-between mb-4">
-            <div>
-              <h3 class="text-xl font-semibold text-gray-900"><%= addresses[i].fullName %></h3>
-              <% if (addresses[i].isDefault) { %>
-              <span class="ml-2 inline-block bg-black text-white text-xs px-2 py-1 rounded-full">Default</span>
-              <% } %>
-            </div>
-            <div class="flex space-x-2">
-              <button class="text-gray-500 hover:text-gray-700" onclick="window.location.href='/profile/editAddress?addressId=<%=addresses[i].addressId %>'">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-5.414a2 2 0 012.828 0L18 10.586l-1.414 1.414-6 6a2 2 0 01-2.828 0A2 2 0 018 17.172V16a2 2 0 012-2h2a2 2 0 012 2v1.172a2 2 0 01-.586 1.414l-6 6z" />
-                </svg>
-              </button>
-              <button class="text-gray-500 hover:text-red-600" onclick="confirmDeleteAddress('<%= addresses[i].addressId %>')">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M19 7l-.867 12.142A1 1 0 0117.133 20H6.867A1 1 0 016 19.133L5.133 7M20 7V5a2 2 0 00-2-2h-2.343M15 7v5m-5-5v5m-5-5v5m-2 2h16v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2z" />
-                </svg>
-              </button>
-            </div>
-          </div>
-          <div class="text-gray-700 space-y-1">
-            <p><%= addresses[i].streetAddress %></p>
-            <p><%= addresses[i].city %>, <%= addresses[i].state %> <%= addresses[i].postalCode %></p>
-            <p><%= addresses[i].country %></p>
-            <p><%= addresses[i].phoneNumber %></p>
-          </div>
-        </div>
-
+      <div class="flex space-x-2">
+        <% if (pagination.hasPrevPage) { %>
+          <a href="?page=<%= pagination.currentPage - 1 %>"
+             class="px-3 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors">
+            <i class="fas fa-chevron-left"></i>
+          </a>
+        <% } else { %>
+          <span class="px-3 py-2 rounded-lg border border-gray-200 text-gray-400 cursor-not-allowed">
+            <i class="fas fa-chevron-left"></i>
+          </span>
         <% } %>
 
+        <% for (let i = Math.max(1, pagination.currentPage - 1); i <= Math.min(pagination.totalPages, pagination.currentPage + 1); i++) { %>
+          <a href="?page=<%= i %>"
+             class="px-3 py-2 rounded-lg border 
+                    <%= i === pagination.currentPage ? 'bg-black text-white border-black' : 'border-gray-300 text-gray-700 hover:bg-gray-50' %>
+                    transition-colors">
+            <%= i %>
+          </a>
+        <% } %>
+
+        <% if (pagination.hasNextPage) { %>
+          <a href="?page=<%= pagination.currentPage + 1 %>"
+             class="px-3 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors">
+            <i class="fas fa-chevron-right"></i>
+          </a>
+        <% } else { %>
+          <span class="px-3 py-2 rounded-lg border border-gray-200 text-gray-400 cursor-not-allowed">
+            <i class="fas fa-chevron-right"></i>
+          </span>
+        <% } %>
       </div>
-    </main>
+    </div>
+  <% } %>
+</main>
 
   </div>
 
