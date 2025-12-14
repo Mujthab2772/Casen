@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>My Orders</title>
-  <!-- ✅ Fixed CDN URLs: NO TRAILING SPACES -->
+  <!-- ✅ Fixed CDN URLs -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.10/dist/cdn.min.js"></script>
@@ -287,7 +287,7 @@
     </main>
   </div>
 
-  <!-- ✅ SweetAlert2 CDN (no space!) -->
+  <!-- ✅ SweetAlert2 CDN -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <style>
@@ -365,18 +365,30 @@
       const fullAddress = `${addr.fullName}<br>${addr.streetAddress}<br>${addr.city}, ${addr.state} ${addr.postalCode}<br>${addr.country}<br>Phone: ${addr.phoneNumber}${addr.secondNumber ? '<br>Alt: ' + addr.secondNumber : ''}`;
       const effectiveTotal = effectiveSubtotal;
 
-      // ✅ BUTTON LAYOUT FIX: flex gap, aligned to right
-      let actionButtonsHtml = `
+      // ✅ FIXED: Hide 'Cancel Entire Order' if order is delivered or otherwise non-cancelable
+      const nonCancellableStatuses = ['delivered', 'cancelled', 'returned', 'return requested'];
+      const os = (order.orderStatus || '').toLowerCase();
+      const showCancelEntireButton = !nonCancellableStatuses.includes(os);
+      const showReturnButton = os === 'delivered';
+
+      let cancelButtonHtml = '';
+      let returnButtonHtml = '';
+
+      if (showCancelEntireButton) {
+        cancelButtonHtml = `<button onclick="confirmCancelOrder('${order._id}', '${order.orderId}')" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">Cancel Entire Order</button>`;
+      }
+
+      if (showReturnButton) {
+        returnButtonHtml = `<button onclick="confirmReturnOrder('${order._id}', '${order.orderId}');" class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition">Request Return</button>`;
+      }
+
+      const actionButtonsHtml = `
         <div class="flex gap-2">
           <button onclick="downloadOrderDetails('${order._id}'); Swal.close();" title="Download Invoice" class="p-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition">
             <i class="fas fa-download"></i>
           </button>
-          ${order.orderStatus !== 'cancelled' ? 
-            (order.orderStatus === 'delivered' 
-              ? `<button onclick="confirmReturnOrder('${order._id}', '${order.orderId}');" class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition">Request Return</button>`
-              : `<button onclick="confirmCancelOrder('${order._id}', '${order.orderId}')" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">Cancel Entire Order</button>`)
-            : ''
-          }
+          ${cancelButtonHtml}
+          ${returnButtonHtml}
           <button onclick="Swal.close();" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition">Close</button>
         </div>
       `;
@@ -688,9 +700,7 @@
                 <div class="order-date">Placed on ${new Date(order.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
               </div>
               <div>
-                <span class="status-badge status-${order.orderStatus.toLowerCase().replace(' ', '-')}">
-                  ${getOrderStatusLabel(order.orderStatus)}
-                </span>
+                <span class="status-badge status-${order.orderStatus.toLowerCase().replace(' ', '-')}">${getOrderStatusLabel(order.orderStatus)}</span>
               </div>
             </div>
           </div>

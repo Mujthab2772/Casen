@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Caseify Admin - Orders</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="/logoTab.png" />
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/customersPage.css" />
+</head>
+<body class="bg-gray-50">
+  <div class="dashboard-container">
+    <!-- Sidebar (unchanged) -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="3" y="3" width="18" height="18" rx="2" fill="white"/>
+            <rect x="7" y="7" width="4" height="4" fill="black"/>
+            <rect x="13" y="7" width="4" height="4" fill="black"/>
+            <rect x="7" y="13" width="10" height="4" fill="black"/>
+          </svg>
+        </div>
+        <span class="sidebar-title">Casen</span>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="/admin/dashboard" class="nav-item">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4z"/>
+            <path d="M3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6z"/>
+            <path d="M14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
+          </svg>
+          <span>Dashboard</span>
+        </a>
+
+        <a href="/admin/order" class="nav-item active">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 6H6.28l-.31-1.243A1 1 0 005 4H3z"/>
+            <path d="M16 16a2 2 0 11-4 0 2 2 0 014 0z"/>
+            <path d="M4 16a2 2 0 11-4 0 2 2 0 014 0z"/>
+          </svg>
+          <span>Orders</span>
+        </a>
+
+        <a href="/admin/products" class="nav-item">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M3 1a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V1z"/>
+            <path d="M3 5a1 1 0 011-1h12a1 1 0 011 1v12a2 2 0 01-2 2H5a2 2 0 01-2-2V5z"/>
+          </svg>
+          <span>Products</span>
+        </a>
+
+        <a href="/admin/customers" class="nav-item">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v1h8v-1zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"/>
+          </svg>
+          <span>Customers</span>
+        </a>
+
+        <a href="#" class="nav-item">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
+          </svg>
+          <span>Analytics</span>
+        </a>
+
+        <a href="#" class="nav-item">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z"/>
+          </svg>
+          <span>Coupons</span>
+        </a>
+
+        <a href="/admin/category" class="nav-item">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M7 3a1 1 0 000 2h6a1 1 0 000-2H7zM4 7a1 1 0 011-1h10a1 1 0 011 1v3a2 2 0 01-2 2H6a2 2 0 01-2-2V7zm2 3a1 1 0 100 2 1 1 0 000-2z"/>
+          </svg>
+          <span>Categories</span>
+        </a>
+
+        <a href="#" class="nav-item">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M4.5 3a2.5 2.5 0 015 0V4h4V3a2.5 2.5 0 015 0v1h2.006a1 1 0 01.994.89l1.348 13.48A2 2 0 0118.334 20H1.666a2 2 0 01-1.994-2.21L1 4.89A1 1 0 012 4h2V3a2.5 2.5 0 012.5-2.5z"/>
+          </svg>
+          <span>Offer</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-info">
+          <div class="user-avatar">A</div>
+          <div class="user-details">
+            <div class="user-name">Admin</div>
+            <div class="user-email">admin@example.com</div>
+          </div>
+        </div>
+        <form action="/admin/logout" method="post">
+          <button class="logout-btn" type="submit">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M10.5 1.5H3a1.5 1.5 0 00-1.5 1.5v10a1.5 1.5 0 001.5 1.5h7.5a1.5 1.5 0 001.5-1.5v-4"/>
+              <path d="M10.5 5l3-3m0 0l-3-3m3 3H6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            </svg>
+            Logout
+          </button>
+        </form>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-dashboard">
+      <div class="dashboard-header">
+        <h1 class="page-title">Orders</h1>
+      </div>
+
+      <div class="content-area py-4">
+        <div class="max-w-4xl mx-auto px-4 mb-6">
+          <div class="flex flex-col sm:flex-row gap-3">
+            <!-- ✅ FILTER FORM WITH ID -->
+            <form id="filter-form" method="GET" class="relative flex-1">
+              <input
+                type="text"
+                name="search"
+                id="search-input"
+                placeholder="Search by name or ID..."
+                class="w-full pl-11 pr-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                value="<%- typeof search !== 'undefined' ? search : '' %>"
+              />
+              <button
+                type="button"
+                id="search-action"
+                class="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-600"
+                aria-label="<%- (typeof search !== 'undefined' && search.trim() !== '') ? 'Clear search' : 'Search' %>"
+              >
+                <% if (typeof search !== 'undefined' && search.trim() !== '') { %>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                  </svg>
+                <% } else { %>
+                  <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                <% } %>
+              </button>
+
+              <input type="hidden" name="status" value="<%- (typeof status !== 'undefined' && status) ? status : '' %>" id="status-hidden" />
+            </form>
+
+            <!-- Status Dropdown -->
+            <div class="relative" x-data="{ open: false, selected: '<%- (typeof status !== 'undefined' && status) ? status : '' %>', options: [
+              { value: '', label: 'All Statuses' },
+              { value: 'pending', label: 'Pending' },
+              { value: 'confirmed', label: 'Confirmed' },
+              { value: 'processing', label: 'Processing' },
+              { value: 'shipped', label: 'Shipped' },
+              { value: 'delivered', label: 'Delivered' },
+              { value: 'cancelled', label: 'Cancelled' },
+              { value: 'returned', label: 'Returned' },
+              { value: 'requestingReturn', label: 'Return Request' }
+            ] }" @click.outside="open = false">
+              <button
+                type="button"
+                @click="open = !open"
+                class="flex items-center justify-between w-full py-2.5 pl-3 pr-8 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                style="min-width: 140px;"
+                :aria-expanded="open"
+              >
+                <span x-text="options.find(o => o.value === selected)?.label || 'All Statuses'"></span>
+                <svg class="h-4 w-4 text-gray-700 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              <div
+                x-show="open"
+                x-transition:enter="transition ease-out duration-100"
+                x-transition:enter-start="transform opacity-0 scale-95"
+                x-transition:enter-end="transform opacity-100 scale-100"
+                x-transition:leave="transition ease-in duration-75"
+                x-transition:leave-start="transform opacity-100 scale-100"
+                x-transition:leave-end="transform opacity-0 scale-95"
+                class="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto"
+                role="listbox"
+              >
+                <template x-for="option in options" :key="option.value">
+                  <button
+                    type="button"
+                    @click="
+                      selected = option.value;
+                      open = false;
+                      document.getElementById('status-hidden').value = option.value;
+                      document.getElementById('filter-form').submit();
+                    "
+                    class="w-full text-left px-3 py-2 text-sm hover:bg-blue-50 focus:bg-blue-100"
+                    :class="{ 'bg-blue-100': selected === option.value }"
+                  >
+                    <span x-text="option.label"></span>
+                  </button>
+                </template>
+              </div>
+            </div>
+          </div>
+
+          <!-- Active Filters -->
+          <div class="mt-3 flex flex-wrap gap-2">
+            <% if (typeof search !== 'undefined' && search && search.trim() !== '') { %>
+              <span class="inline-flex items-center gap-1 bg-blue-100 text-blue-800 text-xs px-2.5 py-1 rounded-full">
+                Search: <strong><%- search %></strong>
+                <a href="?<% if (typeof status !== 'undefined' && status) { %>status=<%- encodeURIComponent(status) %><% } %>" class="ml-1 hover:text-blue-600">×</a>
+              </span>
+            <% } %>
+
+            <% if (typeof status !== 'undefined' && status) { %>
+              <%
+                const statusLabels = {
+                  'pending': 'Pending',
+                  'confirmed': 'Confirmed',
+                  'processing': 'Processing',
+                  'shipped': 'Shipped',
+                  'delivered': 'Delivered',
+                  'cancelled': 'Cancelled',
+                  'returned': 'Returned',
+                  'requestingReturn': 'Return Request'
+                };
+                const label = statusLabels[status] || status;
+              %>
+              <span class="inline-flex items-center gap-1 bg-indigo-100 text-indigo-800 text-xs px-2.5 py-1 rounded-full">
+                Status: <strong><%- label %></strong>
+                <a href="?<% if (typeof search !== 'undefined' && search) { %>search=<%- encodeURIComponent(search) %><% } %>" class="ml-1 hover:text-indigo-600">×</a>
+              </span>
+            <% } %>
+          </div>
+        </div>
+
+        <!-- Orders Table -->
+        <div class="table-wrapper">
+          <table class="customers-table w-full">
+            <thead>
+              <tr>
+                <th>Order ID</th>
+                <th>Customer</th>
+                <th>Date</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (orders && orders.length > 0) { %>
+                <% orders.forEach(order => { %>
+                  <tr>
+                    <td>#<%- (order.orderId?.toString().slice(-6) || order._id.toString().slice(-6)) %></td>
+                    <td><%- (order.userDetails?.firstName + ' ' + order.userDetails?.lastName) || 'Guest' %></td>
+                    <td><%- new Date(order.createdAt).toLocaleDateString() %></td>
+                    <td>$<%- (order.totalAmount || 0).toFixed(2) %></td>
+                    <td>
+                      <% if (order.orderStatus === 'pending') { %>
+                        <span class="bg-amber-100 text-amber-800 inline-block px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap">Pending</span>
+                      <% } else if (order.orderStatus === 'confirmed') { %>
+                        <span class="inline-block px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap bg-sky-100 text-sky-800">Confirmed</span>
+                      <% } else if (order.orderStatus === 'processing') { %>
+                        <span class="inline-block px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap bg-indigo-100 text-indigo-800">Processing</span>
+                      <% } else if (order.orderStatus === 'shipped') { %>
+                        <span class="inline-block px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap bg-emerald-100 text-emerald-800">Shipped</span>
+                      <% } else if (order.orderStatus === 'delivered') { %>
+                        <span class="inline-block px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap bg-green-100 text-green-800">Delivered</span>
+                      <% } else if (order.orderStatus === 'cancelled') { %>
+                        <span class="inline-block px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap bg-rose-100 text-rose-800">Cancelled</span>
+                      <% } else if (order.orderStatus === 'returned') { %>
+                        <span class="inline-block px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap bg-purple-100 text-purple-800">Returned</span>
+                      <% } else if (order.orderStatus === 'requestingReturn') { %>
+                        <span class="inline-block px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap bg-orange-100 text-orange-800">Return Request</span>
+                      <% } else { %>
+                        <span class="inline-block px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap bg-gray-100 text-gray-800"><%- order.orderStatus %></span>
+                      <% } %>
+                    </td>
+                    <td>
+                      <a href="/admin/order/<%- order._id %>" class="action-btn group flex items-center justify-center w-8 h-8 rounded-md bg-white border border-gray-300 text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-150 shadow-sm" aria-label="View order">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                      </a>
+                    </td>
+                  </tr>
+                <% }) %>
+              <% } else { %>
+                <tr>
+                  <td colspan="6" class="text-center py-6 text-gray-500">No orders found</td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination mt-8">
+          <div class="pagination-info text-sm text-gray-600">
+            Showing
+            <span class="font-medium"><%- (orders.length > 0 ? ((currentPage - 1) * 5 + 1) : 0) %></span>
+            to
+            <span class="font-medium"><%- (currentPage - 1) * 5 + orders.length %></span>
+            of
+            <span class="font-medium"><%- totalOrders %></span>
+            orders
+          </div>
+          <div class="pagination-controls mt-3 flex items-center gap-2">
+            <% if (currentPage > 1) { %>
+              <a href="?page=<%- currentPage - 1 %>
+                <% if (search) { %>&search=<%- encodeURIComponent(search) %><% } %>
+                <% if (status) { %>&status=<%- encodeURIComponent(status) %><% } %>"
+                class="pagination-btn flex items-center justify-center w-8 h-8 rounded border border-gray-300 text-gray-700 hover:bg-gray-100"
+              >
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                </svg>
+              </a>
+            <% } else { %>
+              <button class="pagination-btn flex items-center justify-center w-8 h-8 rounded border border-gray-200 text-gray-400 cursor-not-allowed" disabled>
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                </svg>
+              </button>
+            <% } %>
+
+            <div class="pagination-number text-sm font-medium text-gray-700"><%- currentPage %> / <%- totalPages || 1 %></div>
+
+            <% if (currentPage < totalPages) { %>
+              <a href="?page=<%- currentPage + 1 %>
+                <% if (search) { %>&search=<%- encodeURIComponent(search) %><% } %>
+                <% if (status) { %>&status=<%- encodeURIComponent(status) %><% } %>"
+                class="pagination-btn flex items-center justify-center w-8 h-8 rounded border border-gray-300 text-gray-700 hover:bg-gray-100"
+              >
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+                </svg>
+              </a>
+            <% } else { %>
+              <button class="pagination-btn flex items-center justify-center w-8 h-8 rounded border border-gray-200 text-gray-400 cursor-not-allowed" disabled>
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+                </svg>
+              </button>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.10/dist/cdn.min.js"></script>
+
+    <!-- Filtering Scripts -->
+    <script>
+      // Allow Enter-to-submit
+      document.getElementById('filter-form')?.addEventListener('submit', (e) => {
+        const input = document.getElementById('search-input');
+        input.value = input.value.trim();
+        // Allow normal submission
+      });
+
+      // Clear search but preserve status
+      document.getElementById('search-action')?.addEventListener('click', () => {
+        const url = new URL(window.location);
+        url.searchParams.delete('search');
+        url.searchParams.delete('page');
+
+        const currentStatus = document.getElementById('status-hidden')?.value;
+        if (currentStatus) {
+          url.searchParams.set('status', currentStatus);
+        } else {
+          url.searchParams.delete('status');
+        }
+
+        window.location.href = url.toString();
+      });
+    </script>
+</body>
+</html>

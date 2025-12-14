@@ -6,6 +6,7 @@ import upload from "../middlewares/multer.js"
 import { addProductPage, addProducts, editProduct, productsPage, productStatus, updateProduct } from "../controllers/admin/productController.js"
 import { adminCheck, adminCheckLogin, validateAddCategory, validateEditCategory } from "../middlewares/adminMiddleware.js"
 import { validateAddProduct, validateEditProduct } from "../middlewares/validationProductMiddleware.js"
+import { orders, orderStatus, singleOrder } from "../controllers/admin/orderController.js"
 
 const router = express.Router()
 
@@ -51,6 +52,14 @@ router.get('/editProduct',adminCheck, editProduct)
 router.put('/editProduct/:productid',adminCheck, upload.any(),validateEditProduct, updateProduct)
 
 router.patch('/updateProduct',adminCheck, productStatus)
+
+// order page
+
+router.get('/order', adminCheck, orders)
+
+router.get('/order/:orderId', adminCheck, singleOrder)
+
+router.post('/order/:orderId/update-status', adminCheck, orderStatus)
 
 //logout 
 
