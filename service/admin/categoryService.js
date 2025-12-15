@@ -1,5 +1,7 @@
 import categoryCollection from "../../models/categoryModel.js";
 import { v4 as uuidv4 } from "uuid";
+import { Product } from "../../models/productModel.js";
+import { ProductVariant } from "../../models/productVariantModel.js";
 
 export const categoryAddToDb = async (categoryName, description, fileUrl) => {
     let existCategory = await categoryCollection.findOne({categoryName: categoryName})
@@ -48,6 +50,24 @@ export const toggleBlockAndUnblock = async (categoryid) => {
         }else {
             await categoryCollection.updateOne({categoryId: categoryid}, {$set: {isValid: true}})
         }
+
+        // const productSameAs = await Product.aggregate([
+        //     {$match: {categoryId: categoryDetail._id}},
+        //     {
+        //         $lookup: {
+        //             from: 'productvariants',
+        //             localField: "variantId",
+        //             foreignField: "_id",
+        //             as: 'variant'
+        //         }
+        //     },
+        //     {$unwind: "$variant"},
+        //     {$match: {'variant.stock': {$gt: 5}}}
+        // ])
+
+
+        // console.log(productSameAs[0].variant.stock)
+
     } catch (error) {
         console.log(`Error from toggleBlockAndUnblock ${error}`);
         throw error

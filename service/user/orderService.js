@@ -51,7 +51,6 @@ export const itemCancel = async (details, userId) => {
   try {
     const { orderId, itemIndex } = details;
 
-    // Fetch full order
     const order = await orderModal.findOne({ _id: orderId, userId });
     if (!order) throw new Error('Order not found');
 
@@ -62,15 +61,12 @@ export const itemCancel = async (details, userId) => {
 
     const itemToCancel = itemsArray[itemIndex];
 
-    // Only allow cancellation if not already cancelled
     if (itemToCancel.orderStatus === 'cancelled') {
       throw new Error('Item is already cancelled');
     }
 
-    // Update the specific item's orderStatus to 'cancelled'
     itemsArray[itemIndex].orderStatus = 'cancelled';
 
-    // Recalculate subtotal excluding cancelled items
     const activeItems = itemsArray.filter(item => item.orderStatus !== 'cancelled');
 
     const newSubtotal = activeItems.reduce((sum, item) => {
@@ -80,18 +76,17 @@ export const itemCancel = async (details, userId) => {
       return sum + (price * item.quantity);
     }, 0);
 
-    // Apply discount only if there are active (non-cancelled) items
+   
     const hasActiveItems = activeItems.length > 0;
-    const newDiscount = hasActiveItems ? 40 : 0; // ← your discount rule
-    const newTax = 0; // adjust if tax logic added later
+    const newDiscount = hasActiveItems ? 40 : 0; 
+    const newTax = 0;
     const newTotal = Math.max(0, newSubtotal - newDiscount + newTax);
 
-    // Update the order with modified items and recalculated totals
     const updatedOrder = await orderModal.findOneAndUpdate(
       { _id: orderId, userId },
       {
         $set: {
-          items: itemsArray, // includes the cancelled item with updated status
+          items: itemsArray,
           subTotal: newSubtotal,
           discountAmount: newDiscount,
           taxAmount: newTax,
@@ -103,7 +98,6 @@ export const itemCancel = async (details, userId) => {
 
     if (!updatedOrder) throw new Error('Failed to update order');
 
-    // Restore stock for the cancelled item
     await ProductVariant.findOneAndUpdate(
       { variantId: itemToCancel.variantId },
       { $inc: { stock: itemToCancel.quantity } },
@@ -133,7 +127,6 @@ export const orderCancelEntire = async (orderId, userId) => {
     if (['delivered', 'returned'].includes(order.orderStatus)) {
       throw new Error('Cannot cancel a delivered or returned order');
     }
-    // console.log(order)
 
     for (const item of order.items) {
       if (item.orderStatus !== 'cancelled') {
@@ -149,8 +142,6 @@ export const orderCancelEntire = async (orderId, userId) => {
     }
 
     order.orderStatus = 'cancelled';
-    order.subTotal = 0
-    order.totalAmount = 0
     await order.save();
 
     return { success: true, message: 'Order cancelled successfully' };

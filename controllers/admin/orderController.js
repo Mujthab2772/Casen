@@ -1,4 +1,5 @@
 import { orderDetails, orderSingle, statusUpdate } from "../../service/admin/orderService.js";
+import { STATUS_CODE } from "../../util/statusCodes.js";
 
 export const orders = async (req, res) => {
   try {
@@ -46,21 +47,20 @@ export const orderStatus = async (req, res) => {
     const { userId } = req.query;
 
     if (!orderId || !status || !userId) {
-      return res.status(400).json({ success: false, message: 'Missing required fields' });
+      return res.status(STATUS_CODE.BAD_REQUEST).json({ success: false, message: 'Missing required fields' });
     }
 
     const result = await statusUpdate(orderId, status, userId);
 
     if (typeof result === 'string') {
-      return res.status(200).json({ success: true, message: result, unchanged: true });
+      return res.status(STATUS_CODE.OK).json({ success: true, message: result, unchanged: true });
     }
 
-    return res.status(200).json({ success: true, message: 'Order status updated successfully' });
+    return res.status(STATUS_CODE.OK).json({ success: true, message: 'Order status updated successfully' });
   } catch (error) {
     console.error(`Error in orderStatus:`, error);
-    return res.status(500).json({ success: false, message: 'Failed to update order status' });
+    return res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).json({ success: false, message: 'Failed to update order status' });
   }
 };
 
-// fliter
-// action update
+

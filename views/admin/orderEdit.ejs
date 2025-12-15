@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Caseify Admin - Order Details</title>
-  <link rel="icon" type="/image/png" sizes="32x32" href="/logoTab.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/logoTab.png" />
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- SweetAlert2 -->
@@ -38,7 +38,7 @@
           <span>Dashboard</span>
         </a>
 
-        <a href="/admin/orders" class="nav-item active">
+        <a href="/admin/order" class="nav-item active">
           <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
             <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 6H6.28l-.31-1.243A1 1 0 005 4H3z"/>
             <path d="M16 16a2 2 0 11-4 0 2 2 0 014 0z"/>
@@ -142,16 +142,37 @@
 
           const statusDotColors = {
             'pending': 'bg-amber-500',
+            'confirmed': 'bg-sky-500',
             'processing': 'bg-indigo-500',
             'shipped': 'bg-emerald-500',
             'delivered': 'bg-green-500',
             'cancelled': 'bg-rose-500',
-            'confirmed': 'bg-sky-500',
-            'returned': 'bg-purple-500',
-            'requestingReturn': 'bg-orange-500'
+            'requestingReturn': 'bg-orange-500',
+            'returned': 'bg-purple-500'
           };
 
-          const statuses = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled', 'returned', 'requestingReturn'];
+          const statusOrder = ['pending', 'confirmed', 'processing', 'shipped', 'delivered'];
+          const currentStatus = order.orderStatus;
+
+          // Determine allowed next statuses
+          let allowedStatuses = [currentStatus]; // Always allow staying the same
+
+          if (currentStatus === 'cancelled' || currentStatus === 'returned') {
+            // Terminal states — no changes
+            allowedStatuses = [currentStatus];
+          } else if (currentStatus === 'requestingReturn') {
+            // Admin can approve return (only if customer requested)
+            allowedStatuses.push('returned');
+          } else {
+            // Normal forward flow (NO requestingReturn from delivered!)
+            const idx = statusOrder.indexOf(currentStatus);
+            if (idx !== -1 && idx + 1 < statusOrder.length) {
+              allowedStatuses.push(statusOrder[idx + 1]);
+            }
+          }
+
+          const isStatusAllowed = (status) => allowedStatuses.includes(status);
+          const statuses = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled', 'requestingReturn', 'returned'];
         %>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -180,7 +201,7 @@
                     <i class="fas fa-check text-white text-xs"></i>
                   </div>
                   <span class="text-sm font-medium text-gray-900">
-                    <%- order.paymentStatus === 'Paid' ? 'Paid' : 'Pending' %>
+                    <%- order.paymentStatus %>
                   </span>
                 </div>
               </div>
@@ -212,6 +233,7 @@
               <div class="mt-6 pt-4 border-t border-gray-100">
                 <div class="space-y-1.5 text-sm">
                   <div class="flex justify-between"><span class="text-gray-600">Subtotal</span> <span>$<%- (order.subTotal || 0).toFixed(2) %></span></div>
+                  <div class="flex justify-between"><span class="text-gray-600">Discount</span> <span>-$<%- (order.discountAmount || 0).toFixed(2) %></span></div>
                   <div class="flex justify-between"><span class="text-gray-600">Shipping</span> <span>$<%- (order.shipping || 0).toFixed(2) %></span></div>
                   <div class="flex justify-between"><span class="text-gray-600">Tax</span> <span>$<%- (order.tax || 0).toFixed(2) %></span></div>
                 </div>
@@ -222,7 +244,7 @@
               </div>
             </div>
 
-            <!-- Order Actions (only if not cancelled) -->
+            <!-- Order Actions -->
             <% if (order.orderStatus !== 'cancelled') { %>
               <div class="bg-white rounded-xl shadow-sm p-5 sm:p-6 border border-gray-100">
                 <h3 class="text-lg font-semibold text-gray-900 mb-4">Order Actions</h3>
@@ -282,7 +304,7 @@
               <% } %>
             </div>
 
-            <!-- ✅ Return Request Info (NEW SECTION) -->
+            <!-- Return Request Info -->
             <% if (['requestingReturn', 'returned'].includes(order.orderStatus)) { %>
               <div class="bg-white rounded-xl shadow-sm p-5 sm:p-6 border border-gray-100">
                 <h3 class="text-lg font-semibold text-gray-900 mb-3">
@@ -317,7 +339,6 @@
                 </div>
               </div>
             <% } %>
-
           </div>
         </div>
 
@@ -346,8 +367,9 @@
                     const isSelected = order.orderStatus === status;
                     const dotColor = statusDotColors[status];
                     const colorName = dotColor.split('-')[1];
+                    const isDisabled = !isStatusAllowed(status);
                   %>
-                    <label class="flex items-center p-3 rounded-xl border <%= isSelected ? `border-${colorName}-200 bg-${colorName}-50` : 'border-gray-300 hover:bg-gray-50' %> cursor-pointer transition group js-status-option" data-status="<%- status %>">
+                    <label class="flex items-center p-3 rounded-xl border <%= isSelected ? `border-${colorName}-200 bg-${colorName}-50` : 'border-gray-300 hover:bg-gray-50' %> cursor-pointer transition group js-status-option <%= isDisabled ? 'opacity-50 pointer-events-none' : '' %>" data-status="<%- status %>">
                       <div class="flex items-center">
                         <span class="<%= dotColor %> w-3 h-3 rounded-full mr-3"></span>
                         <span class="font-medium text-gray-800">
@@ -359,6 +381,7 @@
                         name="status" 
                         value="<%- status %>"
                         <%= isSelected ? 'checked' : '' %>
+                        <%= isDisabled ? 'disabled' : '' %>
                         class="sr-only js-status-radio" 
                       />
                       <i class="fas fa-check-circle text-<%= colorName %> ml-auto text-lg js-checkmark <%= isSelected ? '' : 'hidden' %>"></i>
@@ -435,7 +458,6 @@
         });
       });
 
-      // ✅ FIXED: Use URLSearchParams + correct Content-Type
       if (statusForm) {
         statusForm.addEventListener('submit', async function (e) {
           e.preventDefault();
@@ -480,7 +502,7 @@
               Swal.fire({
                 icon: 'error',
                 title: 'Update Failed',
-                text: result.message || 'Unable to update order status.',
+                text: result.message || 'Invalid status transition.',
                 confirmButtonText: 'OK'
               });
             }

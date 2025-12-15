@@ -96,6 +96,7 @@ export const statusUpdate = async (orderId, status, userId) => {
     if (status === 'returned') {
       await orderCancelEntire(orderId, userId);
       order.orderStatus = 'returned';
+      order.paymentStatus = 'refunded'
       await order.save();
       return order;
     }

@@ -187,6 +187,10 @@
                   }
                 }
               }
+              // Apply discount if exists
+              const orderDiscount = order.discountAmount || 0;
+              effectiveTotal = Math.max(0, effectiveTotal - orderDiscount);
+
               let statusClass = '';
               const os = (order.orderStatus || '').toLowerCase();
               if (os === 'delivered') statusClass = 'bg-green-100 text-green-800';
@@ -363,7 +367,10 @@
 
       const addr = order.address;
       const fullAddress = `${addr.fullName}<br>${addr.streetAddress}<br>${addr.city}, ${addr.state} ${addr.postalCode}<br>${addr.country}<br>Phone: ${addr.phoneNumber}${addr.secondNumber ? '<br>Alt: ' + addr.secondNumber : ''}`;
-      const effectiveTotal = effectiveSubtotal;
+
+      // ✅ NEW: Handle discount
+      const orderDiscount = order.discountAmount || 0;
+      const effectiveTotal = Math.max(0, effectiveSubtotal - orderDiscount);
 
       // ✅ FIXED: Hide 'Cancel Entire Order' if order is delivered or otherwise non-cancelable
       const nonCancellableStatuses = ['delivered', 'cancelled', 'returned', 'return requested'];
@@ -410,6 +417,7 @@
             </div>
             <div class="border-t pt-4">
               <div class="flex justify-between text-sm text-gray-600"><span>Subtotal</span><span>₹${effectiveSubtotal.toFixed(2)}</span></div>
+              ${orderDiscount > 0 ? `<div class="flex justify-between text-sm text-emerald-600 font-medium"><span>Discount</span><span>- ₹${orderDiscount.toFixed(2)}</span></div>` : ''}
               <div class="flex justify-between font-bold text-lg text-gray-900 mt-3 pt-3 border-t"><span>Total</span><span>₹${effectiveTotal.toFixed(2)}</span></div>
             </div>
             <div class="pt-4">${actionButtonsHtml}</div>

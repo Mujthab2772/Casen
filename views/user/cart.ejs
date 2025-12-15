@@ -135,15 +135,20 @@
                         <% for (let i = 0; i < cart.length; i++) { 
                             const item = cart[i].products;
                             const trueStock = item.variant.stock;
-                            const maxAllowedQty = Math.min(trueStock, 10);
+                            const maxPerOrder = 10;
                             const qty = item.quantity;
-                            const isOverLimit = qty > maxAllowedQty;
+                            const isOutOfStock = qty > trueStock;
+                            const isOverMaxPerOrder = qty > maxPerOrder && qty <= trueStock;
+                            const isInvalid = isOutOfStock || isOverMaxPerOrder;
+                            const maxAllowedQty = Math.min(trueStock, maxPerOrder);
                         %>
                             <div class="flex items-center py-4 border-b border-gray-200"
                                 data-cart-product-id="<%= item.cartProductId %>"
                                 data-unit-price="<%= item.variant.price %>"
-                                data-max-qty="<%= maxAllowedQty %>"
-                                data-is-out-of-stock="<%= isOverLimit ? 'true' : 'false' %>">
+                                data-true-stock="<%= trueStock %>"
+                                data-max-per-order="<%= maxPerOrder %>"
+                                data-qty="<%= qty %>"
+                                data-is-invalid="<%= isInvalid ? 'true' : 'false' %>">
                                 <img src="<%= item.variant.images[0] %>"
                                     alt="<%= item.product.productName %>" class="w-20 h-20 object-cover mr-4" />
                                 <div class="flex-grow">
@@ -152,9 +157,11 @@
                                     </a>
                                     <p class="text-sm text-gray-600"><%= item.variant.color %></p>
                                     <p class="text-sm text-gray-600">Rs. <%= item.variant.price %></p>
-                                    <p class="stock-status-text text-xs <%= isOverLimit ? 'text-red-600 font-semibold' : 'text-gray-500' %>">
-                                        <% if (isOverLimit) { %>
-                                            <%= qty > trueStock ? 'Out of stock' : 'Max 10 per order' %>
+                                    <p class="stock-status-text text-xs <%= isInvalid ? 'text-red-600 font-semibold' : 'text-gray-500' %>">
+                                        <% if (isOutOfStock) { %>
+                                            Out of stock
+                                        <% } else if (isOverMaxPerOrder) { %>
+                                            Max 10 per order
                                         <% } else { %>
                                             In stock: <%= trueStock %>
                                         <% } %>
@@ -174,7 +181,7 @@
                                 <button class="remove-item text-xs text-gray-500 hover:text-red-500 transition-colors whitespace-nowrap"
                                     data-cart-product-id="<%= item.cartProductId %>">Remove</button>
 
-                                <% if (!isOverLimit) { %>
+                                <% if (!isInvalid) { %>
                                     <div class="item-total font-medium ml-4">Rs.<%= (item.variant.price * qty).toFixed(2) %></div>
                                 <% } else { %>
                                     <div class="item-total font-medium ml-4 text-red-600">—</div>
@@ -194,8 +201,11 @@
                         let validItemCount = 0;
                         for (let i = 0; i < cart.length; i++) {
                             const item = cart[i].products;
-                            const maxAllowedQty = Math.min(item.variant.stock, 10);
-                            if (item.quantity <= maxAllowedQty) {
+                            const maxPerOrder = 10;
+                            const trueStock = item.variant.stock;
+                            const qty = item.quantity;
+                            const isInvalid = qty > trueStock || (qty > maxPerOrder && qty <= trueStock);
+                            if (!isInvalid) {
                                 subtotal += item.variant.price * item.quantity;
                                 validItemCount++;
                             }
@@ -243,27 +253,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- You May Also Like -->
-        <section class="mt-16">
-            <h2 class="text-3xl font-bold mb-8">You may also like</h2>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                <div class="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition">
-                    <div class="relative">
-                        <img src="https://placehold.co/300x300/1f2937/ffffff?text=iPhone+16+Pro+Max" alt="iPhone 16 Pro Max Case" class="w-full h-64 object-cover">
-                        <div class="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded">Save 50%</div>
-                    </div>
-                    <div class="p-4">
-                        <div class="text-xs text-gray-500 uppercase mb-1">Casen</div>
-                        <h3 class="font-medium text-sm mb-2">Casen iPhone 16 Pro Max Super Soft Silicone Back Cover (Black)</h3>
-                        <div class="flex items-center">
-                            <span class="text-red-500 font-medium">Rs. 499.00</span>
-                            <span class="text-gray-400 text-xs line-through ml-2">Rs. 999.00</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
     </main>
 
     <!-- Trust Badges -->
@@ -304,7 +293,7 @@
         </div>
     </footer>
 
-    <!-- ✅ Updated Cart Scripts -->
+    <!-- Updated Cart Scripts -->
     <script>
     function showAlert(title, text, icon = 'info') {
         if (typeof Swal !== 'undefined') {
@@ -348,7 +337,8 @@
 
                 const cartProductId = cartItem.dataset.cartProductId;
                 const unitPrice = parseFloat(cartItem.dataset.unitPrice);
-                const maxQty = parseInt(cartItem.dataset.maxQty, 10) || 10;
+                const trueStock = parseInt(cartItem.dataset.trueStock, 10);
+                const maxPerOrder = parseInt(cartItem.dataset.maxPerOrder, 10);
                 const qtyValueEl = cartItem.querySelector('.qty-value');
                 if (!qtyValueEl) return;
 
@@ -356,27 +346,33 @@
                 if (isNaN(currentQty)) currentQty = 1;
 
                 if (action === 'decrease' && currentQty <= 1) return;
-                if (action === 'increase' && currentQty >= maxQty) return;
+                if (action === 'increase' && currentQty >= Math.min(trueStock, maxPerOrder)) return;
 
                 const newQty = action === 'increase' ? currentQty + 1 : currentQty - 1;
+                const isOutOfStock = newQty > trueStock;
+                const isOverMaxPerOrder = newQty > maxPerOrder && newQty <= trueStock;
+                const isInvalid = isOutOfStock || isOverMaxPerOrder;
+
                 qtyValueEl.textContent = newQty;
-                const isNowOverLimit = newQty > maxQty;
-                cartItem.dataset.isOutOfStock = isNowOverLimit ? 'true' : 'false';
+                cartItem.dataset.isInvalid = isInvalid ? 'true' : 'false';
 
                 // Update stock status text
                 const stockStatusEl = cartItem.querySelector('.stock-status-text');
                 if (stockStatusEl) {
-                    const trueStock = parseInt(stockStatusEl.textContent.split(':').pop(), 10);
-                    if (!isNaN(trueStock)) {
-                        stockStatusEl.textContent = (isNowOverLimit ? (newQty > trueStock ? 'Out of stock' : 'Max 10 per order') : 'In stock') + ': ' + trueStock;
-                        stockStatusEl.className = 'stock-status-text text-xs ' + (isNowOverLimit ? 'text-red-600 font-semibold' : 'text-gray-500');
+                    if (isOutOfStock) {
+                        stockStatusEl.textContent = 'Out of stock';
+                    } else if (isOverMaxPerOrder) {
+                        stockStatusEl.textContent = 'Max 10 per order';
+                    } else {
+                        stockStatusEl.textContent = `In stock: ${trueStock}`;
                     }
+                    stockStatusEl.className = 'stock-status-text text-xs ' + (isInvalid ? 'text-red-600 font-semibold' : 'text-gray-500');
                 }
 
                 // Update total
                 const totalEl = cartItem.querySelector('.item-total');
                 if (totalEl) {
-                    if (isNowOverLimit) {
+                    if (isInvalid) {
                         totalEl.textContent = '—';
                         totalEl.classList.add('text-red-600');
                     } else {
@@ -389,7 +385,7 @@
                 const decBtn = cartItem.querySelector('.decrease-btn');
                 const incBtn = cartItem.querySelector('.increase-btn');
                 if (decBtn) decBtn.disabled = newQty <= 1;
-                if (incBtn) incBtn.disabled = newQty >= maxQty;
+                if (incBtn) incBtn.disabled = newQty >= Math.min(trueStock, maxPerOrder);
 
                 // Update backend
                 try {
@@ -404,14 +400,23 @@
                 } catch (err) {
                     // Revert UI on error
                     qtyValueEl.textContent = currentQty;
-                    const wasOverLimit = currentQty > maxQty;
-                    cartItem.dataset.isOutOfStock = wasOverLimit ? 'true' : 'false';
-                    if (stockStatusEl && !isNaN(trueStock)) {
-                        stockStatusEl.textContent = (wasOverLimit ? (currentQty > trueStock ? 'Out of stock' : 'Max 10 per order') : 'In stock') + ': ' + trueStock;
-                        stockStatusEl.className = 'stock-status-text text-xs ' + (wasOverLimit ? 'text-red-600 font-semibold' : 'text-gray-500');
+                    const wasOutOfStock = currentQty > trueStock;
+                    const wasOverMax = currentQty > maxPerOrder && currentQty <= trueStock;
+                    const wasInvalid = wasOutOfStock || wasOverMax;
+                    cartItem.dataset.isInvalid = wasInvalid ? 'true' : 'false';
+
+                    if (stockStatusEl) {
+                        if (wasOutOfStock) {
+                            stockStatusEl.textContent = 'Out of stock';
+                        } else if (wasOverMax) {
+                            stockStatusEl.textContent = 'Max 10 per order';
+                        } else {
+                            stockStatusEl.textContent = `In stock: ${trueStock}`;
+                        }
+                        stockStatusEl.className = 'stock-status-text text-xs ' + (wasInvalid ? 'text-red-600 font-semibold' : 'text-gray-500');
                     }
                     if (totalEl) {
-                        if (wasOverLimit) {
+                        if (wasInvalid) {
                             totalEl.textContent = '—';
                             totalEl.classList.add('text-red-600');
                         } else {
@@ -420,7 +425,7 @@
                         }
                     }
                     if (decBtn) decBtn.disabled = currentQty <= 1;
-                    if (incBtn) incBtn.disabled = currentQty >= maxQty;
+                    if (incBtn) incBtn.disabled = currentQty >= Math.min(trueStock, maxPerOrder);
 
                     showAlert('Error', 'Failed to update quantity. Please try again.', 'error');
                     recalculateTotals();
@@ -457,8 +462,7 @@
                         });
                         if (res.ok) {
                             cartItem.remove();
-                            recalculateTotals();
-                            window.location.href = '/cart'
+                            window.location.href = '/cart';
                         } else {
                             showAlert('Error', 'Failed to remove item', 'error');
                         }
@@ -469,48 +473,45 @@
             });
         });
 
-        // ✅ ENHANCED CHECKOUT VALIDATION
+        // Checkout validation
         const checkoutButton = document.getElementById('checkout-button');
         if (checkoutButton) {
             checkoutButton.addEventListener('click', function (e) {
                 const cartItems = document.querySelectorAll('[data-cart-product-id]');
-                const isCartEmpty = cartItems.length === 0;
-
-                if (isCartEmpty) {
+                if (cartItems.length === 0) {
                     e.preventDefault();
                     showEmptyCartAlert();
                     return;
                 }
 
-                let hasInvalidQuantity = false;
-                let invalidProductName = '';
-
                 for (const item of cartItems) {
-                    const qtyEl = item.querySelector('.qty-value');
-                    const maxQty = parseInt(item.dataset.maxQty, 10);
-                    const currentQty = parseInt(qtyEl?.textContent.trim(), 10);
+                    const trueStock = parseInt(item.dataset.trueStock, 10);
+                    const maxPerOrder = parseInt(item.dataset.maxPerOrder, 10);
+                    const qty = parseInt(item.querySelector('.qty-value')?.textContent.trim(), 10);
                     const productName = item.querySelector('p.font-medium')?.textContent || 'this item';
 
-                    if (currentQty > maxQty) {
-                        hasInvalidQuantity = true;
-                        invalidProductName = productName;
-                        break;
+                    if (qty > trueStock) {
+                        e.preventDefault();
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Out of Stock',
+                            text: `"${productName}" is out of stock.`,
+                            confirmButtonColor: '#000'
+                        });
+                        return;
+                    }
+                    if (qty > maxPerOrder) {
+                        e.preventDefault();
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Max Quantity Exceeded',
+                            text: `You can order max ${maxPerOrder} of "${productName}".`,
+                            confirmButtonColor: '#000'
+                        });
+                        return;
                     }
                 }
 
-                if (hasInvalidQuantity) {
-                    e.preventDefault();
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Invalid Quantity',
-                        text: `The quantity for "${invalidProductName}" exceeds available stock or the 10-item limit.`,
-                        confirmButtonText: 'OK',
-                        confirmButtonColor: '#000'
-                    });
-                    return;
-                }
-
-                // ✅ Proceed to checkout
                 window.location.href = '/checkout';
             });
         }
@@ -518,13 +519,15 @@
         // Initialize button states
         document.querySelectorAll('[data-cart-product-id]').forEach(item => {
             const qtyEl = item.querySelector('.qty-value');
-            const maxQty = parseInt(item.dataset.maxQty, 10) || 10;
+            const trueStock = parseInt(item.dataset.trueStock, 10);
+            const maxPerOrder = parseInt(item.dataset.maxPerOrder, 10);
             const qty = parseInt(qtyEl?.textContent.trim(), 10);
             if (!isNaN(qty)) {
                 const decBtn = item.querySelector('.decrease-btn');
                 const incBtn = item.querySelector('.increase-btn');
+                const maxAllowed = Math.min(trueStock, maxPerOrder);
                 if (decBtn) decBtn.disabled = qty <= 1;
-                if (incBtn) incBtn.disabled = qty >= maxQty;
+                if (incBtn) incBtn.disabled = qty >= maxAllowed;
             }
         });
 
@@ -534,8 +537,8 @@
             const items = document.querySelectorAll('[data-cart-product-id]');
 
             items.forEach(item => {
-                const isOverLimit = item.dataset.isOutOfStock === 'true';
-                if (isOverLimit) return;
+                const isInvalid = item.dataset.isInvalid === 'true';
+                if (isInvalid) return;
 
                 const price = parseFloat(item.dataset.unitPrice);
                 const qtyEl = item.querySelector('.qty-value');
