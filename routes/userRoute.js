@@ -11,7 +11,7 @@ import upload from "../middlewares/multer.js"
 import { address, addressEdit, addressEditUpdate, addressFetch, addressNew, deleteAddress } from "../controllers/user/addressController.js"
 import { validateAddress } from "../middlewares/addressMiddleware.js"
 import { cart, newCart, removeCart, updateCart } from "../controllers/user/cartController.js"
-import { checkout, checkoutDatas } from "../controllers/user/checkoutController.js"
+import { checkout, checkoutDatas, getAvailableCoupons, previewCheckout } from "../controllers/user/checkoutController.js"
 import { payment, paymentProcess, paymentSuccess } from "../controllers/user/paymentController.js"
 import { exitsCheckout } from "../middlewares/checkoutMiddleware.js"
 import { cancelItem, cancelOrder, orderListing, returnProduct } from "../controllers/user/orderController.js"
@@ -108,10 +108,14 @@ router.get('/checkout', userProfile, checkout)
 
 router.post('/checkout/process', userProfile, checkoutDatas)
 
+router.post('/checkout/preview', userProfile, previewCheckout);
+
+router.get('/coupons',userProfile, getAvailableCoupons);
+
 
 // payment 
 
-router.get('/payment', userProfile, exitsCheckout, payment)
+router.get('/payment', userProfile, payment)
 
 router.post('/payment/process', userProfile, paymentProcess)
 

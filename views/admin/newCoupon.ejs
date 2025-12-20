@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Caseify Admin - Add New Coupon</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="/logoTab.png" />
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          spacing: {
+            '280': '280px',
+            '227': '227px',
+            '70': '70px',
+            '60': '60px',
+            '56': '56px',
+          },
+          colors: {
+            primary: {
+              DEFAULT: '#000000',
+              light: '#333333',
+              dark: '#000000'
+            },
+            secondary: {
+              DEFAULT: '#FFFFFF',
+              light: '#FFFFFF',
+              dark: '#FFFFFF'
+            },
+            gray: {
+              50: '#f9fafb',
+              100: '#f3f4f6',
+              200: '#e5e7eb',
+              300: '#d1d5db',
+              400: '#9ca3af',
+              500: '#6b7280',
+              600: '#4b5563',
+              700: '#374151',
+              800: '#1f2937',
+              900: '#111827',
+              950: '#030712'
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-gray-50 font-sans antialiased">
+  <div class="flex min-h-screen">
+    <!-- Sidebar -->
+    <aside class="w-[227px] bg-white border-r border-gray-200 fixed left-0 top-0 h-screen overflow-y-auto">
+      <!-- ... (your sidebar remains unchanged) ... -->
+      <div class="px-4 py-6 flex items-center gap-3 border-b border-gray-200">
+        <div class="w-10 h-10 bg-black rounded-md flex items-center justify-center flex-shrink-0">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="3" y="3" width="18" height="18" rx="2" fill="white"/>
+            <rect x="7" y="7" width="4" height="4" fill="black"/>
+            <rect x="13" y="7" width="4" height="4" fill="black"/>
+            <rect x="7" y="13" width="10" height="4" fill="black"/>
+          </svg>
+        </div>
+        <span class="text-sm font-semibold text-black">Casen</span>
+      </div>
+
+      <nav class="flex-1 py-4 flex flex-col">
+        <a href="/admin/dashboard" class="flex items-center gap-3 px-4 py-3 text-gray-500 text-sm transition hover:bg-gray-100 hover:text-black no-underline">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4z"/>
+            <path d="M3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6z"/>
+            <path d="M14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
+          </svg>
+          <span>Dashboard</span>
+        </a>
+        <a href="/admin/order" class="flex items-center gap-3 px-4 py-3 text-gray-500 text-sm transition hover:bg-gray-100 hover:text-black no-underline">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 6H6.28l-.31-1.243A1 1 0 005 4H3z"/>
+            <path d="M16 16a2 2 0 11-4 0 2 2 0 014 0z"/>
+            <path d="M4 16a2 2 0 11-4 0 2 2 0 014 0z"/>
+          </svg>
+          <span>Orders</span>
+        </a>
+        <a href="/admin/products" class="flex items-center gap-3 px-4 py-3 text-gray-500 text-sm transition hover:bg-gray-100 hover:text-black no-underline">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M3 1a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V1z"/>
+            <path d="M3 5a1 1 0 011-1h12a1 1 0 011 1v12a2 2 0 01-2 2H5a2 2 0 01-2-2V5z"/>
+          </svg>
+          <span>Products</span>
+        </a>
+        <a href="/admin/customers" class="flex items-center gap-3 px-4 py-3 text-gray-500 text-sm transition hover:bg-gray-100 hover:text-black no-underline">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v1h8v-1zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"/>
+          </svg>
+          <span>Customers</span>
+        </a>
+        <a href="#" class="flex items-center gap-3 px-4 py-3 text-gray-500 text-sm transition hover:bg-gray-100 hover:text-black no-underline">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
+          </svg>
+          <span>Analytics</span>
+        </a>
+        <a href="#" class="flex items-center gap-3 px-4 py-3 text-gray-500 text-sm transition hover:bg-gray-100 hover:text-black bg-gray-100 border-l-4 border-black no-underline">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z"/>
+          </svg>
+          <span>Coupons</span>
+        </a>
+        <a href="/admin/category" class="flex items-center gap-3 px-4 py-3 text-gray-500 text-sm transition hover:bg-gray-100 hover:text-black no-underline">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M7 3a1 1 0 011-1h10a1 1 0 011 1v3a2 2 0 01-2 2H6a2 2 0 01-2-2V7zm2 3a1 1 0 100 2 1 1 0 000-2z"/>
+          </svg>
+          <span>Categories</span>
+        </a>
+        <a href="#" class="flex items-center gap-3 px-4 py-3 text-gray-500 text-sm transition hover:bg-gray-100 hover:text-black no-underline">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M4.5 3a2.5 2.5 0 015 0V4h4V3a2.5 2.5 0 015 0v1h2.006a1 1 0 01.994.89l1.348 13.48A2 2 0 0118.334 20H1.666a2 2 0 01-1.994-2.21L1 4.89A1 1 0 012 4h2V3a2.5 2.5 0 012.5-2.5z"/>
+          </svg>
+          <span>Offer</span>
+        </a>
+      </nav>
+
+      <div class="p-4 border-t border-gray-200 absolute inset-x-0 bottom-0">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center font-semibold text-blue-800">A</div>
+          <div>
+            <div class="text-sm font-semibold text-gray-900">Admin</div>
+            <div class="text-xs text-gray-500 truncate">admin@example.com</div>
+          </div>
+        </div>
+        <form action="/admin/logout" method="post">
+          <button type="submit" class="w-full flex items-center justify-center gap-2 py-2 bg-gray-100 rounded-md text-gray-900 text-sm hover:bg-gray-200 transition-colors">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M10.5 1.5H3a1.5 1.5 0 00-1.5 1.5v10a1.5 1.5 0 001.5 1.5h7.5a1.5 1.5 0 001.5-1.5v-4"/>
+              <path d="M10.5 5l3-3m0 0l-3-3m3 3H6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            </svg>
+            Logout
+          </button>
+        </form>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 ml-[227px] bg-gray-50">
+      <div class="bg-white border-b border-gray-200 px-8 py-6">
+        <div class="flex items-center gap-4">
+          <a href="/admin/coupons" class="inline-flex items-center gap-1 text-gray-500 hover:text-gray-700">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+            Back to Coupon Management
+          </a>
+        </div>
+        <div class="mt-4">
+          <h1 class="text-3xl font-semibold text-black">Add New Coupon</h1>
+          <p class="text-gray-500 mt-1">Define the parameters for a new coupon.</p>
+        </div>
+      </div>
+
+      <div class="p-8">
+        <div class="max-w-4xl mx-auto bg-white rounded-xl shadow-sm p-6">
+          <form id="couponForm">
+            <!-- Coupon Code & Discount Type -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div>
+                <label for="couponCode" class="block text-sm font-medium text-gray-700 mb-2">Coupon Code</label>
+                <div class="flex">
+                  <input
+                    type="text"
+                    id="couponCode"
+                    placeholder="e.g., SUMMER25"
+                    class="flex-1 px-4 py-2.5 rounded-l-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black focus:border-black"
+                  />
+                  <button
+                    type="button"
+                    class="px-4 py-2.5 bg-gray-100 text-gray-700 rounded-r-lg border border-gray-300 hover:bg-gray-200 transition-colors"
+                  >
+                    Generate
+                  </button>
+                </div>
+              </div>
+              <div>
+                <label for="discountType" class="block text-sm font-medium text-gray-700 mb-2">Discount Type</label>
+                <select
+                  id="discountType"
+                  class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black focus:border-black"
+                >
+                  <option value="fixed">Fixed Amount</option>
+                  <option value="percentage">Percentage</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Value -->
+            <div class="mb-6">
+              <label for="value" class="block text-sm font-medium text-gray-700 mb-2">Value</label>
+              <div class="relative">
+                <input
+                  type="text"
+                  id="value"
+                  placeholder="₹ 0.00"
+                  class="w-full pl-10 pr-12 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black focus:border-black"
+                />
+                <div class="absolute right-3 top-2.5 text-gray-500 text-sm" id="currencySymbol">₹</div>
+                <div class="absolute left-3 top-2.5 text-gray-500" id="prefixSymbol"> ₹ </div>
+              </div>
+            </div>
+
+            <!-- Start Date & End Date -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div>
+                <label for="startDate" class="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
+                <div class="relative">
+                  <input
+                    type="date"
+                    id="startDate"
+                    class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black focus:border-black"
+                  />
+                </div>
+              </div>
+              <div>
+                <label for="endDate" class="block text-sm font-medium text-gray-700 mb-2">End Date</label>
+                <div class="relative">
+                  <input
+                    type="date"
+                    id="endDate"
+                    class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black focus:border-black"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- Conditions -->
+            <div class="mb-6">
+              <h3 class="text-lg font-medium text-gray-900 mb-3">Conditions</h3>
+              <p class="text-sm text-gray-500 mb-4">Set conditions for when this coupon can be applied.</p>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label for="minPurchase" class="block text-sm font-medium text-gray-700 mb-2">Minimum Purchase Value</label>
+                  <input
+                    type="text"
+                    id="minPurchase"
+                    placeholder="e.g., ₹50"
+                    class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black focus:border-black"
+                  />
+                </div>
+                <div>
+                  <label for="maxDiscount" class="block text-sm font-medium text-gray-700 mb-2">Maximum Discount Value</label>
+                  <input
+                    type="text"
+                    id="maxDiscount"
+                    placeholder="Optional"
+                    class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black focus:border-black"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- Usage Limits -->
+            <div class="mb-6">
+              <h3 class="text-lg font-medium text-gray-900 mb-3">Usage Limits</h3>
+              <p class="text-sm text-gray-500 mb-4">Set limits on how many times the coupon can be used.</p>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label for="limitPerCustomer" class="block text-sm font-medium text-gray-700 mb-2">Limit Per Customer</label>
+                  <input
+                    type="number"
+                    id="limitPerCustomer"
+                    value="1"
+                    min="1"
+                    class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black focus:border-black"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="flex justify-end pt-6 border-t border-gray-200">
+              <button
+                type="submit"
+                class="px-6 py-2.5 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors font-medium"
+              >
+                Create Coupon
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- SweetAlert2 + Validation Script -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script>
+    const discountTypeSelect = document.getElementById('discountType');
+    const valueInput = document.getElementById('value');
+    const currencySymbol = document.getElementById('currencySymbol');
+    const prefixSymbol = document.getElementById('prefixSymbol');
+    const minPurchaseInput = document.getElementById('minPurchase');
+    const maxDiscountInput = document.getElementById('maxDiscount');
+
+    // Initialize based on initial selection
+    updateValueField();
+
+    discountTypeSelect.addEventListener('change', updateValueField);
+    valueInput.addEventListener('input', handleValueInput);
+    minPurchaseInput.addEventListener('input', handleMinPurchaseInput);
+
+    function updateValueField() {
+      const isPercentage = discountTypeSelect.value === 'percentage';
+
+      if (isPercentage) {
+        valueInput.placeholder = 'e.g., 15';
+        currencySymbol.textContent = '%';
+        prefixSymbol.innerHTML = ''; // No prefix for percentage
+        maxDiscountInput.disabled = false;
+        maxDiscountInput.classList.remove('bg-gray-100', 'cursor-not-allowed');
+      } else {
+        valueInput.placeholder = '₹ 0.00';
+        currencySymbol.textContent = '₹';
+        prefixSymbol.innerHTML = ' ₹ ';
+        // Clear and disable maxDiscount for fixed amount
+        maxDiscountInput.value = '';
+        maxDiscountInput.disabled = true;
+        maxDiscountInput.classList.add('bg-gray-100', 'cursor-not-allowed');
+      }
+
+      // Reset input format if type changes
+      valueInput.value = valueInput.value
+        .replace(/[^0-9.]/g, '')
+        .replace(/(\..*)\./g, '$1');
+    }
+
+    function handleValueInput(e) {
+      let val = e.target.value.replace(/[^0-9.]/g, '');
+      if (val.split('.').length > 2) val = val.replace(/\.+$/, '');
+      if (discountTypeSelect.value === 'percentage') {
+        e.target.value = val;
+      } else {
+        e.target.value = val ? '₹ ' + val : '';
+      }
+    }
+
+    function handleMinPurchaseInput(e) {
+      let val = e.target.value.replace(/[^0-9.]/g, '');
+      if (val.split('.').length > 2) val = val.replace(/\.+$/, '');
+      e.target.value = val ? '₹ ' + val : '';
+    }
+
+    document.getElementById('couponForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const couponCode = document.getElementById('couponCode').value.trim().toUpperCase();
+      const discountType = document.getElementById('discountType').value;
+      const value = document.getElementById('value').value.trim();
+      const startDate = document.getElementById('startDate').value;
+      const endDate = document.getElementById('endDate').value;
+      const minPurchase = document.getElementById('minPurchase').value.trim();
+      const maxDiscount = document.getElementById('maxDiscount').value.trim();
+      const limitPerCustomer = document.getElementById('limitPerCustomer').value.trim();
+
+      const showError = (msg) => {
+        Swal.fire({ icon: 'error', title: 'Validation Error', text: msg, confirmButtonText: 'OK' });
+      };
+
+      // Validate coupon code
+      if (!couponCode || couponCode.length < 3) return showError('Coupon code must be at least 3 characters.');
+      if (!/^[A-Z0-9_]+$/.test(couponCode)) return showError('Only uppercase letters, numbers, and underscores allowed.');
+
+      // Clean and parse value
+      let cleanValue = value.replace(/[^0-9.]/g, '');
+      const valNum = cleanValue ? parseFloat(cleanValue) : NaN;
+      if (isNaN(valNum) || valNum <= 0) return showError('Please enter a valid discount value > 0.');
+
+      // Validate dates
+      if (!startDate || !endDate) return showError('Start and end dates are required.');
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      if (start > end) return showError('Start date must be before end date.');
+      if (end < today) return showError('Coupon cannot end in the past.');
+
+      // Min purchase
+      const minClean = minPurchase.replace(/[^0-9.]/g, '');
+      const minNum = minClean ? parseFloat(minClean) : 0;
+      if (minPurchase && (isNaN(minNum) || minNum <= 0)) return showError('Minimum purchase must be a positive number.');
+
+      // Max discount (only for percentage)
+      if (discountType === 'percentage') {
+        if (valNum < 1 || valNum > 100) return showError('Percentage must be between 1% and 100%.');
+        if (maxDiscount) {
+          const maxClean = maxDiscount.replace(/[^0-9.]/g, '');
+          const maxNum = parseFloat(maxClean);
+          if (isNaN(maxNum) || maxNum <= 0) return showError('Max discount must be a positive number.');
+        }
+      }
+
+      // Usage limit
+      const limit = parseInt(limitPerCustomer, 10);
+      if (isNaN(limit) || limit < 1) return showError('Limit per customer must be at least 1.');
+
+      // Prepare payload
+      const payload = {
+        couponCode,
+        discountType,
+        discountAmount: valNum,
+        startDate,
+        endDate,
+        minAmount: minNum > 0 ? minNum : undefined,
+        maxAmount: maxDiscount ? parseFloat(maxDiscount.replace(/[^0-9.]/g, '')) : undefined,
+        perUserLimit: limit
+      };
+
+      try {
+        const res = await fetch('/admin/coupon/new/add', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          Swal.fire({
+            icon: 'success',
+            title: 'Coupon Created!',
+            text: 'The coupon has been added successfully.',
+            confirmButtonText: 'OK'
+          }).then(() => window.location.href = '/admin/coupons');
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: 'Failed',
+            text: data.message || 'An error occurred.',
+            confirmButtonText: 'OK'
+          });
+        }
+      } catch (err) {
+        Swal.fire({ icon: 'error', title: 'Network Error', text: 'Could not reach server.', confirmButtonText: 'OK' });
+      }
+    });
+  </script>
+</body>
+</html>

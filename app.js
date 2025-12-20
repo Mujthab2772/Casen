@@ -8,6 +8,7 @@ import adminRouter from "./routes/adminRoute.js"
 import userRouter from "./routes/userRoute.js";
 import methodOverride from 'method-override'
 import passport from './config/passport.js';
+import flash from "connect-flash";
 
 dotenv.config();
 const app = express()
@@ -32,6 +33,15 @@ app.use(session({
     //     maxAge: 1000 * 60 * 60 * 24
     // }
 }))
+// Flash middleware - MUST come after session
+app.use(flash());
+
+// Make flash messages and session available to all templates
+app.use((req, res, next) => {
+  res.locals.messages = req.flash();
+  res.locals.session = req.session;
+  next();
+});
 
 app.use(passport.initialize())
 app.use(passport.session())

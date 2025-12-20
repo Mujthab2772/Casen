@@ -7,6 +7,8 @@ import { addProductPage, addProducts, editProduct, productsPage, productStatus, 
 import { adminCheck, adminCheckLogin, validateAddCategory, validateEditCategory } from "../middlewares/adminMiddleware.js"
 import { validateAddProduct, validateEditProduct } from "../middlewares/validationProductMiddleware.js"
 import { orders, orderStatus, singleOrder } from "../controllers/admin/orderController.js"
+import { addNewCoupon, couponFetch, editActive, editCoupon, newCoupon, updateEditCoupon } from "../controllers/admin/couponController.js"
+import { handleValidationErrors, validateCoupon } from "../middlewares/couponValidate.js"
 
 const router = express.Router()
 
@@ -60,6 +62,20 @@ router.get('/order', adminCheck, orders)
 router.get('/order/:orderId', adminCheck, singleOrder)
 
 router.post('/order/:orderId/update-status', adminCheck, orderStatus)
+
+// coupon 
+
+router.get('/coupons', adminCheck, couponFetch)
+
+router.get('/coupon/new', adminCheck, newCoupon)
+
+router.post('/coupon/new/add', adminCheck, validateCoupon, handleValidationErrors, addNewCoupon)
+
+router.patch('/coupon/toggle/:couponCode', adminCheck, editActive)
+
+router.get('/coupon/edit/:couponCode', adminCheck, editCoupon)
+
+router.put('/coupon/edit/:couponCode', adminCheck, validateCoupon, handleValidationErrors, updateEditCoupon)
 
 //logout 
 

@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thank You for Your Order!</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.10/dist/cdn.min.js"></script>
+    <style>
+      .flash-message {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        color: white;
+        font-weight: 500;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        animation: slide-in 0.3s ease-out, fade-out 0.5s ease-in 3.5s forwards;
+      }
+      .flash-error {
+        background-color: #ef4444;
+      }
+      .flash-success {
+        background-color: #10b981;
+      }
+      @keyframes slide-in {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+      }
+      @keyframes fade-out {
+        from { opacity: 1; }
+        to { opacity: 0; transform: translateX(100%); }
+      }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <!-- Flash Messages -->
+  <% if (locals.messages && messages.error) { %>
+  <div class="flash-message flash-error" x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 4000)">
+    <%= messages.error %>
+  </div>
+  <% } %>
+  <% if (locals.messages && messages.success) { %>
+  <div class="flash-message flash-success" x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 4000)">
+    <%= messages.success %>
+  </div>
+  <% } %>
+  
+  <!-- Header -->
+  <header class="bg-white shadow-sm sticky top-0 z-50">
+    <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center">
+        <a href="/"><img src="/logo.png" alt="Logo" class="h-8 object-contain" /></a>
+      </div>
+      <nav class="hidden md:flex space-x-5">
+        <a href="/" class="text-sm font-medium transition-opacity hover:opacity-80">Home</a>
+        <a href="#" class="text-sm font-medium transition-opacity hover:opacity-80">About</a>
+        <a href="/products" class="text-sm font-medium transition-opacity hover:opacity-80">Phone Cases</a>
+        <a href="#" class="text-sm font-medium transition-opacity hover:opacity-80">Tablet Cases</a>
+        <a href="#" class="text-sm font-medium transition-opacity hover:opacity-80">Sale</a>
+      </nav>
+      <div class="flex items-center space-x-4">
+        <button class="p-2 rounded-full hover:bg-gray-100 transition-colors">
+          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+          </svg>
+        </button>
+        <button class="p-2 rounded-full hover:bg-gray-100 transition-colors relative" onclick="window.location.href='/cart'">
+          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
+        </button>
+        <% if (locals.user && user.profilePic) { %>
+          <div class="relative" x-data="{ open: false }" @click.away="open = false">
+            <button @click="open = !open" class="rounded-full overflow-hidden w-8 h-8 border border-transparent hover:border-gray-300 transition-colors focus:outline-none">
+              <img src="<%= user.profilePic %>" alt="Profile" class="w-full h-full object-cover" />
+            </button>
+            <div x-show="open" x-transition class="absolute right-0 mt-2 w-44 bg-white shadow-lg rounded-lg py-1 z-50">
+              <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">Profile</a>
+              <form action="/logout" method="post">
+                <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">Logout</button>
+              </form>
+            </div>
+          </div>
+        <% } else if (locals.user) { %>
+          <div class="relative" x-data="{ open: false }" @click.away="open = false">
+            <button @click="open = !open" class="w-8 h-8 flex items-center justify-center text-gray-600 hover:text-gray-900 transition-colors">
+              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            </button>
+            <div x-show="open" x-transition class="absolute right-0 mt-2 w-44 bg-white shadow-lg rounded-lg py-1 z-50">
+              <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Profile</a>
+              <form action="/logout" method="post">
+                <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Logout</button>
+              </form>
+            </div>
+          </div>
+        <% } else { %>
+          <a href="/login" class="text-sm font-medium flex items-center">
+            <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg> Sign In
+          </a>
+        <% } %>
+        <button class="md:hidden text-gray-600 hover:text-gray-900">
+          <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+  <main class="flex items-center justify-center min-h-[calc(100vh-64px)] p-4">
+    <% if (order) { %>
+    <div class="max-w-2xl w-full bg-white rounded-xl shadow-lg p-6 md:p-8">
+      <div class="text-center mb-8">
+        <div class="inline-flex items-center justify-center w-16 h-16 bg-green-500 rounded-full mb-4">
+          <svg class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-2">Thank You for Your Order!</h1>
+        <p class="text-gray-500">Your order #<%= order.orderId %> has been successfully placed.</p>
+      </div>
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+        <div class="p-6 border-b border-gray-200">
+          <h2 class="text-xl font-semibold text-gray-900 mb-2">Order Summary</h2>
+          <p class="text-gray-500">A confirmation email has been sent to <%= order.address.email %>.</p>
+        </div>
+        <div class="divide-y divide-gray-200">
+          <% (Array.isArray(order.items) ? order.items : []).forEach(item => { %>
+          <div class="flex items-center p-4">
+            <div class="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center mr-4 overflow-hidden">
+              <% if (item.images && item.images[0]) { %>
+                <img src="<%= item.images[0] %>" alt="<%= item.productName %>" class="w-full h-full object-contain">
+              <% } else { %>
+                <svg class="h-8 w-8 text-gray-500" fill="currentColor" viewBox="0 0 24 24">
+                  <rect x="4" y="6" width="16" height="12" rx="2" />
+                </svg>
+              <% } %>
+            </div>
+            <div class="flex-grow">
+              <h3 class="font-medium text-gray-900"><%= item.productName || 'Product' %></h3>
+              <p class="text-sm text-gray-500"><%= item.variantColor || 'Color' %></p>
+              <p class="text-sm text-gray-500">Quantity: <%= item.quantity || 1 %></p>
+            </div>
+            <div class="text-right">
+              <span class="font-medium">₹ <%= parseFloat(item.price).toFixed(2) %></span>
+            </div>
+          </div>
+          <% }); %>
+        </div>
+        <div class="p-6">
+          <div class="space-y-3">
+            <div class="flex justify-between">
+              <span class="text-gray-500">Subtotal</span>
+              <span>₹ <%= order.subTotal.toFixed(2) %></span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-500">Discount</span>
+              <span class="text-green-600">- ₹ <%= order.discountAmount.toFixed(2) %></span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-500">Shipping</span>
+              <span>Free</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-500">Tax</span>
+              <span>₹ <%= order.taxAmount.toFixed(2) %></span>
+            </div>
+            <div class="border-t pt-3 mt-3 flex justify-between">
+              <span class="text-xl font-bold">Total</span>
+              <span class="text-xl font-bold">₹ <%= order.totalAmount.toFixed(2) %></span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="grid md:grid-cols-2 gap-6">
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900 mb-3">Shipping Address</h3>
+          <p class="text-gray-500">
+            <%= order.address.fullName %><br>
+            <%= order.address.streetAddress %><br>
+            <%= order.address.city %>, <%= order.address.state %> <%= order.address.postalCode %><br>
+            <%= order.address.country %><br>
+            Phone: <%= order.address.phoneNumber %>
+            <% if (order.address.secondNumber) { %>
+            <br>Alt: <%= order.address.secondNumber %>
+            <% } %>
+          </p>
+        </div>
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900 mb-3">Order Status</h3>
+          <p class="text-gray-500">
+            <span class="inline-block px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-medium">
+              <%= order.orderStatus.charAt(0).toUpperCase() + order.orderStatus.slice(1) %>
+            </span><br>
+            <span class="mt-2 block">Payment Status: 
+              <span class="inline-block px-2 py-1 bg-<%= order.paymentStatus === 'paid' ? 'green' : 'yellow' %>-100 text-<%= order.paymentStatus === 'paid' ? 'green' : 'yellow' %>-800 rounded-full text-sm font-medium">
+                <%= order.paymentStatus.charAt(0).toUpperCase() + order.paymentStatus.slice(1) %>
+              </span>
+            </span>
+            <% if (order.paymentStatus === 'pending') { %>
+              <span class="mt-2 block text-sm text-gray-600">
+                * Cash on delivery orders will show "Pending" until delivered and payment is received
+              </span>
+            <% } %>
+          </p>
+        </div>
+      </div>
+      <div class="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
+        <a href="/profile/orders" class="px-6 py-3 bg-black text-white font-medium rounded-lg hover:bg-gray-800 transition-colors text-center">View Order History</a>
+        <a href="/products" class="px-6 py-3 bg-gray-100 text-gray-900 font-medium rounded-lg hover:bg-gray-200 transition-colors text-center">Continue Shopping</a>
+      </div>
+    </div>
+    <% } else { %>
+    <div class="text-center">
+      <div class="inline-flex items-center justify-center w-16 h-16 bg-red-500 rounded-full mb-4">
+        <svg class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </div>
+      <h1 class="text-2xl font-bold text-gray-900 mb-2">Order Not Found</h1>
+      <p class="text-gray-500 mb-6">We couldn't find your order details. Please check your order number or try again.</p>
+      <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <a href="/checkout" class="px-6 py-3 bg-black text-white font-medium rounded-lg hover:bg-gray-800 transition-colors text-center">Retry Checkout</a>
+        <a href="/profile/orders" class="px-6 py-3 bg-gray-100 text-gray-900 font-medium rounded-lg hover:bg-gray-200 transition-colors text-center">View Order History</a>
+      </div>
+    </div>
+    <% } %>
+  </main>
+</body>
+</html>

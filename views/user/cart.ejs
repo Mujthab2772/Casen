@@ -94,38 +94,42 @@
 
     <!-- Main Content -->
     <main class="container mx-auto px-4 py-8">
-        <div class="flex items-center justify-between mb-12">
-            <button onclick="window.location.href='/products'" class="flex items-center text-sm font-medium text-gray-700 hover:text-black transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                </svg>
-                Continue Shopping
-            </button>
-
-            <div class="flex items-center justify-between w-full max-w-md">
-                <div class="flex flex-col items-center">
-                    <div class="w-8 h-8 rounded-full bg-black flex items-center justify-center text-xs font-medium text-white">1</div>
-                    <span class="mt-2 text-xs text-gray-500">Cart</span>
-                </div>
-                <div class="flex-1 h-px bg-gray-200 mx-2"></div>
-                <div class="flex flex-col items-center">
-                    <div class="w-8 h-8 rounded-full border-2 border-gray-300 flex items-center justify-center text-xs font-medium text-gray-500">2</div>
-                    <span class="mt-2 text-xs font-medium text-black">Information</span>
-                </div>
-                <div class="flex-1 h-px bg-gray-200 mx-2"></div>
-                <div class="flex flex-col items-center">
-                    <div class="w-8 h-8 rounded-full border-2 border-gray-300 flex items-center justify-center text-xs font-medium text-gray-500">3</div>
-                    <span class="mt-2 text-xs text-gray-500">Payment</span>
-                </div>
+        <!-- Centered Progress Bar Section -->
+        <div class="mb-12">
+            <div class="flex justify-start mb-4">
+                <button onclick="window.location.href='/products'" class="flex items-center text-sm font-medium text-gray-700 hover:text-black transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                    Continue Shopping
+                </button>
             </div>
 
-            <div class="w-[96px]"></div>
+            <div class="flex justify-center">
+                <div class="flex items-center justify-between w-full max-w-md">
+                    <div class="flex flex-col items-center">
+                        <div class="w-8 h-8 rounded-full bg-black flex items-center justify-center text-xs font-medium text-white">1</div>
+                        <span class="mt-2 text-xs text-gray-500">Cart</span>
+                    </div>
+                    <div class="flex-1 h-px bg-gray-200 mx-2"></div>
+                    <div class="flex flex-col items-center">
+                        <div class="w-8 h-8 rounded-full border-2 border-gray-300 flex items-center justify-center text-xs font-medium text-gray-500">2</div>
+                        <span class="mt-2 text-xs font-medium text-black">Information</span>
+                    </div>
+                    <div class="flex-1 h-px bg-gray-200 mx-2"></div>
+                    <div class="flex flex-col items-center">
+                        <div class="w-8 h-8 rounded-full border-2 border-gray-300 flex items-center justify-center text-xs font-medium text-gray-500">3</div>
+                        <span class="mt-2 text-xs text-gray-500">Payment</span>
+                    </div>
+                </div>
+            </div>
         </div>
+
         <div class="flex justify-between items-center mb-8">
             <h1 class="text-5xl font-bold">Your cart</h1>
         </div>
 
-        <div class="flex flex-col lg:flex-row gap-8">
+        <div class="flex flex-col lg:flex-row gap-8 min-h-[80vh]">
             <div class="lg:w-2/3">
                 <div class="border-b-4 border-black"></div>
                 <div class="space-y-6 mt-4">
@@ -198,7 +202,6 @@
 
                     <%
                         let subtotal = 0;
-                        let validItemCount = 0;
                         for (let i = 0; i < cart.length; i++) {
                             const item = cart[i].products;
                             const maxPerOrder = 10;
@@ -207,11 +210,9 @@
                             const isInvalid = qty > trueStock || (qty > maxPerOrder && qty <= trueStock);
                             if (!isInvalid) {
                                 subtotal += item.variant.price * item.quantity;
-                                validItemCount++;
                             }
                         }
-                        const discount = validItemCount > 0 ? 40 : 0;
-                        const total = Math.max(0, subtotal - discount);
+                        const total = subtotal; // No discount applied
                         const shipping = subtotal > 0 ? "Free Shipping" : "0.00 RS";
                     %>
 
@@ -227,10 +228,6 @@
                         <div class="flex justify-between">
                             <span>Tax</span>
                             <span>0.00 RS</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span>Discount</span>
-                            <span id="discount">Rs. <%= discount.toFixed(2) %></span>
                         </div>
                     </div>
 
@@ -296,34 +293,23 @@
     <!-- Updated Cart Scripts -->
     <script>
     function showAlert(title, text, icon = 'info') {
-        if (typeof Swal !== 'undefined') {
-            Swal.fire({ title, text, icon, timer: 3000, timerProgressBar: true });
-        } else {
-            console.error('Alert:', title, text);
-            alert(`${title}: ${text}`);
-        }
+        Swal.fire({ title, text, icon, timer: 3000, timerProgressBar: true });
     }
 
     function showEmptyCartAlert() {
-        if (typeof Swal !== 'undefined') {
-            Swal.fire({
-                title: 'Your cart is empty',
-                text: 'Please add some items to your cart before checking out.',
-                icon: 'info',
-                confirmButtonText: 'Continue shopping',
-                customClass: {
-                    confirmButton: 'bg-black text-white hover:bg-gray-800'
-                }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    window.location.href = '/products';
-                }
-            });
-        } else {
-            if (confirm('Your cart is empty. Would you like to continue shopping?')) {
+        Swal.fire({
+            title: 'Your cart is empty',
+            text: 'Please add some items to your cart before checking out.',
+            icon: 'info',
+            confirmButtonText: 'Continue shopping',
+            customClass: {
+                confirmButton: 'bg-black text-white hover:bg-gray-800'
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
                 window.location.href = '/products';
             }
-        }
+        });
     }
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -356,7 +342,6 @@
                 qtyValueEl.textContent = newQty;
                 cartItem.dataset.isInvalid = isInvalid ? 'true' : 'false';
 
-                // Update stock status text
                 const stockStatusEl = cartItem.querySelector('.stock-status-text');
                 if (stockStatusEl) {
                     if (isOutOfStock) {
@@ -369,7 +354,6 @@
                     stockStatusEl.className = 'stock-status-text text-xs ' + (isInvalid ? 'text-red-600 font-semibold' : 'text-gray-500');
                 }
 
-                // Update total
                 const totalEl = cartItem.querySelector('.item-total');
                 if (totalEl) {
                     if (isInvalid) {
@@ -381,13 +365,11 @@
                     }
                 }
 
-                // Update button states
                 const decBtn = cartItem.querySelector('.decrease-btn');
                 const incBtn = cartItem.querySelector('.increase-btn');
                 if (decBtn) decBtn.disabled = newQty <= 1;
                 if (incBtn) incBtn.disabled = newQty >= Math.min(trueStock, maxPerOrder);
 
-                // Update backend
                 try {
                     const res = await fetch(`/cart/update`, {
                         method: 'PUT',
@@ -398,7 +380,6 @@
                     if (!res.ok) throw new Error('Update failed');
                     recalculateTotals();
                 } catch (err) {
-                    // Revert UI on error
                     qtyValueEl.textContent = currentQty;
                     const wasOutOfStock = currentQty > trueStock;
                     const wasOverMax = currentQty > maxPerOrder && currentQty <= trueStock;
@@ -439,21 +420,16 @@
                 const cartProductId = e.currentTarget.dataset.cartProductId;
                 const cartItem = e.currentTarget.closest('[data-cart-product-id]');
 
-                let shouldRemove = false;
-                if (typeof Swal !== 'undefined') {
-                    const result = await Swal.fire({
-                        title: 'Remove item?',
-                        text: "This action cannot be undone.",
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonText: 'Yes, remove it!'
-                    });
-                    shouldRemove = result.isConfirmed;
-                } else {
-                    shouldRemove = confirm('Remove this item?');
-                }
+                const result = await Swal.fire({
+                    title: 'Remove item?',
+                    text: "This action cannot be undone.",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, remove it!',
+                    cancelButtonText: 'Cancel'
+                });
 
-                if (shouldRemove) {
+                if (result.isConfirmed) {
                     try {
                         const res = await fetch(`/cart/remove`, {
                             method: 'DELETE',
@@ -533,7 +509,6 @@
 
         function recalculateTotals() {
             let subtotal = 0;
-            let validItemCount = 0;
             const items = document.querySelectorAll('[data-cart-product-id]');
 
             items.forEach(item => {
@@ -547,16 +522,13 @@
                 const qty = parseInt(qtyEl.textContent.trim(), 10);
                 if (!isNaN(qty) && qty > 0) {
                     subtotal += price * qty;
-                    validItemCount++;
                 }
             });
 
-            const discount = validItemCount > 0 ? 40 : 0;
-            const total = Math.max(0, subtotal - discount);
+            const total = subtotal; // No discount
             const shipping = subtotal > 0 ? "Free Shipping" : "0.00 RS";
 
             document.getElementById('subtotal').textContent = `Rs. ${subtotal.toFixed(2)}`;
-            document.getElementById('discount').textContent = `Rs. ${discount.toFixed(2)}`;
             document.getElementById('shipping').textContent = shipping;
             document.querySelector('#total-price span:last-child').textContent = `Rs. ${total.toFixed(2)}`;
         }

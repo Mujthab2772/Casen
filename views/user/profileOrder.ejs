@@ -83,7 +83,6 @@
       </div>
     </div>
   </header>
-
   <div class="container mx-auto px-4 py-8 flex flex-col lg:flex-row gap-6">
     <!-- Sidebar -->
     <aside class="lg:w-60 bg-white rounded-xl shadow-sm p-4">
@@ -123,7 +122,6 @@
         <form id="logout-form" action="/logout" method="post" class="hidden"></form>
       </nav>
     </aside>
-
     <!-- Orders Content -->
     <main class="flex-1">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
@@ -132,7 +130,6 @@
           <p class="text-gray-500 mt-1">Track and manage your recent purchases</p>
         </div>
       </div>
-
       <!-- Order Search -->
       <div class="mb-6">
         <form method="GET" class="max-w-md">
@@ -157,7 +154,6 @@
           <% } %>
         </form>
       </div>
-
       <!-- Order Filters -->
       <div class="mb-6 border-b border-gray-200">
         <div class="flex space-x-6 pb-2">
@@ -167,29 +163,42 @@
           <a href="?status=cancelled<%= locals.currentSearch ? '&search=' + encodeURIComponent(currentSearch) : '' %>" class="pb-2 border-b-2 <%= locals.currentStatus === 'cancelled' ? 'border-black font-medium text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-800' %>">Cancelled</a>
         </div>
       </div>
-
       <!-- Dynamic Order List -->
       <div class="space-y-5">
         <% if (locals.orders && orders.length > 0) { %>
           <% orders.forEach(order => { %>
             <%
-              let effectiveTotal = 0;
-              if (order.items) {
-                for (let item of order.items.flat()) {
-                  if (item.orderStatus !== 'cancelled') {
-                    let price = 0;
-                    if (item.price) {
-                      if (item.price.$numberDecimal) price = parseFloat(item.price.$numberDecimal);
-                      else if (typeof item.price === 'string') price = parseFloat(item.price);
-                      else price = parseFloat(item.price) || 0;
+              let effectiveTotal;
+              const isEntireOrderCancelled = (order.orderStatus || '').toLowerCase() === 'cancelled';
+
+              if (isEntireOrderCancelled) {
+                // Handle Decimal128 values from MongoDB
+                if (order.totalAmount && typeof order.totalAmount === 'object' && '$numberDecimal' in order.totalAmount) {
+                  effectiveTotal = parseFloat(order.totalAmount.$numberDecimal);
+                } else if (typeof order.totalAmount === 'number') {
+                  effectiveTotal = order.totalAmount;
+                } else {
+                  effectiveTotal = parseFloat(order.totalAmount) || 0;
+                }
+              } else {
+                // Recalculate only for active orders
+                effectiveTotal = 0;
+                if (order.items) {
+                  for (let item of order.items.flat()) {
+                    if (item.orderStatus !== 'cancelled') {
+                      let price = 0;
+                      if (item.price) {
+                        if (item.price.$numberDecimal) price = parseFloat(item.price.$numberDecimal);
+                        else if (typeof item.price === 'string') price = parseFloat(item.price);
+                        else price = parseFloat(item.price) || 0;
+                      }
+                      effectiveTotal += price * (item.quantity || 1);
                     }
-                    effectiveTotal += price * (item.quantity || 1);
                   }
                 }
+                const orderDiscount = order.discountAmount || 0;
+                effectiveTotal = Math.max(0, effectiveTotal - orderDiscount);
               }
-              // Apply discount if exists
-              const orderDiscount = order.discountAmount || 0;
-              effectiveTotal = Math.max(0, effectiveTotal - orderDiscount);
 
               let statusClass = '';
               const os = (order.orderStatus || '').toLowerCase();
@@ -230,7 +239,6 @@
           </div>
         <% } %>
       </div>
-
       <!-- PAGINATION -->
       <% if (locals.pagination && pagination.totalPages > 1) { %>
         <div class="mt-8 flex items-center justify-between">
@@ -247,7 +255,6 @@
               if (pagination.status && pagination.status !== 'all') urlParams.set('status', pagination.status);
               if (pagination.search) urlParams.set('search', pagination.search);
             %>
-
             <% if (pagination.hasPrevPage) { %>
               <%
                 urlParams.set('page', pagination.currentPage - 1);
@@ -260,7 +267,6 @@
                 <i class="fas fa-chevron-left"></i>
               </span>
             <% } %>
-
             <% for (let i = Math.max(1, pagination.currentPage - 1); i <= Math.min(pagination.totalPages, pagination.currentPage + 1); i++) { %>
               <%
                 urlParams.set('page', i);
@@ -272,7 +278,6 @@
                 <%= i %>
               </a>
             <% } %>
-
             <% if (pagination.hasNextPage) { %>
               <%
                 urlParams.set('page', pagination.currentPage + 1);
@@ -290,10 +295,8 @@
       <% } %>
     </main>
   </div>
-
   <!-- ✅ SweetAlert2 CDN -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
   <style>
     @media print {
       body * { visibility: hidden; }
@@ -301,7 +304,6 @@
       #printable-order * { visibility: visible; }
     }
   </style>
-
   <script>
     function getOrderStatusClass(status) {
       const s = (status || '').toLowerCase();
@@ -315,7 +317,6 @@
     function getOrderStatusLabel(status) {
       return (status || '').charAt(0).toUpperCase() + (status || '').slice(1);
     }
-
     const orderDetailsCache = {};
     document.addEventListener('DOMContentLoaded', function() {
       document.querySelectorAll('[data-order]').forEach(el => {
@@ -323,10 +324,13 @@
         orderDetailsCache[order._id] = order;
       });
     });
-
     function showOrderDetails(el) {
       const order = JSON.parse(el.dataset.order);
       const items = Array.isArray(order.items) ? order.items.flat() : [];
+      
+      // ✅ FIXED: Use original total if entire order is cancelled
+      const isEntireOrderCancelled = (order.orderStatus || '').toLowerCase() === 'cancelled';
+      
       let itemsHtml = '';
       let effectiveSubtotal = 0;
       items.forEach((item, idx) => {
@@ -344,7 +348,7 @@
         if (!isCancelled) effectiveSubtotal += price * quantity;
         const images = Array.isArray(item.images) ? item.images : [];
         let itemActions = '';
-        if (!isCancelled && order.orderStatus !== 'cancelled' && order.orderStatus !== 'delivered' && items.length > 1) {
+        if (!isCancelled && !isEntireOrderCancelled && order.orderStatus !== 'delivered' && items.length > 1) {
           itemActions = `<div class="mt-2 flex justify-end"><button onclick="event.stopPropagation(); cancelItem('${order._id}', ${idx});" class="text-xs text-red-600 hover:text-red-800 font-medium flex items-center"><i class="fas fa-times mr-1"></i> Cancel item</button></div>`;
         }
         const itemClasses = isCancelled ? 'opacity-60' : '';
@@ -368,11 +372,22 @@
       const addr = order.address;
       const fullAddress = `${addr.fullName}<br>${addr.streetAddress}<br>${addr.city}, ${addr.state} ${addr.postalCode}<br>${addr.country}<br>Phone: ${addr.phoneNumber}${addr.secondNumber ? '<br>Alt: ' + addr.secondNumber : ''}`;
 
-      // ✅ NEW: Handle discount
+      // ✅ Use original total for cancelled orders
       const orderDiscount = order.discountAmount || 0;
-      const effectiveTotal = Math.max(0, effectiveSubtotal - orderDiscount);
+      let effectiveTotal;
+      if (isEntireOrderCancelled) {
+        // Handle Decimal128 values from MongoDB
+        if (order.totalAmount && typeof order.totalAmount === 'object' && '$numberDecimal' in order.totalAmount) {
+          effectiveTotal = parseFloat(order.totalAmount.$numberDecimal);
+        } else if (typeof order.totalAmount === 'number') {
+          effectiveTotal = order.totalAmount;
+        } else {
+          effectiveTotal = parseFloat(order.totalAmount) || 0;
+        }
+      } else {
+        effectiveTotal = Math.max(0, effectiveSubtotal - orderDiscount);
+      }
 
-      // ✅ FIXED: Hide 'Cancel Entire Order' if order is delivered or otherwise non-cancelable
       const nonCancellableStatuses = ['delivered', 'cancelled', 'returned', 'return requested'];
       const os = (order.orderStatus || '').toLowerCase();
       const showCancelEntireButton = !nonCancellableStatuses.includes(os);
@@ -380,15 +395,12 @@
 
       let cancelButtonHtml = '';
       let returnButtonHtml = '';
-
       if (showCancelEntireButton) {
         cancelButtonHtml = `<button onclick="confirmCancelOrder('${order._id}', '${order.orderId}')" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">Cancel Entire Order</button>`;
       }
-
       if (showReturnButton) {
         returnButtonHtml = `<button onclick="confirmReturnOrder('${order._id}', '${order.orderId}');" class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition">Request Return</button>`;
       }
-
       const actionButtonsHtml = `
         <div class="flex gap-2">
           <button onclick="downloadOrderDetails('${order._id}'); Swal.close();" title="Download Invoice" class="p-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition">
@@ -399,10 +411,8 @@
           <button onclick="Swal.close();" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition">Close</button>
         </div>
       `;
-
       const statusClass = getOrderStatusClass(order.orderStatus);
       const statusLabel = getOrderStatusLabel(order.orderStatus);
-
       Swal.fire({
         title: `<div class="text-center">
           <div class="text-gray-900 text-xl font-bold">Order <span class="font-mono bg-gray-100 px-2 py-1 rounded">${order.orderId.toUpperCase()}</span></div>
@@ -432,8 +442,7 @@
         }
       });
     }
-
-    // --- Rest of your functions remain unchanged ---
+    // --- Rest of your functions unchanged ---
     function confirmCancelOrder(orderId, orderNumber) {
       Swal.close();
       Swal.fire({
@@ -466,7 +475,6 @@
         }
       });
     }
-
     function confirmReturnOrder(orderId, orderNumber) {
       Swal.fire({
         title: 'Request a Return?',
@@ -534,7 +542,6 @@
         }
       });
     }
-
     function cancelItem(orderId, itemIndex) {
       Swal.fire({
         title: 'Cancel This Item?',
@@ -566,7 +573,6 @@
         }
       });
     }
-
     function downloadOrderDetails(orderId) {
       if (orderDetailsCache[orderId]) {
         generateInvoice(orderDetailsCache[orderId]);
@@ -587,7 +593,6 @@
           Swal.fire('Error', 'Failed to fetch order details. Please try again.', 'error');
         });
     }
-
     function generateInvoice(order) {
       const printableContent = `
         <!DOCTYPE html>
