@@ -1,5 +1,14 @@
-import { couponDetails, tempOrder } from "../../service/user/checkoutService.js";
-import { cashOnDelivery, orderDetails } from "../../service/user/paymentService.js";
+import { 
+  couponDetails, 
+  tempOrder 
+} from "../../service/user/checkoutService.js";
+import { 
+  cashOnDelivery,
+  createRazorpayOrderSession,
+  verifyRazorpayPayment,
+  orderDetails
+} from "../../service/user/paymentService.js";
+
 
 export const payment = async (req, res) => {
   try {
@@ -63,7 +72,8 @@ export const payment = async (req, res) => {
         messages: req.flash(),
         checkoutDetail,
         address: recalculated.addressDetails,
-        items: recalculated.productList
+        items: recalculated.productList,
+        razorpayKeyId: process.env.RAZORPAY_KEY_ID
       });
     } catch (error) {
       console.log(`Temp order error:`, error);
@@ -92,10 +102,8 @@ export const paymentProcess = async (req, res) => {
       return res.redirect('/login');
     }
     
-    let result = null;
-    
-    // Handle Cash on Delivery
     if (req.body.paymentMethod === 'cash') {
+      let result;
       try {
         result = await cashOnDelivery(req);
         req.flash('success', 'Your order has been placed successfully! Payment to be made on delivery.');
@@ -103,44 +111,141 @@ export const paymentProcess = async (req, res) => {
         console.log(`COD Error:`, error);
         throw error;
       }
-    } 
-    // Handle Online Payment (not implemented in provided code, this is a placeholder)
-    else if (req.body.paymentMethod === 'online') {
-      // This would handle Razorpay/PayPal integration
-      // For now, we'll just redirect with an error
-      req.flash('error', 'Online payment is not available at the moment. Please choose Cash on Delivery.');
-      return res.redirect('/payment');
+      
+      delete req.session.checkout;
+      
+      return res.redirect(`/payment/success?orderId=${result.orderId}`);
     }
-    // Handle Wallet Payment (placeholder)
-    else if (req.body.paymentMethod === 'wallet') {
-      req.flash('error', 'Wallet payment is not available at the moment. Please choose Cash on Delivery.');
+    
+    if (req.body.paymentMethod === 'online') {
+      try {
+        const paymentSession = await createRazorpayOrderSession(req);
+        
+        req.session.paymentSession = paymentSession;
+        
+        return res.json({
+          success: true,
+          razorpayOrderId: paymentSession.razorpayOrderId,
+          amount: paymentSession.amount,
+          currency: paymentSession.currency,
+          key: process.env.RAZORPAY_KEY_ID,
+          name: 'Casen',
+          description: 'Order Payment',
+          image: '/logo.png',
+          order_details: paymentSession.orderDetails,
+          paymentSessionId: paymentSession.paymentSessionId,
+          contact: req.session.checkout.contact.phone || req.session.checkout.contact,
+          email: req.session.userDetail.email
+        });
+      } catch (error) {
+        console.error('Razorpay order creation error:', error);
+        return res.json({ 
+          success: false,
+          message: 'Failed to initiate payment. Please try again.' 
+        });
+      }
+    }
+    
+    if (req.body.paymentMethod === 'wallet') {
+      req.flash('error', 'Wallet payment is not available at the moment. Please choose another payment method.');
       return res.redirect('/payment');
     }
     
-    // Clear the checkout session after successful payment processing
-    delete req.session.checkout;
-    
-    // Redirect to success page with order ID
-    return res.redirect(`/payment/success?orderId=${result.orderId}`);
+    req.flash('error', 'Please select a valid payment method.');
+    return res.redirect('/payment');
     
   } catch (error) {
-    console.log(`Payment process error:`, error.message || error);
+    console.log(`Payment process error:`, error.toString());
     
-    // Clear session on error to prevent stale data
     delete req.session.checkout;
     
-    let errorMessage = 'Payment failed. Please try again.';
-    if (error.message.includes('usage limit')) {
-      errorMessage = 'Coupon usage limit exceeded. Please try without coupon.';
-    } else if (error.message.includes('out of stock')) {
-      errorMessage = error.message;
-    } else if (error.message.includes('Minimum order')) {
-      errorMessage = error.message;
-    } else if (error.message.includes('not authenticated')) {
+    const errorMessage = error?.message || error?.error?.description || 'Payment failed. Please try again.';
+    
+    let flashMessage = 'Payment failed. Please try again.';
+    if (errorMessage.includes && errorMessage.includes('usage limit')) {
+      flashMessage = 'Coupon usage limit exceeded. Please try without coupon.';
+    } else if (errorMessage.includes && errorMessage.includes('out of stock')) {
+      flashMessage = errorMessage;
+    } else if (errorMessage.includes && errorMessage.includes('Minimum order')) {
+      flashMessage = errorMessage;
+    } else if (errorMessage.includes && errorMessage.includes('not authenticated')) {
       return res.redirect('/login');
+    } else if (errorMessage.includes && errorMessage.includes('receipt')) {
+      flashMessage = 'Payment system error. Please try again later.';
+    } else if (errorMessage.includes && errorMessage.includes('BAD_REQUEST_ERROR')) {
+      flashMessage = error.error?.description || 'Payment gateway error. Please try again.';
     }
     
-    req.flash('error', errorMessage);
+    req.flash('error', flashMessage);
+    
+    return res.json({ 
+      success: false,
+      message: flashMessage 
+    });
+  }
+};
+
+export const verifyPayment = async (req, res) => {
+  try {
+    // console.log('=== PAYMENT VERIFICATION STARTED ===');
+    // console.log('Session paymentSession:', req.session.paymentSession);
+    // console.log('Query parameters:', req.query);
+    // console.log('User session:', req.session.userDetail);
+    
+    const verificationData = req.query;
+    
+    if (!verificationData.paymentSessionId || !verificationData.razorpay_order_id || 
+        !verificationData.razorpay_payment_id || !verificationData.razorpay_signature) {
+      throw new Error('Missing verification parameters. Please try again.');
+    }
+    
+    if (!req.session.paymentSession) {
+      throw new Error('Payment session not found. Your session may have expired. Please try again.');
+    }
+    
+    if (req.session.paymentSession.paymentSessionId !== verificationData.paymentSessionId) {
+      throw new Error('Invalid payment session. Please try placing your order again.');
+    }
+    
+    const order = await verifyRazorpayPayment({
+      ...verificationData,
+      paymentSession: req.session.paymentSession,
+      userId: req.session.userDetail._id
+    });
+    
+    delete req.session.checkout;
+    delete req.session.paymentSession;
+    
+    // console.log('=== PAYMENT VERIFICATION COMPLETE ===');
+    
+    req.flash('success', 'Payment successful! Your order has been confirmed.');
+    return res.redirect(`/payment/success?orderId=${order.orderId}`);
+  } catch (error) {
+    console.error('Payment verification error details:', {
+      message: error.message,
+      stack: error.stack
+    });
+    
+    delete req.session.checkout;
+    delete req.session.paymentSession;
+    
+    const errorMessage = error?.message || error?.error?.description || 'Payment verification failed. Please contact support.';
+    
+    let flashMessage = 'Payment verification failed. Please contact support.';
+    if (errorMessage.includes && errorMessage.includes('signature')) {
+      flashMessage = 'Payment verification failed. The payment may not have been completed.';
+    } else if (errorMessage.includes && errorMessage.includes('session')) {
+      flashMessage = 'Your payment session has expired. Please try placing your order again.';
+    } else if (errorMessage.includes && errorMessage.includes('out of stock')) {
+      flashMessage = errorMessage;
+    } else if (errorMessage.includes && errorMessage.includes('Product variant not found')) {
+      flashMessage = 'One or more products in your cart are no longer available. Please try again with available items.';
+    }
+    
+    req.flash('error', flashMessage);
+    
+    console.error('Verification error details:', error);
+    
     return res.redirect('/checkout');
   }
 };

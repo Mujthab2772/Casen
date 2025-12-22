@@ -22,6 +22,7 @@ export const checkout = async (req, res) => {
       if (quantity <= variant.stock) {
         subtotal += variant.price * quantity;
       }
+      
     }
 
     const validCoupons = await getValidCouponsForUser(userId, subtotal);
@@ -38,7 +39,7 @@ export const checkout = async (req, res) => {
       user,
       cartProducts,
       userAddresses: userAddresses.addresses,
-      availableCoupons: availableCoupons, // FIXED: Don't stringify here
+      availableCoupons: availableCoupons || null, // FIXED: Don't stringify here
       subtotal,
       messages: req.flash()
     });

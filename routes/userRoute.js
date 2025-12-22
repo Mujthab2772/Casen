@@ -12,7 +12,7 @@ import { address, addressEdit, addressEditUpdate, addressFetch, addressNew, dele
 import { validateAddress } from "../middlewares/addressMiddleware.js"
 import { cart, newCart, removeCart, updateCart } from "../controllers/user/cartController.js"
 import { checkout, checkoutDatas, getAvailableCoupons, previewCheckout } from "../controllers/user/checkoutController.js"
-import { payment, paymentProcess, paymentSuccess } from "../controllers/user/paymentController.js"
+import { payment, paymentProcess, paymentSuccess, verifyPayment } from "../controllers/user/paymentController.js"
 import { exitsCheckout } from "../middlewares/checkoutMiddleware.js"
 import { cancelItem, cancelOrder, orderListing, returnProduct } from "../controllers/user/orderController.js"
 import { validateProfileUpdate } from "../middlewares/validateProfileUpdate.js"
@@ -118,6 +118,8 @@ router.get('/coupons',userProfile, getAvailableCoupons);
 router.get('/payment', userProfile, payment)
 
 router.post('/payment/process', userProfile, paymentProcess)
+
+router.get('/payment/verify', userProfile, verifyPayment)
 
 // success payment 
 

@@ -105,8 +105,7 @@ export const getValidCouponsForUser = async (userId, subtotal) => {
   const coupons = await couponModel.find({
     isActive: true,
     startDate: { $lte: now },
-    endDate: { $gte: now },
-    minAmount: { $lte: subtotal }
+    endDate: { $gte: now }
   });
 
   const valid = [];

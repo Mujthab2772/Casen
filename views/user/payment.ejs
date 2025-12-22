@@ -7,6 +7,10 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.10/dist/cdn.min.js"></script>
+  <!-- Razorpay Checkout script -->
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <!-- SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
     body {
       background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
@@ -47,6 +51,19 @@
     @keyframes fade-out {
       from { opacity: 1; }
       to { opacity: 0; transform: translateX(100%); }
+    }
+    .razorpay-spinner {
+      display: none;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(107, 114, 128, 0.3);
+      border-top: 3px solid #4f46e5;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
   </style>
 </head>
@@ -159,7 +176,7 @@
     </div>
     <div class="grid lg:grid-cols-3 gap-8">
       <div class="lg:col-span-2">
-        <div x-data="{ selectedMethod: 'cash' }">
+        <div x-data="paymentComponent">
           <!-- Cash on Delivery -->
           <div 
             @click="selectedMethod = 'cash'"
@@ -242,22 +259,37 @@
             </div>
           </div>
           
-          <form :action="selectedMethod === 'cash' ? '/payment/process' : '/payment/initiate'" method="POST">
-            <input type="hidden" name="paymentMethod" :value="selectedMethod">
-            <button type="submit" class="w-full bg-black hover:bg-gray-800 text-white py-4 rounded-xl font-semibold mt-4 transition shadow-lg">
-              <template x-if="selectedMethod === 'cash'">
-                Confirm & Place Order
-              </template>
-              <template x-if="selectedMethod !== 'cash'">
-                Confirm & Pay ₹<%= checkoutDetail.orderSummary.total %>
-              </template>
+          <!-- Payment Forms -->
+          <form x-show="selectedMethod === 'cash'" action="/payment/process" method="POST" class="mb-6">
+            <input type="hidden" name="paymentMethod" value="cash">
+            <button type="submit" class="w-full bg-black hover:bg-gray-800 text-white py-4 rounded-xl font-semibold transition shadow-lg">
+              Confirm & Place Order
             </button>
-            <p class="text-center text-xs text-gray-500 mt-3">
-              By completing your purchase, you agree to our 
-              <a href="#" class="text-black underline">Terms of Service</a> and 
-              <a href="#" class="text-black underline">Privacy Policy</a>.
-            </p>
           </form>
+          
+          <div x-show="selectedMethod === 'online'">
+            <button 
+              @click="initiateRazorpayPayment" 
+              :disabled="processing"
+              class="w-full bg-black hover:bg-gray-800 text-white py-4 rounded-xl font-semibold transition shadow-lg flex justify-center items-center"
+            >
+              <span x-show="!processing">Confirm & Pay ₹<%= checkoutDetail.orderSummary.total %></span>
+              <div x-show="processing" class="razorpay-spinner mr-2"></div>
+              <span x-show="processing">Processing Payment...</span>
+            </button>
+          </div>
+          
+          <div x-show="selectedMethod === 'wallet'">
+            <button disabled class="w-full bg-gray-300 cursor-not-allowed text-gray-600 py-4 rounded-xl font-semibold mt-4">
+              Coming Soon
+            </button>
+          </div>
+          
+          <p class="text-center text-xs text-gray-500 mt-3">
+            By completing your purchase, you agree to our 
+            <a href="#" class="text-black underline">Terms of Service</a> and 
+            <a href="#" class="text-black underline">Privacy Policy</a>.
+          </p>
         </div>
       </div>
       <!-- Order Summary -->
@@ -303,5 +335,123 @@
       </div>
     </div>
   </main>
+
+  <script>
+    document.addEventListener('alpine:init', () => {
+      Alpine.data('paymentComponent', () => ({
+        selectedMethod: 'cash',
+        processing: false,
+        
+        initiateRazorpayPayment() {
+          if (this.processing) return;
+          
+          this.processing = true;
+          
+          fetch('/payment/process', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ paymentMethod: 'online' })
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              this.openRazorpayCheckout(data);
+            } else {
+              throw new Error(data.message || 'Failed to initiate payment');
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            this.processing = false;
+            Swal.fire({
+              icon: 'error',
+              title: 'Payment Error',
+              text: 'An error occurred while processing your payment. Please try again.\nError: ' + error.message,
+              confirmButtonText: 'OK'
+            });
+          });
+        },
+        
+        openRazorpayCheckout(options) {
+          const rzpOptions = {
+            key: options.key,
+            amount: options.amount,
+            currency: options.currency,
+            name: options.name,
+            description: options.description,
+            image: options.image,
+            order_id: options.razorpayOrderId,
+            prefill: {
+              name: '<%= user.firstName + " " + (user.lastName || "") %>',
+              email: options.email,
+              contact: options.contact
+            },
+            notes: {
+              order_details: JSON.stringify(options.order_details),
+              paymentSessionId: options.paymentSessionId
+            },
+            theme: {
+              color: "#4F46E5"
+            },
+            handler: (response) => {
+              // Payment succeeded
+              Swal.fire({
+                title: 'Payment Processing',
+                text: 'Please wait while we verify your payment...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                  Swal.showLoading();
+                }
+              });
+              
+              // Add a small delay to ensure Swal is fully shown before redirecting
+              setTimeout(() => {
+                // Redirect to verification endpoint with payment details
+                const params = new URLSearchParams({
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_signature: response.razorpay_signature,
+                  paymentSessionId: options.paymentSessionId
+                });
+                
+                window.location.href = `/payment/verify?${params.toString()}`;
+              }, 300);
+            },
+            modal: {
+              ondismiss: () => {
+                this.processing = false;
+                Swal.fire({
+                  icon: 'info',
+                  title: 'Payment Cancelled',
+                  text: 'You have cancelled the payment. Please try again or choose another payment method.',
+                  confirmButtonText: 'OK'
+                });
+              }
+            }
+          };
+          
+          const rzp = new Razorpay(rzpOptions);
+          rzp.on('payment.failed', (response) => {
+            this.processing = false;
+            let errorMsg = 'Payment failed due to a technical issue.';
+            if (response.error && response.error.reason) {
+              errorMsg = response.error.reason;
+            }
+            
+            Swal.fire({
+              icon: 'error',
+              title: 'Payment Failed',
+              text: errorMsg,
+              confirmButtonText: 'Try Again'
+            });
+          });
+          
+          rzp.open();
+        }
+      }));
+    });
+  </script>
 </body>
 </html>
