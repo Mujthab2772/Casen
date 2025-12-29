@@ -123,7 +123,7 @@
             <h1 class="text-3xl font-semibold text-black">Offer Management</h1>
             <p class="text-gray-500 mt-1">Create, view, edit, and manage product/category offers.</p>
           </div>
-          <a href="/admin/offer/new" class="inline-flex items-center gap-2 bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors">
+          <a href="/admin/offer/add" class="inline-flex items-center gap-2 bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
             </svg>
@@ -142,7 +142,6 @@
               value="<%= search || '' %>"
               placeholder="Search by offer name or code"
               class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              oninput="updateFilters()"
             />
             <div class="absolute left-3 top-2.5 text-gray-400">
               <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -152,7 +151,7 @@
           </div>
 
           <div>
-            <select id="statusFilter" class="py-2.5 pl-3 pr-8 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[140px]" onchange="updateFilters()">
+            <select id="statusFilter" class="py-2.5 pl-3 pr-8 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[140px]">
               <option value="all" <%= (status === 'all' || !status) ? 'selected' : '' %>>Status: All</option>
               <option value="active" <%= status === 'active' ? 'selected' : '' %>>Active</option>
               <option value="inactive" <%= status === 'inactive' ? 'selected' : '' %>>Inactive</option>
@@ -161,7 +160,7 @@
           </div>
 
           <div>
-            <select id="offerTypeFilter" class="py-2.5 pl-3 pr-8 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[140px]" onchange="updateFilters()">
+            <select id="offerTypeFilter" class="py-2.5 pl-3 pr-8 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[140px]">
               <option value="all" <%= (offerType === 'all' || !offerType) ? 'selected' : '' %>>Offer Type: All</option>
               <option value="product" <%= offerType === 'product' ? 'selected' : '' %>>Product</option>
               <option value="category" <%= offerType === 'category' ? 'selected' : '' %>>Category</option>
@@ -194,12 +193,12 @@
                   <tr class="hover:bg-gray-50">
                     <td class="px-4 py-4"><%= offer.offerName %></td>
                     <td class="px-4 py-4">
-                      <%= offer.offerType === 'product' ? 'Product' :
-                          offer.offerType === 'category' ? 'Category' :
+                      <%= offer.targetingType === 'products' ? 'Product' :
+                          offer.targetingType === 'categories' ? 'Category' :
                           'Global' %>
                     </td>
                     <td class="px-4 py-4">
-                      <% if (offer.discountType === 'percentage') { %>
+                      <% if (offer.offerType === 'percentage') { %>
                         <%= offer.discountValue %>% off
                       <% } else { %>
                         ₹<%= offer.discountValue %> off
@@ -208,14 +207,15 @@
                     <td class="px-4 py-4"><%= new Date(offer.startDate).toISOString().split('T')[0] %></td>
                     <td class="px-4 py-4"><%= new Date(offer.endDate).toISOString().split('T')[0] %></td>
                     <td class="px-4 py-4">
-                      <% if (!offer.isActive) { %>
+                      <% if (offer.status !== 'active') { %>
                         <span class="inline-block px-3 py-1 rounded-md text-xs font-semibold bg-gray-100 text-gray-800">Inactive</span>
                       <% } else { %>
                         <% const now = new Date(); %>
                         <% const isExpired = new Date(offer.endDate) < now; %>
+                        <% const isScheduled = new Date(offer.startDate) > now; %>
                         <% if (isExpired) { %>
                           <span class="inline-block px-3 py-1 rounded-md text-xs font-semibold bg-red-100 text-red-800">Expired</span>
-                        <% } else if (new Date(offer.startDate) > now) { %>
+                        <% } else if (isScheduled) { %>
                           <span class="inline-block px-3 py-1 rounded-md text-xs font-semibold bg-yellow-100 text-yellow-800">Scheduled</span>
                         <% } else { %>
                           <span class="inline-block px-3 py-1 rounded-md text-xs font-semibold bg-green-100 text-green-800">Active</span>
@@ -230,10 +230,10 @@
                       </a>
                       <button type="button"
                               data-id="<%= offer._id %>"
-                              data-active="<%= offer.isActive %>"
+                              data-active="<%= offer.status === 'active' && new Date(offer.endDate) > new Date() %>"
                               onclick="confirmToggleActive(this.dataset.id, this.dataset.active === 'true')"
-                              class="w-9 h-9 flex items-center justify-center <%= offer.isActive ? 'bg-red-100 text-red-600 hover:bg-red-200' : 'bg-green-100 text-green-600 hover:bg-green-200' %> rounded-md">
-                        <% if (offer.isActive) { %>
+                              class="w-9 h-9 flex items-center justify-center <%= (offer.status === 'active' && new Date(offer.endDate) > new Date()) ? 'bg-red-100 text-red-600 hover:bg-red-200' : 'bg-green-100 text-green-600 hover:bg-green-200' %> rounded-md">
+                        <% if (offer.status === 'active' && new Date(offer.endDate) > new Date()) { %>
                           <!-- Trash icon -->
                           <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A1 1 0 0117.133 21H6.867A1 1 0 016 19.133L4.867 7H19zm-1 7h-1v-7h1v7z" />
@@ -258,7 +258,7 @@
           <div class="text-sm text-gray-600">
             Showing <span class="font-medium"><%= (currentPage - 1) * 10 + 1 %></span> to
             <span class="font-medium"><%= Math.min(currentPage * 10, totalOffers) %></span> of
-            <span class="font- medium"><%= totalOffers %></span> offers
+            <span class="font-medium"><%= totalOffers %></span> offers
           </div>
 
           <div class="flex items-center gap-2">
@@ -320,6 +320,17 @@
 
         window.location.search = params.toString();
       }
+
+      // Search only on Enter
+      document.getElementById('searchInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          updateFilters();
+        }
+      });
+
+      // Dropdowns update immediately
+      document.getElementById('statusFilter').addEventListener('change', updateFilters);
+      document.getElementById('offerTypeFilter').addEventListener('change', updateFilters);
 
       async function confirmToggleActive(offerId, isActive) {
         const action = isActive ? 'deactivate' : 'reactivate';

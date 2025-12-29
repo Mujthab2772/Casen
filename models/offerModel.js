@@ -8,7 +8,7 @@ const offerSchema = new Schema(
       type: String,
       required: true,
       unique: true,
-      default: () => uuidv4(), 
+      default: () => uuidv4(),
     },
     offerName: {
       type: String,
@@ -21,13 +21,21 @@ const offerSchema = new Schema(
       type: String,
       required: [true, 'Offer type is required'],
       enum: {
-        values: ['percentage', 'fixed'],
-        message: 'Offer type must be "percentage" or "fixed"',
+        values: ['percentage', 'fixed', 'buyonegetone', 'free_shipping'],
+        message: 'Offer type must be one of: percentage, fixed, buyonegetone, free_shipping',
       },
     },
     discountValue: {
       type: Number,
-      required: [true, 'Discount value is required'],
+      validate: {
+        validator: function (value) {
+          if (['free_shipping', 'buyonegetone'].includes(this.offerType)) {
+            return true; 
+          }
+          return value != null && value > 0;
+        },
+        message: 'Discount value is required for this offer type',
+      },
       min: [0, 'Discount value cannot be negative'],
     },
     startDate: {
@@ -40,26 +48,20 @@ const offerSchema = new Schema(
     },
     minPurchase: {
       type: Number,
-      required: [true, 'Minimum purchase amount is required'],
       min: [0, 'Minimum purchase cannot be negative'],
       default: 0,
     },
-    maxDiscountAmount: {
-      type: Number,
-      min: [0, 'Max discount amount cannot be negative'],
-      default: null,
+    status: {
+      type: String,
+      enum: ['active', 'inactive'],
+      default: 'active',
+    },
+    targetingType: {
+      type: String,
+      enum: ['all', 'products', 'categories'],
+      default: 'all',
     },
     targeting: {
-      categories: {
-        type: [String],
-        default: [],
-        validate: {
-          validator: function (arr) {
-            return new Set(arr).size === arr.length;
-          },
-          message: 'Duplicate categories are not allowed',
-        },
-      },
       productIds: {
         type: [String],
         default: [],
@@ -70,14 +72,20 @@ const offerSchema = new Schema(
           message: 'Duplicate product IDs are not allowed',
         },
       },
-    },
-    isActive: {
-      type: Boolean,
-      default: true,
+      categoryIds: {
+        type: [String], 
+        default: [],
+        validate: {
+          validator: function (arr) {
+            return new Set(arr).size === arr.length;
+          },
+          message: 'Duplicate category IDs are not allowed',
+        },
+      },
     },
   },
   {
-    timestamps: true, 
+    timestamps: true,
   }
 );
 
@@ -86,21 +94,28 @@ offerSchema.pre('validate', function (next) {
     this.invalidate('endDate', 'End date must be after start date');
   }
 
-  const hasCategories = this.targeting?.categories?.length > 0;
-  const hasProductIds = this.targeting?.productIds?.length > 0;
-  if (!hasCategories && !hasProductIds) {
-    this.invalidate('targeting', 'Offer must apply to at least one category or product');
+  if (this.targetingType === 'products' && (!this.targeting.productIds || this.targeting.productIds.length === 0)) {
+    this.invalidate('targeting', 'At least one product must be selected');
+  }
+
+  if (this.targetingType === 'categories' && (!this.targeting.categoryIds || this.targeting.categoryIds.length === 0)) {
+    this.invalidate('targeting', 'At least one category must be selected');
   }
 
   if (this.offerType === 'percentage' && this.discountValue > 100) {
     this.invalidate('discountValue', 'Percentage discount cannot exceed 100');
   }
 
+  if (this.targetingType === 'all') {
+    this.targeting.productIds = [];
+    this.targeting.categoryIds = [];
+  }
+
   next();
 });
 
-offerSchema.index({ isActive: 1, startDate: 1, endDate: 1 });
-offerSchema.index({ 'targeting.categories': 1 });
+offerSchema.index({ status: 1, startDate: 1, endDate: 1 });
+offerSchema.index({ 'targeting.categoryIds': 1 });
 offerSchema.index({ 'targeting.productIds': 1 });
 offerSchema.index({ offerId: 1 }, { unique: true });
 

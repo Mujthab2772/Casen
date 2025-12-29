@@ -9,6 +9,8 @@ import { validateAddProduct, validateEditProduct } from "../middlewares/validati
 import { orders, orderStatus, singleOrder } from "../controllers/admin/orderController.js"
 import { addNewCoupon, couponFetch, editActive, editCoupon, newCoupon, updateEditCoupon } from "../controllers/admin/couponController.js"
 import { handleValidationErrors, validateCoupon } from "../middlewares/couponValidate.js"
+import { newOffer, offerAdd, offerDetail, offerEdit, offerToggle, offerUpdate } from "../controllers/admin/offerController.js"
+import { validateOfferCreation } from "../middlewares/offerMIddleware.js"
 
 const router = express.Router()
 
@@ -76,6 +78,21 @@ router.patch('/coupon/toggle/:couponCode', adminCheck, editActive)
 router.get('/coupon/edit/:couponCode', adminCheck, editCoupon)
 
 router.put('/coupon/edit/:couponCode', adminCheck, validateCoupon, handleValidationErrors, updateEditCoupon)
+
+// offer
+
+router.get('/offers', adminCheck, offerDetail)
+
+router.get('/offer/add', adminCheck, newOffer)
+
+router.post('/offer/add/new', adminCheck, offerAdd)
+
+router.get('/offer/edit/:id', adminCheck, offerEdit)
+
+router.put('/offer/update/:offerId', adminCheck, offerUpdate)
+
+router.patch('/offer/toggle/:offerId', adminCheck, offerToggle)
+
 
 //logout 
 
