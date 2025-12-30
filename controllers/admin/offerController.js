@@ -48,7 +48,6 @@ export const newOffer = async (req, res) => {
 
 export const offerAdd = async (req, res) => {
   try {
-    console.log(req.body)
     await newOfferData(req.body)
     return res.status(STATUS_CODE.OK).json({ message: "Offer created successfully!" })
   } catch (error) {

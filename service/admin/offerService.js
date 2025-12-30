@@ -2,7 +2,6 @@ import categoryModel from "../../models/categoryModel.js"
 import offerModel from "../../models/offerModel.js"
 import { Product } from "../../models/productModel.js"
 import {v4 as uuidv} from 'uuid'
- 
 
 const todayStart = new Date();
 todayStart.setHours(0, 0, 0, 0);
@@ -53,7 +52,6 @@ export const getFilteredOffers = async ({ page, limit, search, status, offerType
   }
 
   const totalOffers = await offerModel.countDocuments(query);
-
   const offers = await offerModel.find(query)
     .sort({ createdAt: -1 })
     .skip(skip)
@@ -70,55 +68,54 @@ export const getFilteredOffers = async ({ page, limit, search, status, offerType
 };
 
 export const newOfferData = async(offerDetail) => {
-    try {
-        const {
-            offerName, 
-            offerType, 
-            discountValue, 
-            startDate, 
-            endDate, 
-            status = 'active', 
-            minPurchase = 0, 
-            applicableType, 
-            selectedProducts = [],
-            selectedCategories = [], 
-        } = offerDetail
+  try {
+    const {
+      offerName,
+      offerType,
+      discountValue,
+      startDate,
+      endDate,
+      status = 'active',
+      applicableType,
+      selectedProducts = [],
+      selectedCategories = [],
+    } = offerDetail
 
+    const offerExists = await offerModel.findOne({offerName})
+    if(offerExists) throw new Error("offer already exists")
 
-        let targetingType
-        if(applicableType === 'all'){
-            targetingType = 'all'
-        } else if(applicableType === 'products') {
-            targetingType = 'products'
-        } else if(applicableType === 'categories') {
-            targetingType = 'categories'
-        } else {
-            throw new Error('Invalid applicableType')
-        }
-
-        const offer = new offerModel({
-            offerId: uuidv(),
-            offerName,
-            offerType,
-            discountValue: Number(discountValue),
-            startDate: new Date(startDate),
-            endDate: new Date(endDate),
-            minPurchase: Number(minPurchase),
-            status,
-            targetingType,
-            'targeting.productIds': (targetingType === 'products') ? selectedProducts : [],
-            'targeting.categoryIds': (targetingType === 'categories') ? selectedCategories : []
-        })
-
-        await offer.save()
-        return offer
-    } catch (error) {
-        console.log(`error from newOfferData ${error}`);
-        throw error
+    let targetingType
+    if(applicableType === 'all'){
+      targetingType = 'all'
+    } else if(applicableType === 'products') {
+      targetingType = 'products'
+    } else if(applicableType === 'categories') {
+      targetingType = 'categories'
+    } else {
+      throw new Error('Invalid applicableType')
     }
+
+    const offer = new offerModel({
+      offerId: uuidv(),
+      offerName,
+      offerType,
+      discountValue: Number(discountValue),
+      startDate: new Date(startDate),
+      endDate: new Date(endDate),
+      status,
+      targetingType,
+      'targeting.productIds': (targetingType === 'products') ? selectedProducts : [],
+      'targeting.categoryIds': (targetingType === 'categories') ? selectedCategories : []
+    })
+
+    await offer.save()
+    return offer
+  } catch (error) {
+    console.log(`error from newOfferData ${error}`);
+    throw error
+  }
 }
 
-// service
 export const updateOffer = async (offerId, offerDetails) => {
   try {
     const offer = await offerModel.findById({_id: offerId});
@@ -130,7 +127,6 @@ export const updateOffer = async (offerId, offerDetails) => {
     offer.discountValue = offerDetails.discountValue;
     offer.startDate = offerDetails.startDate;
     offer.endDate = offerDetails.endDate;
-    offer.minPurchase = offerDetails.minPurchase;
     offer.status = offerDetails.status;
     offer.targetingType = offerDetails.applicableType;
 
@@ -149,14 +145,13 @@ export const updateOffer = async (offerId, offerDetails) => {
     return offer;
   } catch (error) {
     console.log(`Error in updateOffer:`, error);
-    throw error; 
+    throw error;
   }
 };
 
-
 export const toggleOffer = async (offerId) => {
   try {
-    const offer = await offerModel.findById({_id: offerId}); // no need for { _id: ... }
+    const offer = await offerModel.findById({_id: offerId});
     if (!offer) {
       throw new Error('Offer not found');
     }

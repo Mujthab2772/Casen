@@ -85,7 +85,7 @@ router.get('/offers', adminCheck, offerDetail)
 
 router.get('/offer/add', adminCheck, newOffer)
 
-router.post('/offer/add/new', adminCheck, offerAdd)
+router.post('/offer/add/new', adminCheck,validateOfferCreation, offerAdd)
 
 router.get('/offer/edit/:id', adminCheck, offerEdit)
 

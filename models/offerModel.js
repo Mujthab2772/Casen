@@ -1,4 +1,3 @@
-// models/Offer.js
 import { Schema, model } from 'mongoose';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -30,7 +29,7 @@ const offerSchema = new Schema(
       validate: {
         validator: function (value) {
           if (['free_shipping', 'buyonegetone'].includes(this.offerType)) {
-            return true; 
+            return true;
           }
           return value != null && value > 0;
         },
@@ -45,11 +44,6 @@ const offerSchema = new Schema(
     endDate: {
       type: Date,
       required: [true, 'End date is required'],
-    },
-    minPurchase: {
-      type: Number,
-      min: [0, 'Minimum purchase cannot be negative'],
-      default: 0,
     },
     status: {
       type: String,
@@ -73,7 +67,7 @@ const offerSchema = new Schema(
         },
       },
       categoryIds: {
-        type: [String], 
+        type: [String],
         default: [],
         validate: {
           validator: function (arr) {
@@ -93,24 +87,19 @@ offerSchema.pre('validate', function (next) {
   if (this.startDate && this.endDate && this.endDate <= this.startDate) {
     this.invalidate('endDate', 'End date must be after start date');
   }
-
   if (this.targetingType === 'products' && (!this.targeting.productIds || this.targeting.productIds.length === 0)) {
     this.invalidate('targeting', 'At least one product must be selected');
   }
-
   if (this.targetingType === 'categories' && (!this.targeting.categoryIds || this.targeting.categoryIds.length === 0)) {
     this.invalidate('targeting', 'At least one category must be selected');
   }
-
   if (this.offerType === 'percentage' && this.discountValue > 100) {
     this.invalidate('discountValue', 'Percentage discount cannot exceed 100');
   }
-
   if (this.targetingType === 'all') {
     this.targeting.productIds = [];
     this.targeting.categoryIds = [];
   }
-
   next();
 });
 
