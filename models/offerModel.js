@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 const offerSchema = new Schema(
   {
     offerId: {
-      type: String,
+      type: String,   
       required: true,
       unique: true,
       default: () => uuidv4(),
@@ -20,7 +20,7 @@ const offerSchema = new Schema(
       type: String,
       required: [true, 'Offer type is required'],
       enum: {
-        values: ['percentage', 'fixed', 'buyonegetone', 'free_shipping'],
+        values: ['percentage', 'fixed'],
         message: 'Offer type must be one of: percentage, fixed, buyonegetone, free_shipping',
       },
     },

@@ -8,7 +8,6 @@
   <title>
     <%= product.productName %> - Casen
   </title>
-  <!-- ✅ FIXED: NO TRAILING SPACES -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -73,24 +72,40 @@
       position: absolute;
       pointer-events: none;
     }
+
+    .offer-badge {
+      background: linear-gradient(135deg, #ff416c, #ff4b2b);
+      color: white;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-weight: bold;
+      font-size: 0.85rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      box-shadow: 0 2px 4px rgba(255, 65, 108, 0.3);
+    }
   </style>
 </head>
 
 <body class="bg-white text-gray-800 font-sans" x-data="productApp({
-        productId: '<%= product._id %>',
-        productName: '<%= product.productName %>',
-        categoryName: '<%= product.category?.categoryName || '' %>',
-        description: `<%= product.description || 'No description available.' %>`,
-        isLoggedIn: <%= locals.user ? 'true' : 'false' %>,  <!-- ✅ Critical -->
-        variants: <%= JSON.stringify(product.variants.map(v => ({
-          _id: v._id.toString(),
-          color: (v.color || 'Unknown').trim(),
-          price: typeof v.price === 'number' ? v.price : (parseFloat(v.price) || 0),
-          stock: typeof v.stock === 'number' ? v.stock : (parseInt(v.stock, 10) || 0),
-          images: Array.isArray(v.images) ? v.images : ['https://placehold.co/600x600?text=No+Image']
-        }))) %>
-      })" x-init="init()">
-
+productId: '<%= product._id %>',
+productName: '<%= product.productName %>',
+categoryName: '<%= product.category?.categoryName || '' %>',
+description: `<%= product.description || 'No description available.' %>`,
+isLoggedIn: <%= locals.user ? 'true' : 'false' %>,
+variants: <%= JSON.stringify(product.variants.map(v => ({
+_id: v._id.toString(),
+color: (v.color || 'Unknown').trim(),
+originalPrice: typeof v.originalPrice === 'number' ? v.originalPrice : (typeof v.price === 'number' ? v.price : 0),
+price: typeof v.price === 'number' ? v.price : (parseFloat(v.price) || 0),
+stock: typeof v.stock === 'number' ? v.stock : (parseInt(v.stock, 10) || 0),
+images: Array.isArray(v.images) ? v.images : ['https://placehold.co/600x600?text=No+Image'],
+hasOffer: v.hasOffer || false,
+offerInfo: v.offerInfo || null
+}))) %>,
+offerInfo: <%= product.offerInfo ? JSON.stringify(product.offerInfo) : 'null' %>
+})" x-init="init()">
   <!-- Header -->
   <header class="bg-white shadow-sm sticky top-0 z-50">
     <div class="container mx-auto px-4 py-3 flex items-center justify-between">
@@ -120,7 +135,6 @@
               d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
           </svg>
         </button>
-
         <!-- User Menu -->
         <% if (locals.user && user.profilePic) { %>
           <div class="relative" x-data="{ open: false }" @click.away="open = false">
@@ -165,7 +179,6 @@
                 Sign In
               </a>
               <% } %>
-
                 <button class="md:hidden text-gray-600 hover:text-gray-900">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
                     stroke="currentColor">
@@ -175,7 +188,6 @@
       </div>
     </div>
   </header>
-
   <nav aria-label="breadcrumb" class="container mx-auto px-4 mt-4">
     <ol class="flex items-center space-x-2 text-sm text-gray-500">
       <li><a href="/" class="hover:text-gray-700">Home</a></li>
@@ -187,7 +199,6 @@
       </li>
     </ol>
   </nav>
-
   <main class="container mx-auto px-4 py-8">
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
       <!-- Image Gallery -->
@@ -196,8 +207,15 @@
           <img id="mainImage" :src="selectedVariant.images[0] || 'https://placehold.co/600x600?text=No+Image'"
             :alt="productName" class="w-full h-full object-contain transition-transform duration-200 ease-out" />
           <div id="zoomLens" class="hidden w-32 h-32 rounded-full absolute top-0 left-0"></div>
+          <% if (product.variants && product.variants.some(v=> v.hasOffer)) { %>
+            <div class="absolute top-2 left-2 z-10">
+              <span class="offer-badge">
+                <i class="fas fa-tag"></i> Save <%= Math.round(product.variants[0].offerInfo?.discountPercentage || 0)
+                  %>%
+              </span>
+            </div>
+            <% } %>
         </div>
-
         <div id="thumbnailGallery" class="flex space-x-2 overflow-x-auto pb-1">
           <template x-for="img in selectedVariant.images.slice(0, 5)" :key="img">
             <img :src="img"
@@ -205,10 +223,7 @@
               @click="updateMainImage(img)" />
           </template>
         </div>
-
-
       </div>
-
       <!-- Product Details -->
       <div class="space-y-6">
         <div>
@@ -216,16 +231,33 @@
           <p class="text-sm text-gray-500" x-text="productName"></p>
           <h1 class="text-2xl font-bold mt-1" x-text="selectedVariant.color || 'Color N/A'"></h1>
         </div>
-
         <div class="flex items-center space-x-2 text-sm text-orange-500">
           <i class="fas fa-fire"></i>
           <span>153+ bought in past month</span>
         </div>
-
         <div class="flex items-center space-x-4">
-          <span class="text-xl font-bold text-red-500" x-text="`Rs. ${selectedVariant.price.toFixed(2)}`"></span>
+          <!-- Updated price display logic to use selectedVariant's price -->
+          <div class="flex flex-col">
+            <div class="flex items-baseline">
+              <template x-if="selectedVariant.hasOffer">
+                <div>
+                  <span class="text-2xl font-bold text-red-500"
+                    x-text="`Rs. ${selectedVariant.price.toFixed(2)}`"></span>
+                  <span class="ml-3 text-gray-400 line-through text-lg"
+                    x-text="`Rs. ${selectedVariant.originalPrice.toFixed(2)}`"></span>
+                </div>
+              </template>
+              <template x-if="!selectedVariant.hasOffer">
+                <span class="text-2xl font-bold text-red-500" x-text="`Rs. ${selectedVariant.price.toFixed(2)}`"></span>
+              </template>
+            </div>
+            <template x-if="selectedVariant.hasOffer">
+              <div class="mt-1 text-sm text-red-600 font-medium">
+                <span x-text="`Offer: ${selectedVariant.offerInfo?.offerName || 'Special Offer'}`"></span>
+              </div>
+            </template>
+          </div>
         </div>
-
         <!-- Stock Status -->
         <div class="inline-flex items-center px-3 py-1 rounded-full text-sm"
           :class="selectedVariant.stock > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
@@ -238,20 +270,26 @@
             Out of stock
           </div>
         </div>
-
+        <!-- Color Selection -->
         <div class="bg-gray-50 p-4 rounded-lg">
           <h3 class="font-semibold mb-3">Color - <span x-text="selectedVariant.color || 'N/A'"></span></h3>
           <div class="flex space-x-3">
             <template x-for="(variant, index) in variants" :key="index">
-              <div class="w-10 h-10 rounded-full cursor-pointer border-2" :class="{
-                  'border-blue-500': selectedVariantIndex === index,
-                  'border-transparent': selectedVariantIndex !== index,
-                  [getColorClass(variant.color)]: true
-                }" @click="selectVariant(index)" :title="variant.color"></div>
+              <div class="w-10 h-10 rounded-full cursor-pointer border-2 flex-shrink-0" :class="{
+'border-blue-500': selectedVariantIndex === index,
+'border-transparent': selectedVariantIndex !== index,
+[getColorClass(variant.color)]: true
+}" @click="selectVariant(index)" :title="variant.color">
+                <template x-if="variant.hasOffer">
+                  <div
+                    class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    <span x-text="Math.round(variant.offerInfo?.discountPercentage || 0)"></span>
+                  </div>
+                </template>
+              </div>
             </template>
           </div>
         </div>
-
         <!-- Description Accordion -->
         <div class="border-t border-gray-200 pt-4" @click="toggleAccordion('description')">
           <div class="flex justify-between items-center cursor-pointer">
@@ -262,7 +300,6 @@
             <p x-text="description"></p>
           </div>
         </div>
-
         <!-- Tech Spec Accordion -->
         <div class="border-t border-gray-200 pt-4" @click="toggleAccordion('spec')">
           <div class="flex justify-between items-center cursor-pointer">
@@ -276,20 +313,19 @@
             </div>
           </div>
         </div>
-
         <!-- Actions -->
         <div class="flex flex-col space-y-3">
           <div class="flex items-center space-x-4">
             <div class="flex items-center">
-              <button class="w-10 h-10 rounded-full bg-gray-100 text-gray-700 flex items-center justify-center 
-                   hover:bg-gray-200 hover:shadow-sm transition-all duration-200 active:scale-95"
-                @click="updateQuantity(-1)" :disabled="quantity <= 1">
+              <button class="w-10 h-10 rounded-full bg-gray-100 text-gray-700 flex items-center justify-center
+hover:bg-gray-200 hover:shadow-sm transition-all duration-200 active:scale-95" @click="updateQuantity(-1)"
+                :disabled="quantity <= 1">
                 <i class="fas fa-minus text-sm"></i>
               </button>
               <span class="mx-4 w-8 text-center text-lg font-medium text-gray-800" x-text="quantity"></span>
-              <button class="w-10 h-10 rounded-full bg-gray-100 text-gray-700 flex items-center justify-center 
-                   hover:bg-gray-200 hover:shadow-sm transition-all duration-200 active:scale-95"
-                @click="updateQuantity(1)" :disabled="selectedVariant.stock > 0 && quantity >= selectedVariant.stock">
+              <button class="w-10 h-10 rounded-full bg-gray-100 text-gray-700 flex items-center justify-center
+hover:bg-gray-200 hover:shadow-sm transition-all duration-200 active:scale-95" @click="updateQuantity(1)"
+                :disabled="selectedVariant.stock > 0 && quantity >= selectedVariant.stock">
                 <i class="fas fa-plus text-sm"></i>
               </button>
             </div>
@@ -304,7 +340,6 @@
             <span>Add to Wishlist</span>
           </button>
         </div>
-
         <div class="flex items-center space-x-4 text-sm">
           <span class="font-medium">Share:</span>
           <button class="text-gray-600 hover:text-blue-600"><i class="fab fa-facebook-f"></i></button>
@@ -317,7 +352,6 @@
         </div>
       </div>
     </div>
-
     <!-- Recommendations -->
     <section class="mt-16 bg-gradient-to-r from-yellow-50 to-orange-50 py-12 rounded-2xl relative">
       <div class="container mx-auto px-4">
@@ -341,37 +375,55 @@
         <div id="product-carousel" class="overflow-x-auto pb-4 space-x-4 scrollbar-hide flex">
           <div class="flex space-x-4 min-w-max px-2">
             <% for (let i=0; i < allproducts.length; i++) { %>
-              <div class="bg-white rounded-lg overflow-hidden shadow-sm w-48 flex-shrink-0">
-                <a href="/product?product=<%= allproducts[i].productId %>" class="block">
-                  <div class="relative">
-                    <img src="<%= allproducts[i].variants.images[0] %>" class="w-full h-48 object-contain" />
-                  </div>
-                  <div class="p-4">
-                    <div class="text-xs text-gray-500 mb-1">Casen</div>
-                    <div class="text-sm mb-2 truncate">
-                      <%= allproducts[i].productName %>
+              <% const p=allproducts[i];
+               const variant=p.variants || {}; 
+               const priceNum=(typeof variant.price==='number'
+                ) ? variant.price : 0; 
+                const originalPrice=(variant.offerInfo && variant.offerInfo.originalPrice) ?
+                variant.offerInfo.originalPrice : priceNum; const hasOffer=variant.hasOffer || false; 
+                const imageUrl=(variant.images && Array.isArray(variant.images) && variant.images[0]) ? variant.images[0]
+                : 'https://via.placeholder.com/300' ; %>
+                <div class="bg-white rounded-lg overflow-hidden shadow-sm w-48 flex-shrink-0">
+                  <a href="/product?product=<%= p.productId %>" class="block">
+                    <div class="relative">
+                      <img src="<%= imageUrl %>" class="w-full h-48 object-contain" />
+                      <% if (hasOffer) { %>
+                        <div class="absolute top-2 left-2 z-10">
+                          <span class="offer-badge">
+                            Save <%= Math.round(allproducts[i].offerInfo?.discountPercentage || 0) %>%
+                          </span>
+                        </div>
+                        <% } %>
                     </div>
-                    <div class="flex items-center justify-between">
-                      <span class="text-sm font-bold text-red-500">
-                        <%= allproducts[i].variants.price %>
-                      </span>
+                    <div class="p-4">
+                      <div class="text-xs text-gray-500 mb-1">Casen</div>
+                      <div class="text-sm mb-2 truncate">
+                        <%= p.productName %>
+                      </div>
+                      <div class="flex items-center justify-between">
+                        <% if (hasOffer) { %>
+                          <span class="text-sm font-bold text-red-500">Rs. <%= variant.price.toFixed(2) %></span>
+                          <span class="text-gray-400 line-through text-xs">Rs. <%= allproducts[i].offerInfo?.originalPrice %></span>
+                          <% } else { %>
+                            <span class="text-sm font-bold text-red-500">
+                              Rs. <%= priceNum.toFixed(2) %>
+                            </span>
+                            <% } %>
+                      </div>
                     </div>
-                  </div>
-                </a>
-              </div>
-              <% } %>
+                  </a>
+                </div>
+                <% } %>
           </div>
         </div>
       </div>
     </section>
   </main>
-
   <footer class="bg-black text-white pt-12 pb-8 mt-16">
     <div class="container mx-auto px-4 text-center">
       <p>&copy; 2025 Casen. All rights reserved.</p>
     </div>
   </footer>
-
   <!-- Add to Cart Modal -->
   <div x-show="showModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
     @click="showModal = false" x-transition>
@@ -385,7 +437,14 @@
         </div>
         <h3 class="text-xl font-bold mb-2">Added to Cart!</h3>
         <p class="text-gray-600 mb-4">
-          <span x-text="productName"></span> (<span x-text="selectedVariant.color"></span>)
+          <span x-text="productName"></span> (<span x-text="selectedVariant.color"></span>) x <span
+            x-text="quantity"></span>
+          <template x-if="selectedVariant.hasOffer">
+            <div class="text-sm text-green-700 mt-2">
+              You saved Rs. <span x-text="(selectedVariant.originalPrice - selectedVariant.price).toFixed(2)"></span>
+              with <span x-text="selectedVariant.offerInfo?.offerName || 'Special Offer'"></span>
+            </div>
+          </template>
         </p>
         <div class="flex justify-center space-x-4">
           <button @click="showModal = false"
@@ -399,7 +458,6 @@
       </div>
     </div>
   </div>
-
   <!-- Alpine.js Logic -->
   <script>
     function productApp(initialData) {
@@ -408,22 +466,19 @@
         productName: initialData.productName,
         categoryName: initialData.categoryName,
         description: initialData.description,
-        isLoggedIn: initialData.isLoggedIn, // ✅
+        isLoggedIn: initialData.isLoggedIn,
         variants: initialData.variants,
-
         selectedVariantIndex: 0,
         quantity: 1,
         showModal: false,
         openSections: { description: false, spec: false },
-
+        offerInfo: initialData.offerInfo,
         get selectedVariant() {
           return this.variants[this.selectedVariantIndex] || {};
         },
-
         init() {
           this.initZoom();
         },
-
         getColorClass(color) {
           if (!color) return 'color-fallback-gray';
           const c = color.toLowerCase().trim();
@@ -439,7 +494,6 @@
           if (c.includes('violet') || c.includes('grape')) return 'color-fallback-violet';
           return 'color-fallback-gray';
         },
-
         selectVariant(index) {
           if (index >= 0 && index < this.variants.length) {
             this.selectedVariantIndex = index;
@@ -447,113 +501,102 @@
             this.updateMainImage(this.selectedVariant.images[0]);
           }
         },
-
         updateMainImage(src) {
           const img = document.getElementById('mainImage');
           if (img) img.src = src;
           this.resetZoom();
         },
-
         updateQuantity(change) {
           // Enforce max 10 per variant, even if stock is higher
           const maxAllowed = Math.min(this.selectedVariant.stock, 10);
           if (maxAllowed <= 0) return;
-
           let newQty = this.quantity + change;
           if (newQty < 1) newQty = 1;
           if (newQty > maxAllowed) newQty = maxAllowed;
-
           this.quantity = newQty;
         },
-
         addToCart() {
-  // 🔑 Check login first
-  if (!this.isLoggedIn) {
-    Swal.fire({
-      icon: 'info',
-      title: 'Please Sign In',
-      text: 'You need to be logged in to add items to your cart.',
-      confirmButtonText: 'Go to Login',
-      showCancelButton: true,
-      cancelButtonText: 'Cancel'
-    }).then((result) => {
-      if (result.isConfirmed) {
-        window.location.href = '/login';
-      }
-    });
-    return;
-  }
-
-  // Check stock
-  if (this.selectedVariant.stock <= 0) {
-    Swal.fire({
-      icon: 'warning',
-      title: 'Out of Stock',
-      text: 'This item is currently out of stock.',
-      confirmButtonText: 'OK'
-    });
-    return;
-  }
-
-  // Optional: client-side quantity validation (but rely on backend too)
-  if (this.quantity > 10) {
-    Swal.fire({
-      icon: 'warning',
-      title: 'Maximum Limit Reached',
-      text: 'You can add up to 10 items of this product per order.',
-      confirmButtonText: 'OK'
-    });
-    return;
-  }
-
-  // Send to backend
-  fetch('/cart/add', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      productId: this.productId,
-      variantId: this.selectedVariant._id,
-      quantity: this.quantity
-    })
-  })
-  .then(response => response.json())
-  .then(data => {
-    if (data.success === 'success') {
-      // Show success modal
-      this.showModal = true;
-    } else if (data.success === 'fail') {
-      // Backend blocked due to cart limit (e.g., total > 10 for variant)
-      Swal.fire({
-        icon: 'warning',
-        title: 'Maximum Limit Reached',
-        text: 'You can add up to 10 items of this product per order.',
-        confirmButtonText: 'OK'
-      });
-    } else {
-      throw new Error('Invalid response');
-    }
-  })
-  .catch(err => {
-    console.error('Add to cart failed:', err);
-    Swal.fire({
-      icon: 'error',
-      title: 'Oops...',
-      text: 'Failed to add item to cart. Please try again.',
-      confirmButtonText: 'OK'
-    });
-  });
-},
-
+          // 🔑 Check login first
+          if (!this.isLoggedIn) {
+            Swal.fire({
+              icon: 'info',
+              title: 'Please Sign In',
+              text: 'You need to be logged in to add items to your cart.',
+              confirmButtonText: 'Go to Login',
+              showCancelButton: true,
+              cancelButtonText: 'Cancel'
+            }).then((result) => {
+              if (result.isConfirmed) {
+                window.location.href = '/login';
+              }
+            });
+            return;
+          }
+          // Check stock
+          if (this.selectedVariant.stock <= 0) {
+            Swal.fire({
+              icon: 'warning',
+              title: 'Out of Stock',
+              text: 'This item is currently out of stock.',
+              confirmButtonText: 'OK'
+            });
+            return;
+          }
+          // Optional: client-side quantity validation (but rely on backend too)
+          if (this.quantity > 10) {
+            Swal.fire({
+              icon: 'warning',
+              title: 'Maximum Limit Reached',
+              text: 'You can add up to 10 items of this product per order.',
+              confirmButtonText: 'OK'
+            });
+            return;
+          }
+          // Send to backend
+          fetch('/cart/add', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              productId: this.productId,
+              variantId: this.selectedVariant._id,
+              quantity: this.quantity
+            })
+          })
+            .then(response => response.json())
+            .then(data => {
+              if (data.success === 'success') {
+                // Show success modal
+                this.showModal = true;
+              } else if (data.success === 'fail') {
+                // Backend blocked due to cart limit (e.g., total > 10 for variant)
+                Swal.fire({
+                  icon: 'warning',
+                  title: 'Maximum Limit Reached',
+                  text: 'You can add up to 10 items of this product per order.',
+                  confirmButtonText: 'OK'
+                });
+              } else {
+                throw new Error('Invalid response');
+              }
+            })
+            .catch(err => {
+              console.error('Add to cart failed:', err);
+              Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'Failed to add item to cart. Please try again.',
+                confirmButtonText: 'OK'
+              });
+            });
+        },
         toggleAccordion(section) {
           this.openSections[section] = !this.openSections[section];
         },
-
         initZoom() {
           const container = document.getElementById('zoomContainer');
           const img = document.getElementById('mainImage');
           const lens = document.getElementById('zoomLens');
           if (!container || !img || !lens) return;
-
           const zoomLevel = 2;
           container.addEventListener('mouseenter', () => {
             if (window.innerWidth <= 768) return;
@@ -576,7 +619,6 @@
             img.style.transform = `scale(${zoomLevel})`;
           });
         },
-
         resetZoom() {
           const img = document.getElementById('mainImage');
           const lens = document.getElementById('zoomLens');
@@ -587,14 +629,12 @@
         }
       };
     }
-
     // Carousel logic
     document.addEventListener('DOMContentLoaded', () => {
       const carousel = document.getElementById('product-carousel');
       const scrollLeftBtn = document.getElementById('scroll-left');
       const scrollRightBtn = document.getElementById('scroll-right');
       const scrollAmount = 300;
-
       if (carousel && scrollLeftBtn && scrollRightBtn) {
         const updateButtonVisibility = () => {
           const maxScroll = carousel.scrollWidth - carousel.clientWidth;

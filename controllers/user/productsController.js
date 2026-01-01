@@ -1,25 +1,24 @@
 import { productDetailsFilter } from "../../service/user/landingpageService.js";
-import { productDetails, singleProductFetch } from "../../service/user/productService.js"
+import { productDetails, singleProductFetch } from "../../service/user/productService.js";
 import { STATUS_CODE } from "../../util/statusCodes.js";
 
 export const fetchProducts = async (req, res) => {
     try {
         const {
             search = '',
-            sort= 'bestselling',
+            sort = 'bestselling',
             minPrice,
             maxPrice,
             category,
             product,
             color,
             page = 1,
-            limit = 10
-        } = req.query
-
-        const parsedPage = Math.max(1, parseInt(page) || 1)
-        const parsedLimit = Math.min(100, parseInt(limit) || 10)
-
-
+            limit = 9
+        } = req.query;
+        
+        const parsedPage = Math.max(1, parseInt(page) || 1);
+        const parsedLimit = Math.min(100, parseInt(limit) || 10);
+        
         const result = await productDetails({
             search: search.trim(),
             sort,
@@ -30,8 +29,8 @@ export const fetchProducts = async (req, res) => {
             color: color || undefined,
             page: parsedPage,
             limit: parsedLimit
-        })
-
+        });
+        
         res.render('products', {
             products: result.data || [],
             pagination: result.pagination || { currentPage: 1, totalPages: 1, total: 0, hasNext: false, hasPrev: false },
@@ -39,32 +38,31 @@ export const fetchProducts = async (req, res) => {
             user: req.session?.userDetail,
             filterCategories: result.allCategories.map(c => c.categoryName).filter(Boolean),
             filterProducts: result.allproducts.filter(Boolean)
-        })
+        });
     } catch (error) {
         console.log(`error from fetchproducts ${error}`);
-        res.redirect('/')
+        res.redirect('/');
     }
-}
-
+};
 
 export const singleProduct = async (req, res) => {
     try {
-        const productId = (req.query.product)
-
-        if(!productId) return res.status(STATUS_CODE.BAD_REQUEST).redirect('/products')
-
-        const result = await singleProductFetch(productId)
-
-        const products = await productDetailsFilter() 
-
-        if(!result) return res.status(STATUS_CODE.BAD_REQUEST).redirect('/products')
-
-        if(result.variants.length == 0) return res.status(STATUS_CODE.BAD_REQUEST).redirect('/products')
-
-        // console.log(result)
-        res.render('singleProduct', {product: result, user: req.session.userDetail, allproducts: products})
+        const productId = req.query.product;
+        if (!productId) return res.status(STATUS_CODE.BAD_REQUEST).redirect('/products');
+        
+        const result = await singleProductFetch(productId);
+        const products = await productDetailsFilter();
+        
+        if (!result) return res.status(STATUS_CODE.NOT_FOUND).redirect('/products');
+        if (!result.variants || result.variants.length === 0) return res.status(STATUS_CODE.NOT_FOUND).redirect('/products');
+        
+        res.render('singleProduct', { 
+            product: result, 
+            user: req.session.userDetail, 
+            allproducts: products 
+        });
     } catch (error) {
         console.log(`error from singleProduct ${error}`);
-        res.redirect('/products')
+        res.redirect('/products');
     }
-}
+};

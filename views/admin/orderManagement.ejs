@@ -253,7 +253,7 @@
                     <td>#<%- (order.orderId?.toString().slice(-6) || order._id.toString().slice(-6)) %></td>
                     <td><%- (order.userDetails?.firstName + ' ' + order.userDetails?.lastName) || 'Guest' %></td>
                     <td><%- new Date(order.createdAt).toLocaleDateString() %></td>
-                    <td>₹<%- (order.totalAmount || 0).toFixed(2) %></td>
+                    <td>₹<%- (order.totalAmount || 0) %></td>
                     <td>
                       <% if (order.orderStatus === 'pending') { %>
                         <span class="bg-amber-100 text-amber-800 inline-block px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap">Pending</span>

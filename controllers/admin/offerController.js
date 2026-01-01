@@ -7,7 +7,7 @@ export const offerDetail = async (req, res) => {
     const { page = 1, search = '', status = 'all', offerType = 'all' } = req.query;
 
     const currentPage = parseInt(page) || 1;
-    const limit = 10;
+    const limit = 5;
 
     const { offers, totalOffers, totalPages } = await getFilteredOffers({
       page: currentPage,
