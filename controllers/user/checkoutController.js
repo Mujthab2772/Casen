@@ -1,7 +1,6 @@
-import orderModal from "../../models/orderModel.js";
 import { addressDetails } from "../../service/user/addressService.js";
 import { cartDetails } from "../../service/user/cartService.js";
-import { couponDetails, getValidCouponsForUser, tempOrder } from "../../service/user/checkoutService.js";
+import { calculateFinalPrice, getValidCouponsForUser, tempOrder } from "../../service/user/checkoutService.js";
 import { STATUS_CODE } from "../../util/statusCodes.js";
 
 export const checkout = async (req, res) => {
@@ -39,7 +38,7 @@ export const checkout = async (req, res) => {
       user,
       cartProducts,
       userAddresses: userAddresses.addresses,
-      availableCoupons: availableCoupons || null, // FIXED: Don't stringify here
+      availableCoupons: availableCoupons || null, 
       subtotal,
       messages: req.flash()
     });
@@ -71,82 +70,53 @@ export const checkoutDatas = async (req, res) => {
   }
 };
 
+
 export const previewCheckout = async (req, res) => {
   try {
     const userId = req.session.userDetail._id;
     const { shippingAddressId, contact, couponCode } = req.body;
-
+    
     if (!shippingAddressId || !contact?.email || !contact?.phone) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        error: "Missing required contact information or shipping address." 
+        error: "Missing required contact information or shipping address."
       });
     }
-
-    const recalculated = await tempOrder(userId, { shippingAddressId, contact });
-    if (!recalculated.productList?.length) {
-      return res.status(400).json({ 
-        success: false,
-        error: "Cart is empty or contains invalid items." 
-      });
-    }
-
-    let subtotal = 0;
-    recalculated.productList.forEach(item => {
-      subtotal += item.price * item.quantity;
+    
+    
+    const recalculated = await tempOrder(userId, { 
+      shippingAddressId, 
+      contact 
     });
-
-    let discount = 0;
-    let validCoupon = null;
-
-    if (couponCode && couponCode.trim()) {
-      const coupon = await couponDetails({ couponCode: couponCode.trim() });
-      if (coupon) {
-        const now = new Date();
-        if (now >= coupon.startDate && now <= coupon.endDate && subtotal >= coupon.minAmount) {
-          if (coupon.perUserLimit > 0) {
-            const usage = await orderModal.countDocuments({
-              userId,
-              'appliedCoupon.couponId': coupon.couponId
-            });
-            if (usage < coupon.perUserLimit) {
-              if (coupon.discountType === 'percentage') {
-                const calc = (subtotal * coupon.discountAmount) / 100;
-                discount = coupon.maxAmount ? Math.min(calc, coupon.maxAmount) : calc;
-              } else {
-                discount = coupon.discountAmount;
-              }
-              validCoupon = couponCode;
-            }
-          } else {
-            if (coupon.discountType === 'percentage') {
-              const calc = (subtotal * coupon.discountAmount) / 100;
-              discount = coupon.maxAmount ? Math.min(calc, coupon.maxAmount) : calc;
-            } else {
-              discount = coupon.discountAmount;
-            }
-            validCoupon = couponCode;
-          }
-        }
-      }
+    
+    if (!recalculated.productList?.length) {
+      return res.status(400).json({
+        success: false,
+        error: "Cart is empty or contains invalid items."
+      });
     }
-
-    const tax = 0;
-    const total = Math.max(0, subtotal - discount + tax);
-
+    
+    
+    const priceCalculation = await calculateFinalPrice(
+      recalculated.subtotal,
+      couponCode,
+      userId
+    );
+    
     return res.json({
       success: true,
-      subtotal: parseFloat(subtotal.toFixed(2)),
-      discount: parseFloat(discount.toFixed(2)),
-      tax: parseFloat(tax.toFixed(2)),
-      total: parseFloat(total.toFixed(2)),
-      validCoupon: validCoupon
+      subtotal: priceCalculation.subtotal,
+      discount: priceCalculation.discount,
+      tax: priceCalculation.tax,
+      total: priceCalculation.total,
+      validCoupon: priceCalculation.appliedCoupon ? priceCalculation.appliedCoupon.couponCode : null,
+      hasProductOffers: recalculated.offersApplied
     });
   } catch (error) {
     console.log('Preview error:', error);
-    return res.status(500).json({ 
+    return res.status(500).json({
       success: false,
-      error: 'Failed to preview order. Please try again.' 
+      error: 'Failed to preview order. Please try again.'
     });
   }
 };
@@ -161,10 +131,10 @@ export const getAvailableCoupons = async (req, res) => {
     const userId = user._id;
     const subtotal = parseFloat(req.query.subtotal) || 0;
 
-    // Get valid coupons for user
+    
     const validCoupons = await getValidCouponsForUser(userId, subtotal);
     
-    // Format coupons for frontend
+    
     const coupons = validCoupons.map(c => ({
       couponCode: c.couponCode,
       description: c.description || 'Discount coupon',

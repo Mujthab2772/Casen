@@ -1,13 +1,15 @@
-import { 
-  couponDetails, 
-  tempOrder 
+import razorpay from "../../config/razorpay.js";
+import {
+  tempOrder,
+  calculateFinalPrice 
 } from "../../service/user/checkoutService.js";
-import { 
+import {
   cashOnDelivery,
   createRazorpayOrderSession,
   verifyRazorpayPayment,
   orderDetails
 } from "../../service/user/paymentService.js";
+import crypto from 'crypto';
 
 
 export const payment = async (req, res) => {
@@ -38,32 +40,25 @@ export const payment = async (req, res) => {
         return res.redirect('/cart');
       }
       
-      let subtotal = recalculated.productList.reduce((s, i) => s + i.price * i.quantity, 0);
-      let discount = 0;
+      let subtotal = 0;
+      recalculated.productList.forEach(item => {
+        subtotal += item.price * item.quantity;
+      });
       
-      if (appliedCouponCode) {
-        const coupon = await couponDetails({ couponCode: appliedCouponCode.trim() });
-        if (coupon) {
-          if (coupon.discountType === 'percentage') {
-            let calc = (subtotal * coupon.discountAmount) / 100;
-            discount = coupon.maxAmount ? Math.min(calc, coupon.maxAmount) : calc;
-          } else {
-            discount = coupon.discountAmount;
-          }
-          discount = Math.min(discount, subtotal);
-        }
-      }
-      
-      const tax = 0;
-      const total = Math.max(0, subtotal - discount + tax);
+      const priceCalculation = await calculateFinalPrice(
+        subtotal,
+        appliedCouponCode,
+        userId
+      );
       
       const checkoutDetail = {
         ...req.session.checkout,
         orderSummary: {
-          subtotal: parseFloat(subtotal.toFixed(2)),
-          discount: parseFloat(discount.toFixed(2)),
-          tax: parseFloat(tax.toFixed(2)),
-          total: parseFloat(total.toFixed(2))
+          subtotal: priceCalculation.subtotal,
+          discount: priceCalculation.discount,
+          tax: priceCalculation.tax,
+          total: priceCalculation.total,
+          hasProductOffers: false 
         }
       };
       
@@ -95,13 +90,11 @@ export const paymentProcess = async (req, res) => {
       req.flash('error', 'Checkout session expired. Please try again.');
       return res.redirect('/checkout');
     }
-    
     const userId = req.session.userDetail?._id;
     if (!userId) {
       req.flash('error', 'You must be logged in to complete payment.');
       return res.redirect('/login');
     }
-    
     if (req.body.paymentMethod === 'cash') {
       let result;
       try {
@@ -111,18 +104,13 @@ export const paymentProcess = async (req, res) => {
         console.log(`COD Error:`, error);
         throw error;
       }
-      
       delete req.session.checkout;
-      
       return res.redirect(`/payment/success?orderId=${result.orderId}`);
     }
-    
     if (req.body.paymentMethod === 'online') {
       try {
         const paymentSession = await createRazorpayOrderSession(req);
-        
         req.session.paymentSession = paymentSession;
-        
         return res.json({
           success: true,
           razorpayOrderId: paymentSession.razorpayOrderId,
@@ -139,28 +127,22 @@ export const paymentProcess = async (req, res) => {
         });
       } catch (error) {
         console.error('Razorpay order creation error:', error);
-        return res.json({ 
+        return res.json({
           success: false,
-          message: 'Failed to initiate payment. Please try again.' 
+          message: 'Failed to initiate payment. Please try again.'
         });
       }
     }
-    
     if (req.body.paymentMethod === 'wallet') {
       req.flash('error', 'Wallet payment is not available at the moment. Please choose another payment method.');
       return res.redirect('/payment');
     }
-    
     req.flash('error', 'Please select a valid payment method.');
     return res.redirect('/payment');
-    
   } catch (error) {
     console.log(`Payment process error:`, error.toString());
-    
     delete req.session.checkout;
-    
     const errorMessage = error?.message || error?.error?.description || 'Payment failed. Please try again.';
-    
     let flashMessage = 'Payment failed. Please try again.';
     if (errorMessage.includes && errorMessage.includes('usage limit')) {
       flashMessage = 'Coupon usage limit exceeded. Please try without coupon.';
@@ -175,36 +157,43 @@ export const paymentProcess = async (req, res) => {
     } else if (errorMessage.includes && errorMessage.includes('BAD_REQUEST_ERROR')) {
       flashMessage = error.error?.description || 'Payment gateway error. Please try again.';
     }
-    
     req.flash('error', flashMessage);
-    
-    return res.json({ 
+    return res.json({
       success: false,
-      message: flashMessage 
+      message: flashMessage
     });
   }
 };
-
 export const verifyPayment = async (req, res) => {
   try {
-    // console.log('=== PAYMENT VERIFICATION STARTED ===');
-    // console.log('Session paymentSession:', req.session.paymentSession);
-    // console.log('Query parameters:', req.query);
-    // console.log('User session:', req.session.userDetail);
-    
     const verificationData = req.query;
-    
-    if (!verificationData.paymentSessionId || !verificationData.razorpay_order_id || 
-        !verificationData.razorpay_payment_id || !verificationData.razorpay_signature) {
+    if (!verificationData.paymentSessionId || !verificationData.razorpay_order_id ||
+      !verificationData.razorpay_payment_id || !verificationData.razorpay_signature) {
       throw new Error('Missing verification parameters. Please try again.');
     }
-    
     if (!req.session.paymentSession) {
       throw new Error('Payment session not found. Your session may have expired. Please try again.');
     }
-    
     if (req.session.paymentSession.paymentSessionId !== verificationData.paymentSessionId) {
       throw new Error('Invalid payment session. Please try placing your order again.');
+    }
+    const hmac = crypto.createHmac('sha256', process.env.RAZORPAY_KEY_SECRET);
+    hmac.update(verificationData.razorpay_order_id + "|" + verificationData.razorpay_payment_id);
+    const generated_signature = hmac.digest('hex');
+    if (generated_signature !== verificationData.razorpay_signature) {
+      throw new Error('Payment verification failed: Invalid signature');
+    }
+    const paymentDetails = await razorpay.payments.fetch(verificationData.razorpay_payment_id);
+    
+    if (paymentDetails.status !== 'captured') {
+      const failDetails = {
+        reason: `Payment status: ${paymentDetails.status}. ${paymentDetails.error_description || 'Payment was not completed.'}`,
+        timestamp: new Date().toISOString()
+      };
+      req.session.paymentFailDetails = failDetails;
+      delete req.session.paymentSession;
+      req.flash('error', 'Payment was not completed. Please try again.');
+      return res.redirect('/payment/fail');
     }
     
     const order = await verifyRazorpayPayment({
@@ -212,44 +201,31 @@ export const verifyPayment = async (req, res) => {
       paymentSession: req.session.paymentSession,
       userId: req.session.userDetail._id
     });
-    
     delete req.session.checkout;
     delete req.session.paymentSession;
-    
-    // console.log('=== PAYMENT VERIFICATION COMPLETE ===');
-    
     req.flash('success', 'Payment successful! Your order has been confirmed.');
     return res.redirect(`/payment/success?orderId=${order.orderId}`);
   } catch (error) {
-    console.error('Payment verification error details:', {
-      message: error.message,
-      stack: error.stack
-    });
-    
-    delete req.session.checkout;
+    console.error('Verification error:', error);
+    const failDetails = {
+      reason: error.message || 'An unexpected error occurred during payment verification.',
+      timestamp: new Date().toISOString()
+    };
+    req.session.paymentFailDetails = failDetails;
     delete req.session.paymentSession;
-    
-    const errorMessage = error?.message || error?.error?.description || 'Payment verification failed. Please contact support.';
-    
-    let flashMessage = 'Payment verification failed. Please contact support.';
-    if (errorMessage.includes && errorMessage.includes('signature')) {
+    let flashMessage = 'Payment verification failed. Please try again.';
+    const msg = error.message || '';
+    if (msg.includes('signature')) {
       flashMessage = 'Payment verification failed. The payment may not have been completed.';
-    } else if (errorMessage.includes && errorMessage.includes('session')) {
+    } else if (msg.includes('session')) {
       flashMessage = 'Your payment session has expired. Please try placing your order again.';
-    } else if (errorMessage.includes && errorMessage.includes('out of stock')) {
-      flashMessage = errorMessage;
-    } else if (errorMessage.includes && errorMessage.includes('Product variant not found')) {
-      flashMessage = 'One or more products in your cart are no longer available. Please try again with available items.';
+    } else if (msg.includes('out of stock') || msg.includes('Product variant not found')) {
+      flashMessage = msg;
     }
-    
     req.flash('error', flashMessage);
-    
-    console.error('Verification error details:', error);
-    
-    return res.redirect('/checkout');
+    return res.redirect('/payment/fail');
   }
 };
-
 export const paymentSuccess = async (req, res) => {
   try {
     const user = req.session.userDetail;
@@ -257,27 +233,67 @@ export const paymentSuccess = async (req, res) => {
       req.flash('error', 'You must be logged in to view order details.');
       return res.redirect('/login');
     }
-    
     const orderId = req.query.orderId;
     if (!orderId) {
       req.flash('error', 'Order ID is missing.');
       return res.redirect('/profile/orders');
     }
-    
     const order = await orderDetails(user._id, orderId);
     if (!order) {
       req.flash('error', 'Order not found or you do not have permission to view this order.');
       return res.redirect('/profile/orders');
     }
-    
-    return res.render('paymentSuccess', { 
+    return res.render('paymentSuccess', {
       user,
       messages: req.flash(),
-      order 
+      order
     });
   } catch (error) {
     console.log(`Payment success error:`, error);
     req.flash('error', 'Order details not found.');
+    return res.redirect('/profile/orders');
+  }
+};
+
+export const paymentFail = async (req, res) => {
+  try {
+    const user = req.session.userDetail;
+    if (!user) {
+      req.flash('error', 'You must be logged in to view this page.');
+      return res.redirect('/login');
+    }
+
+    
+    const errorDetails = {
+      code: req.query.code ? decodeURIComponent(req.query.code) : null,
+      description: req.query.description ? decodeURIComponent(req.query.description) : null,
+      step: req.query.step ? decodeURIComponent(req.query.step) : null,
+      reason: req.query.reason ? decodeURIComponent(req.query.reason) : null
+    };
+
+    
+    const sessionErrorDetails = req.session.paymentFailDetails || {
+      reason: req.flash('error')[0] || 'Payment failed',
+      timestamp: new Date().toISOString()
+    };
+
+    
+    if (errorDetails.code && errorDetails.description) {
+      sessionErrorDetails.razorpayError = errorDetails;
+    }
+
+    
+    delete req.session.paymentFailDetails;
+
+    return res.render('paymentFail', {
+      user,
+      messages: req.flash(),
+      errorDetails: sessionErrorDetails,
+      orderId: req.query.orderId || null
+    });
+  } catch (error) {
+    console.log(`Payment fail page error:`, error);
+    req.flash('error', 'Unable to load payment failure page.');
     return res.redirect('/profile/orders');
   }
 };

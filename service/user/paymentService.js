@@ -3,34 +3,28 @@ import Payment from "../../models/paymentModel.js";
 import razorpay from "../../config/razorpay.js";
 import { v4 as uuidv4 } from "uuid";
 import { ProductVariant } from "../../models/productVariantModel.js";
-import { couponDetails, tempOrder } from "../../service/user/checkoutService.js";
+import { tempOrder, calculateFinalPrice } from "../../service/user/checkoutService.js";
 import mongoose from 'mongoose';
-import crypto from 'crypto'
+import crypto from 'crypto';
 
 function convertDecimal128ToNumber(value) {
   if (!value) return value;
-  
   if (value.$numberDecimal !== undefined) {
     return parseFloat(value.$numberDecimal);
   }
-  
   if (value.constructor && value.constructor.name === 'Decimal128') {
     return parseFloat(value.toString());
   }
-  
   if (typeof value === 'object' && value.value !== undefined) {
     return parseFloat(value.value);
   }
-  
   if (typeof value === 'number') {
     return value;
   }
-  
   if (typeof value === 'string') {
     const num = parseFloat(value);
     return isNaN(num) ? value : num;
   }
-  
   return value;
 }
 
@@ -38,6 +32,7 @@ function sanitizeOrderItems(items) {
   return items.map(item => ({
     ...item,
     price: convertDecimal128ToNumber(item.price),
+    originalPrice: convertDecimal128ToNumber(item.originalPrice),
     quantity: parseInt(item.quantity) || 1
   }));
 }
@@ -46,18 +41,18 @@ export const cashOnDelivery = async (req) => {
   const userId = req.session.userDetail?._id;
   if (!userId) throw new Error('User not authenticated');
   if (!req.session.checkout) throw new Error('Checkout session expired');
-
+  
   const { shippingAddressId, contact, appliedCouponCode } = req.session.checkout;
-
+  
   const recalculated = await tempOrder(userId, {
     shippingAddressId,
     contact
   });
-
+  
   if (!recalculated?.productList?.length) {
     throw new Error('Cart is empty or contains invalid items');
   }
-
+  
   for (const item of recalculated.productList) {
     const variant = await ProductVariant.findOne(
       { variantId: item.variantId, isActive: true },
@@ -67,52 +62,12 @@ export const cashOnDelivery = async (req) => {
       throw new Error(`"${item.productName}" is out of stock.`);
     }
   }
-
-  let subtotal = recalculated.productList.reduce((s, i) => s + i.price * i.quantity, 0);
-  let discount = 0;
-  let appliedCoupon = null;
-
-  if (appliedCouponCode) {
-    const coupon = await couponDetails({ couponCode: appliedCouponCode.trim() });
-    
-    if (!coupon || !coupon.isActive) {
-      throw new Error('Coupon is no longer valid');
-    }
-
-    const now = new Date();
-    if (now < coupon.startDate || now > coupon.endDate) {
-      throw new Error('Coupon is not active');
-    }
-
-    if (subtotal < coupon.minAmount) {
-      throw new Error(`Minimum order ₹${coupon.minAmount} required`);
-    }
-
-    const usageCount = await orderCollection.countDocuments({
-      userId,
-      'appliedCoupon.couponId': coupon.couponId
-    });
-
-    if (usageCount >= coupon.perUserLimit) {
-      throw new Error('Coupon usage limit exceeded');
-    }
-
-    if (coupon.discountType === 'percentage') {
-      let calc = (subtotal * coupon.discountAmount) / 100;
-      discount = coupon.maxAmount ? Math.min(calc, coupon.maxAmount) : calc;
-    } else {
-      discount = coupon.discountAmount;
-    }
-
-    discount = Math.min(discount, subtotal);
-    appliedCoupon = {
-      couponId: coupon.couponId,
-      couponCode: coupon.couponCode,
-      discountAmount: parseFloat(discount.toFixed(2))
-    };
-  }
-
-  const total = subtotal - discount;
+  
+  const priceCalculation = await calculateFinalPrice(
+    recalculated.subtotal, 
+    appliedCouponCode, 
+    userId
+  );
   
   const orderData = {
     orderId: uuidv4(),
@@ -125,32 +80,42 @@ export const cashOnDelivery = async (req) => {
       variantId: i.variantId,
       variantColor: i.variantColor,
       quantity: i.quantity,
-      price: convertDecimal128ToNumber(i.price), 
+      price: convertDecimal128ToNumber(i.price),
+      originalPrice: convertDecimal128ToNumber(i.originalPrice),
+      discountAmount: convertDecimal128ToNumber(i.discountAmount),
+      hasOffer: i.hasOffer || false,
+      offerInfo: i.offerInfo || null,
       images: i.images,
       orderStatus: 'pending'
     })),
-    subTotal: parseFloat(subtotal.toFixed(2)),
-    discountAmount: parseFloat(discount.toFixed(2)),
-    taxAmount: 0,
-    totalAmount: parseFloat(total.toFixed(2)),
+    subTotal: priceCalculation.subtotal,
+    discountAmount: priceCalculation.discount,
+    taxAmount: priceCalculation.tax,
+    totalAmount: priceCalculation.total,
     paymentId: uuidv4(),
     paymentStatus: 'pending',
     paymentMethod: 'cash',
     orderStatus: 'pending'
   };
-
-  if (appliedCoupon) orderData.appliedCoupon = appliedCoupon;
-
+  
+  if (priceCalculation.appliedCoupon) {
+    orderData.appliedCoupon = priceCalculation.appliedCoupon;
+  }
+  
+  if (recalculated.offersApplied) {
+    orderData.hasProductOffers = true;
+  }
+  
   const order = new orderCollection(orderData);
   await order.save();
-
+  
   for (const item of recalculated.productList) {
     await ProductVariant.updateOne(
       { variantId: item.variantId },
       { $inc: { stock: -item.quantity } }
     );
   }
-
+  
   return order;
 };
 
@@ -158,18 +123,18 @@ export const createRazorpayOrderSession = async (req) => {
   const userId = req.session.userDetail?._id;
   if (!userId) throw new Error('User not authenticated');
   if (!req.session.checkout) throw new Error('Checkout session expired');
-
+  
   const { shippingAddressId, contact, appliedCouponCode } = req.session.checkout;
-
+  
   const recalculated = await tempOrder(userId, {
     shippingAddressId,
     contact
   });
-
+  
   if (!recalculated?.productList?.length) {
     throw new Error('Cart is empty or contains invalid items');
   }
-
+  
   for (const item of recalculated.productList) {
     const variant = await ProductVariant.findOne(
       { variantId: item.variantId, isActive: true },
@@ -179,54 +144,15 @@ export const createRazorpayOrderSession = async (req) => {
       throw new Error(`"${item.productName}" is out of stock.`);
     }
   }
-
-  let subtotal = recalculated.productList.reduce((s, i) => s + convertDecimal128ToNumber(i.price) * i.quantity, 0);
-  let discount = 0;
-  let appliedCoupon = null;
-
-  if (appliedCouponCode) {
-    const coupon = await couponDetails({ couponCode: appliedCouponCode.trim() });
-    
-    if (!coupon || !coupon.isActive) {
-      throw new Error('Coupon is no longer valid');
-    }
-
-    const now = new Date();
-    if (now < coupon.startDate || now > coupon.endDate) {
-      throw new Error('Coupon is not active');
-    }
-
-    if (subtotal < coupon.minAmount) {
-      throw new Error(`Minimum order ₹${coupon.minAmount} required`);
-    }
-
-    const usageCount = await orderCollection.countDocuments({
-      userId,
-      'appliedCoupon.couponId': coupon.couponId
-    });
-
-    if (usageCount >= coupon.perUserLimit) {
-      throw new Error('Coupon usage limit exceeded');
-    }
-
-    if (coupon.discountType === 'percentage') {
-      let calc = (subtotal * coupon.discountAmount) / 100;
-      discount = coupon.maxAmount ? Math.min(calc, coupon.maxAmount) : calc;
-    } else {
-      discount = coupon.discountAmount;
-    }
-
-    discount = Math.min(discount, subtotal);
-    appliedCoupon = {
-      couponId: coupon.couponId,
-      couponCode: coupon.couponCode,
-      discountAmount: parseFloat(discount.toFixed(2))
-    };
-  }
-
-  const total = subtotal - discount;
+  
+  const priceCalculation = await calculateFinalPrice(
+    recalculated.subtotal, 
+    appliedCouponCode, 
+    userId
+  );
   
   const paymentSessionId = uuidv4();
+  
   
   const orderDetails = {
     userId,
@@ -238,29 +164,33 @@ export const createRazorpayOrderSession = async (req) => {
       variantId: i.variantId,
       variantColor: i.variantColor,
       quantity: i.quantity,
-      price: convertDecimal128ToNumber(i.price), 
+      price: convertDecimal128ToNumber(i.price),
+      originalPrice: convertDecimal128ToNumber(i.originalPrice),
+      discountAmount: convertDecimal128ToNumber(i.discountAmount),
+      hasOffer: i.hasOffer || false,
+      offerInfo: i.offerInfo || null,
       images: i.images
     })),
-    subTotal: parseFloat(subtotal.toFixed(2)),
-    discountAmount: parseFloat(discount.toFixed(2)),
-    taxAmount: 0,
-    totalAmount: parseFloat(total.toFixed(2)),
-    appliedCoupon: appliedCoupon || null
+    subTotal: priceCalculation.subtotal,
+    discountAmount: priceCalculation.discount,
+    taxAmount: priceCalculation.tax,
+    totalAmount: priceCalculation.total,
+    hasProductOffers: recalculated.offersApplied,
+    appliedCoupon: priceCalculation.appliedCoupon || null
   };
-
-  const shortReceiptId = `session_${paymentSessionId.substring(0, 27)}`; 
   
+  const shortReceiptId = `session_${paymentSessionId.substring(0, 27)}`;
   const razorpayOrder = await razorpay.orders.create({
-    amount: Math.round(total * 100), 
+    amount: Math.round(priceCalculation.total * 100),
     currency: "INR",
     receipt: shortReceiptId,
     notes: {
       userId: userId.toString(),
       email: req.session.userDetail.email,
-      paymentSessionId: paymentSessionId 
+      paymentSessionId: paymentSessionId
     }
   });
-
+  
   return {
     paymentSessionId,
     razorpayOrderId: razorpayOrder.id,
@@ -270,7 +200,7 @@ export const createRazorpayOrderSession = async (req) => {
   };
 };
 
-export const verifyRazorpayPayment = async ({ 
+export const verifyRazorpayPayment = async ({
   razorpay_order_id,
   razorpay_payment_id,
   razorpay_signature,
@@ -281,45 +211,39 @@ export const verifyRazorpayPayment = async ({
     const hmac = crypto.createHmac('sha256', process.env.RAZORPAY_KEY_SECRET);
     hmac.update(razorpay_order_id + "|" + razorpay_payment_id);
     const generated_signature = hmac.digest('hex');
-
     if (generated_signature !== razorpay_signature) {
       throw new Error('Payment verification failed: Invalid signature');
     }
-
+    
     const paymentDetails = await razorpay.payments.fetch(razorpay_payment_id);
-
+    
+    
     let existingOrder = await orderCollection.findOne({
       'paymentSession.paymentSessionId': paymentSession.paymentSessionId
     });
-
     if (existingOrder) {
       console.log('Order already exists for this payment session');
       return existingOrder;
     }
-
+    
     const orderId = uuidv4();
     const paymentId = uuidv4();
-    
     const sanitizedItems = sanitizeOrderItems(paymentSession.orderDetails.items);
     
+    
     for (const item of sanitizedItems) {
-      if (!item.variantId || !item.productId || !item.quantity || !item.price) {
-        throw new Error(`Invalid item data in order. Missing required fields for product: ${item.productName || 'unknown'}`);
-      }
-      
       const variant = await ProductVariant.findOne(
         { variantId: item.variantId, isActive: true },
         { stock: 1, name: 1 }
       );
-      
       if (!variant) {
         throw new Error(`Product variant not found: ${item.variantId} for ${item.productName || 'unknown product'}`);
       }
-      
       if (variant.stock < item.quantity) {
         throw new Error(`"${item.productName || 'Product'}" is out of stock. Only ${variant.stock} available.`);
       }
     }
+    
     
     const orderData = {
       orderId,
@@ -333,7 +257,11 @@ export const verifyRazorpayPayment = async ({
         variantId: i.variantId,
         variantColor: i.variantColor || 'N/A',
         quantity: i.quantity,
-        price: convertDecimal128ToNumber(i.price), 
+        price: convertDecimal128ToNumber(i.price),
+        originalPrice: convertDecimal128ToNumber(i.originalPrice),
+        discountAmount: convertDecimal128ToNumber(i.discountAmount),
+        hasOffer: i.hasOffer || false,
+        offerInfo: i.offerInfo || null,
         images: Array.isArray(i.images) ? i.images : (i.images ? [i.images] : []),
         orderStatus: 'confirmed'
       })),
@@ -349,19 +277,21 @@ export const verifyRazorpayPayment = async ({
         paymentSessionId: paymentSession.paymentSessionId,
         razorpayOrderId: razorpay_order_id,
         razorpayPaymentId: razorpay_payment_id
-      }
+      },
+      hasProductOffers: paymentSession.orderDetails.hasProductOffers || false
     };
-
+    
+    
     if (paymentSession.orderDetails.appliedCoupon) {
       orderData.appliedCoupon = {
         ...paymentSession.orderDetails.appliedCoupon,
         discountAmount: convertDecimal128ToNumber(paymentSession.orderDetails.appliedCoupon.discountAmount)
       };
     }
-
+    
     let order;
     let paymentRecord;
-
+    
     try {
       const session = await mongoose.startSession();
       session.startTransaction();
@@ -369,8 +299,8 @@ export const verifyRazorpayPayment = async ({
       try {
         order = new orderCollection(orderData);
         await order.save({ session });
-        
         console.log('Order created successfully:', order.orderId);
+        
         
         for (const item of order.items) {
           const updateResult = await ProductVariant.updateOne(
@@ -378,12 +308,11 @@ export const verifyRazorpayPayment = async ({
             { $inc: { stock: -item.quantity } },
             { session }
           );
-          
-          
           if (updateResult.modifiedCount === 0) {
             throw new Error(`Failed to update stock for product: ${item.productName}`);
           }
         }
+        
         
         paymentRecord = new Payment({
           paymentId,
@@ -409,22 +338,19 @@ export const verifyRazorpayPayment = async ({
             amount: paymentDetails.amount / 100
           }
         });
-        
         await paymentRecord.save({ session });
         
         await session.commitTransaction();
         session.endSession();
-        
         return order;
-        
       } catch (transactionError) {
         await session.abortTransaction();
         session.endSession();
         throw transactionError;
       }
-      
     } catch (orderError) {
       console.error('Detailed order creation error:', orderError);
+      
       
       if (paymentDetails.status === 'captured') {
         try {
@@ -438,6 +364,7 @@ export const verifyRazorpayPayment = async ({
         }
       }
       
+      
       if (order && order._id) {
         try {
           await orderCollection.findByIdAndDelete(order._id);
@@ -447,9 +374,7 @@ export const verifyRazorpayPayment = async ({
         }
       }
       
-      // Provide specific error message based on the error type
       let errorMessage = 'Order creation failed after payment. Payment has been refunded.';
-      
       if (orderError.message.includes('out of stock')) {
         errorMessage = orderError.message;
       } else if (orderError.message.includes('Product variant not found')) {
@@ -457,7 +382,6 @@ export const verifyRazorpayPayment = async ({
       } else if (orderError.name === 'ValidationError') {
         errorMessage = 'There was an issue with your order details. Please try again.';
       }
-      
       throw new Error(errorMessage);
     }
   } catch (error) {
@@ -466,7 +390,6 @@ export const verifyRazorpayPayment = async ({
   }
 };
 
-// Get order details
 export const orderDetails = async (userId, orderId) => {
   return await orderCollection.findOne({ userId, orderId });
 };

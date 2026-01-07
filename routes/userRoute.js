@@ -12,10 +12,11 @@ import { address, addressEdit, addressEditUpdate, addressFetch, addressNew, dele
 import { validateAddress } from "../middlewares/addressMiddleware.js"
 import { cart, newCart, removeCart, updateCart } from "../controllers/user/cartController.js"
 import { checkout, checkoutDatas, getAvailableCoupons, previewCheckout } from "../controllers/user/checkoutController.js"
-import { payment, paymentProcess, paymentSuccess, verifyPayment } from "../controllers/user/paymentController.js"
+import { payment, paymentFail, paymentProcess, paymentSuccess, verifyPayment } from "../controllers/user/paymentController.js"
 import { exitsCheckout } from "../middlewares/checkoutMiddleware.js"
 import { cancelItem, cancelOrder, orderListing, returnProduct } from "../controllers/user/orderController.js"
 import { validateProfileUpdate } from "../middlewares/validateProfileUpdate.js"
+import { wishlist, wishlistadd, wishlistRemove } from "../controllers/user/wishlistController.js"
 
 
 
@@ -125,6 +126,8 @@ router.get('/payment/verify', userProfile, verifyPayment)
 
 router.get('/payment/success', userProfile, paymentSuccess)
 
+router.get('/payment/fail', userProfile, paymentFail)
+
 // order Profile 
 
 router.get('/profile/orders', userProfile, orderListing)
@@ -135,6 +138,13 @@ router.patch('/profile/orders/:orderId/cancel', userProfile, cancelOrder)
 
 router.patch('/profile/orders/:orderId/return', userProfile, returnProduct)
 
+//wishlist
+
+router.get('/profile/wishlist', userProfile, wishlist)
+
+router.post('/profile/wishlist/add', userProfile, wishlistadd)
+
+router.delete('/wishlist/remove', userProfile, wishlistRemove)
 
 // password 
 

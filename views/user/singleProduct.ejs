@@ -123,9 +123,8 @@ offerInfo: <%= product.offerInfo ? JSON.stringify(product.offerInfo) : 'null' %>
       </nav>
       <div class="flex items-center space-x-4">
         <button class="p-2 rounded-full hover:bg-gray-100 transition-colors">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" onclick="window.location.href='/profile/wishlist'">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
           </svg>
         </button>
         <button class="p-2 rounded-full hover:bg-gray-100 transition-colors relative"
@@ -335,7 +334,8 @@ hover:bg-gray-200 hover:shadow-sm transition-all duration-200 active:scale-95" @
             </button>
           </div>
           <button
-            class="flex items-center justify-center space-x-2 border border-gray-300 text-gray-700 py-3 rounded-full font-medium hover:bg-gray-50 transition">
+            class="flex items-center justify-center space-x-2 border border-gray-300 text-gray-700 py-3 rounded-full font-medium hover:bg-gray-50 transition"
+            @click="addToWishList">
             <i class="far fa-heart"></i>
             <span>Add to Wishlist</span>
           </button>
@@ -581,6 +581,78 @@ hover:bg-gray-200 hover:shadow-sm transition-all duration-200 active:scale-95" @
             })
             .catch(err => {
               console.error('Add to cart failed:', err);
+              Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'Failed to add item to cart. Please try again.',
+                confirmButtonText: 'OK'
+              });
+            });
+        },
+        addToWishList() {
+          if (!this.isLoggedIn) {
+            Swal.fire({
+              icon: 'info',
+              title: 'Please Sign In',
+              text: 'You need to be logged in to add items to your cart.',
+              confirmButtonText: 'Go to Login',
+              showCancelButton: true,
+              cancelButtonText: 'Cancel'
+            }).then((result) => {
+              if (result.isConfirmed) {
+                window.location.href = '/login';
+              }
+            });
+            return;
+          }
+
+          fetch('/profile/wishlist/add', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+              productId: this.productId,
+              variantId: this.selectedVariant._id
+            })
+          })
+           .then(response => response.json())
+            .then(data => {
+              if (data.success === 'success') {
+                // Show success modal
+               Swal.fire({
+                  icon: 'success',
+                  title: 'Added to Wishlist',
+                  text: 'You can check in wishlist',
+                  confirmButtonText: 'OK',
+                  showDenyButton: true, 
+                  denyButtonText: 'wishlist'
+                }).then(result => {
+                  if(result.isDenied) {
+                    window.location.href = '/profile/wishlist'
+                  }
+                })
+              } else if (data.success === 'already in wishlist') {
+                // Backend blocked due to cart limit (e.g., total > 10 for variant)
+                Swal.fire({
+                  icon: 'warning',
+                  title: 'Already in Wishlist',
+                  text: 'You can only add product once in wishlist.',
+                  confirmButtonText: 'OK'
+                });
+              }else if (data.success === 'already in cart') {
+                // Backend blocked due to cart limit (e.g., total > 10 for variant)
+                Swal.fire({
+                  icon: 'warning',
+                  title: 'Already in Cart',
+                  text: 'Your product already in cart.',
+                  confirmButtonText: 'OK'
+                });
+              }
+               else {
+                throw new Error('Invalid response');
+              }
+            })
+            .catch(err => {
+              console.error('Add to wishlist failed:', err);
               Swal.fire({
                 icon: 'error',
                 title: 'Oops...',

@@ -2,6 +2,7 @@ import { v4 as uuidv4 } from "uuid";
 import Cart from "../../models/cartModel.js";
 import mongoose from 'mongoose';
 import Offer from "../../models/offerModel.js";
+import { applyOffersToProducts } from "../../util/offerUtils.js";
 
 export const cartNew = async (cartItems, userId) => {
   try {
@@ -56,93 +57,10 @@ export const cartNew = async (cartItems, userId) => {
   }
 };
 
-const applyOfferToVariant = (variant, productIdStr, categoryIdStr, activeOffers, productName) => {
-  if (!variant || !variant.price || variant.price <= 0) {
-    return variant;
-  }
-
-  const originalPrice = parseFloat(variant.price.toString());
-
-  const productOffers = activeOffers.filter(offer =>
-    offer.targetingType === 'products' &&
-    offer.targeting.productIds.some(id => id.toString() === productIdStr)
-  );
-
-  const categoryOffers = activeOffers.filter(offer =>
-    offer.targetingType === 'categories' &&
-    offer.targeting.categoryIds.some(id => id.toString() === categoryIdStr)
-  );
-
-  const globalOffers = activeOffers.filter(offer =>
-    offer.targetingType === 'all'
-  );
-
-  let bestOffer = null;
-
-  if (productOffers.length > 0 || categoryOffers.length > 0) {
-    const specificOffers = [...productOffers, ...categoryOffers].filter(Boolean);
-    if (specificOffers.length > 0) {
-      bestOffer = specificOffers.reduce((best, current) => {
-        if (!best) return current;
-        
-        const bestValue = best.offerType === 'percentage'
-          ? best.discountValue
-          : (best.discountValue / originalPrice) * 100;
-          
-        const currentValue = current.offerType === 'percentage'
-          ? current.discountValue
-          : (current.discountValue / originalPrice) * 100;
-          
-        return currentValue > bestValue ? current : best;
-      }, null);
-    }
-  } 
-  else if (globalOffers.length > 0) {
-    bestOffer = globalOffers[0];
-  }
-
-  const updatedVariant = { ...variant, originalPrice: originalPrice };
-  
-  if (bestOffer) {
-    let discountAmount = 0;
-    let finalPrice = originalPrice;
-
-    if (bestOffer.offerType === 'percentage') {
-      discountAmount = (originalPrice * bestOffer.discountValue) / 100;
-      finalPrice = originalPrice - discountAmount;
-    } else if (bestOffer.offerType === 'fixed') {
-      discountAmount = Math.min(bestOffer.discountValue, originalPrice);
-      finalPrice = originalPrice - discountAmount;
-    }
-
-    finalPrice = Math.max(0, finalPrice);
-
-    updatedVariant.offerInfo = {
-      offerId: bestOffer._id.toString(),
-      offerName: bestOffer.offerName,
-      offerType: bestOffer.offerType,
-      discountValue: bestOffer.discountValue,
-      discountPercentage: bestOffer.offerType === 'percentage'
-        ? bestOffer.discountValue
-        : (discountAmount / originalPrice) * 100,
-      originalPrice: originalPrice,
-      discountAmount: discountAmount,
-      finalPrice: finalPrice
-    };
-
-    updatedVariant.originalPrice = originalPrice;
-    updatedVariant.price = finalPrice;
-    updatedVariant.hasOffer = true;
-  }
-
-  return updatedVariant;
-};
-
-export const cartDetails = async (userid) => {
+export const cartDetails = async (userId) => {
   try {
-    const userId = new mongoose.Types.ObjectId(userid);
+    const userObjectId = new mongoose.Types.ObjectId(userId);
     const today = new Date();
-    
     const activeOffers = await Offer.find({
       status: 'active',
       startDate: { $lte: today },
@@ -150,7 +68,7 @@ export const cartDetails = async (userid) => {
     }).lean();
     
     const cartItems = await Cart.aggregate([
-      { $match: { userId } },
+      { $match: { userId: userObjectId } },
       { $unwind: "$products" },
       {
         $lookup: {
@@ -200,24 +118,10 @@ export const cartDetails = async (userid) => {
       }
     ]);
     
-    for (const item of cartItems) {
-      if (item.products && item.products.variant && item.products.product) {
-        const productIdStr = item.products.product._id.toString();
-        const categoryIdStr = item.products.product.categoryId ? item.products.product.categoryId.toString() : '';
-        
-        item.products.variant = applyOfferToVariant(
-          item.products.variant, 
-          productIdStr, 
-          categoryIdStr, 
-          activeOffers, 
-          item.products.product.productName
-        );
-        
-        item.products.total = (item.products.variant.price * item.products.quantity).toFixed(2);
-      }
-    }
+    // Apply offers and calculate totals
+    const itemsWithOffers = await applyOffersToProducts(cartItems, activeOffers);
     
-    return cartItems;
+    return itemsWithOffers;
   } catch (error) {
     console.log(`error from cartDetails ${error}`);
     throw error;
@@ -232,11 +136,9 @@ export const cartUpdate = async (userId, cartItems) => {
       { $set: { 'products.$.quantity': quantity } },
       { new: true, runValidators: true }
     );
-    
     if (!cartItem) {
       return { success: false };
     }
-    
     return { success: true };
   } catch (error) {
     console.log(`error from cartUpdate ${error}`);
@@ -252,11 +154,9 @@ export const cartRemove = async (cartProducts, userId) => {
       { $pull: { products: { cartProductId: cartProductId } } },
       { new: true }
     );
-    
     if (!cartItem) {
       return { success: false };
     }
-    
     return { success: true };
   } catch (error) {
     console.log(`error from cartRemove ${error}`);

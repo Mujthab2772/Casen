@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Unsuccessful • Casen</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.10/dist/cdn.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gradient-start: #f9fafb;
+            --gradient-end: #f3f4f6;
+            --primary: #4f46e5;
+            --primary-light: #818cf8;
+            --secondary: #10b981;
+            --danger: #ef4444;
+            --danger-light: #fee2e2;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --radius-lg: 1.5rem;
+            --radius-xl: 2rem;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', sans-serif;
+            background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
+            min-height: 100vh;
+            color: #1f2937;
+        }
+        
+        .error-illustration {
+            width: 240px;
+            height: 240px;
+            position: relative;
+            margin: 0 auto 2rem;
+        }
+        
+        .error-circle {
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            background: rgba(239, 68, 68, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+        }
+        
+        .error-icon {
+            font-size: 80px;
+            color: var(--danger);
+        }
+        
+        .error-x {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            background: var(--danger);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        .error-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+            transition: transform 0.3s ease;
+        }
+        
+        .error-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card-header {
+            background: linear-gradient(120deg, #fee2e2 0%, #fecaca 100%);
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .card-body {
+            padding: 1.5rem;
+        }
+        
+        .troubleshooting-item {
+            border-radius: 1rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .troubleshooting-item:hover {
+            background: #f8fafc;
+            transform: translateX(5px);
+        }
+        
+        /* Animation for the error illustration */
+        @keyframes pulse {
+            0% { transform: scale(0.95); opacity: 0.7; }
+            50% { transform: scale(1.05); opacity: 1; }
+            100% { transform: scale(0.95); opacity: 0.7; }
+        }
+        
+        .error-circle {
+            animation: pulse 2s infinite;
+        }
+        
+        .flash-message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            color: white;
+            font-weight: 500;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            animation: slide-in 0.3s ease-out, fade-out 0.5s ease-in 3.5s forwards;
+        }
+        
+        .flash-error {
+            background-color: #ef4444;
+        }
+        
+        @keyframes slide-in {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes fade-out {
+            from { opacity: 1; }
+            to { opacity: 0; transform: translateX(100%); }
+        }
+        
+        .custom-container {
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+            padding-left: 1.5rem;
+            padding-right: 1.5rem;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+    <!-- Flash Messages -->
+    <% if (locals.messages && messages.error) { %>
+    <div class="fixed top-4 right-4 z-50 max-w-md" x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)">
+        <div class="bg-red-500 text-white px-6 py-3 rounded-xl shadow-lg flex items-center space-x-3">
+            <i class="fas fa-exclamation-circle text-xl"></i>
+            <p class="font-medium"><%= messages.error %></p>
+            <button @click="show = false" class="ml-auto hover:text-red-200">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+    <% } %>
+
+    <!-- Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="custom-container py-3 flex items-center justify-between">
+            <div class="flex items-center">
+                <a href="/"><img src="/logo.png" alt="Logo" class="h-8 object-contain" /></a>
+            </div>
+            <nav class="hidden md:flex space-x-5">
+                <a href="/" class="text-sm font-medium transition-opacity hover:opacity-80">Home</a>
+                <a href="#" class="text-sm font-medium transition-opacity hover:opacity-80">About</a>
+                <a href="/products" class="text-sm font-medium transition-opacity hover:opacity-80">Phone Cases</a>
+                <a href="#" class="text-sm font-medium transition-opacity hover:opacity-80">Tablet Cases</a>
+                <a href="#" class="text-sm font-medium transition-opacity hover:opacity-80">Sale</a>
+            </nav>
+            <div class="flex items-center space-x-4">
+                <button class="p-2 rounded-full hover:bg-gray-100 transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" onclick="window.location.href='/profile/wishlist'">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+          </svg>
+        </button>
+                <button class="p-2 rounded-full hover:bg-gray-100 transition-colors relative" onclick="window.location.href='/cart'">
+                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                </button>
+                <% if (locals.user && user.profilePic) { %>
+                <div class="relative" x-data="{ open: false }" @click.away="open = false">
+                    <button @click="open = !open" class="rounded-full overflow-hidden w-8 h-8 border border-transparent hover:border-gray-300 transition-colors focus:outline-none">
+                        <img src="<%= user.profilePic %>" alt="Profile" class="w-full h-full object-cover" />
+                    </button>
+                    <div x-show="open" x-transition class="absolute right-0 mt-2 w-44 bg-white shadow-lg rounded-lg py-1 z-50">
+                        <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">Profile</a>
+                        <form action="/logout" method="post">
+                            <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">Logout</button>
+                        </form>
+                    </div>
+                </div>
+                <% } else if (locals.user) { %>
+                <div class="relative" x-data="{ open: false }" @click.away="open = false">
+                    <button @click="open = !open" class="w-8 h-8 flex items-center justify-center text-gray-600 hover:text-gray-900 transition-colors">
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                    </button>
+                    <div x-show="open" x-transition class="absolute right-0 mt-2 w-44 bg-white shadow-lg rounded-lg py-1 z-50">
+                        <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Profile</a>
+                        <form action="/logout" method="post">
+                            <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Logout</button>
+                        </form>
+                    </div>
+                </div>
+                <% } else { %>
+                <a href="/login" class="text-sm font-medium flex items-center">
+                    <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg> Sign In
+                </a>
+                <% } %>
+                <button class="md:hidden text-gray-600 hover:text-gray-900">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow flex items-center justify-center py-12 px-4 sm:px-6">
+        <div class="custom-container">
+            <div class="max-w-2xl mx-auto">
+                <!-- Error Illustration -->
+                <div class="error-illustration">
+                    <div class="error-circle">
+                        <i class="fas fa-times error-icon"></i>
+                    </div>
+                    <div class="error-x">
+                        <i class="fas fa-exclamation"></i>
+                    </div>
+                </div>
+
+                <!-- Main Content -->
+                <div class="text-center mb-10">
+                    <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Payment Unsuccessful</h1>
+                    <p class="text-xl text-gray-600 max-w-2xl mx-auto mb-6">
+                        We're sorry, but there was an issue processing your payment. Let's help you get this resolved.
+                    </p>
+                </div>
+
+                <!-- Enhanced Error Details Section -->
+                <% if (locals.errorDetails) { %>
+                <div class="error-card mb-8">
+                    <div class="card-header">
+                        <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center mr-3">
+                            <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+                        </div>
+                        <h3 class="font-bold text-lg text-red-800">Payment Issue Detected</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="bg-red-50 rounded-lg p-4 mb-4">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-info-circle text-red-400 mt-1"></i>
+                                </div>
+                                <div class="ml-3 flex-1">
+                                    <p class="text-red-800 font-medium">
+                                        <%= errorDetails.razorpayError ? errorDetails.razorpayError.description : errorDetails.reason %>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-3">
+                            <div class="flex items-start">
+                                <div class="mt-1 mr-3">
+                                    <div class="w-2 h-2 rounded-full bg-red-500"></div>
+                                </div>
+                                <p class="text-gray-700">
+                                    Don't worry, <span class="font-medium">no charges</span> have been applied to your payment method.
+                                </p>
+                            </div>
+                            <div class="flex items-start">
+                                <div class="mt-1 mr-3">
+                                    <div class="w-2 h-2 rounded-full bg-red-500"></div>
+                                </div>
+                                <p class="text-gray-700">
+                                    Your items are still <span class="font-medium">reserved in your cart</span> for the next 2 hours.
+                                </p>
+                            </div>
+                        </div>
+
+                        <% if (errorDetails.razorpayError) { %>
+                        <div class="mt-6 pt-4 border-t border-red-100">
+                            <p class="text-sm font-medium text-gray-600 mb-2">Technical Details:</p>
+                            <div class="grid grid-cols-2 gap-3 text-sm">
+                                <div>
+                                    <span class="text-gray-500">Error Code:</span>
+                                    <span class="font-mono ml-1 px-2 py-1 bg-red-50 rounded text-red-700 text-xs"><%= errorDetails.razorpayError.code %></span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-500">Step:</span>
+                                    <span class="ml-1 font-medium text-gray-700"><%= errorDetails.razorpayError.step %></span>
+                                </div>
+                                <div class="col-span-2">
+                                    <span class="text-gray-500">Technical Reason:</span>
+                                    <p class="mt-1 text-xs text-gray-600 bg-gray-50 p-2 rounded"><%= errorDetails.razorpayError.reason %></p>
+                                </div>
+                            </div>
+                        </div>
+                        <% } %>
+                    </div>
+                </div>
+                <% } %>
+
+                <!-- Action Buttons -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
+                    <button onclick="retryPayment()" class="flex flex-col items-center justify-center p-6 rounded-2xl border-2 border-indigo-100 bg-white hover:border-indigo-300 hover:shadow-md transition-all duration-300">
+                        <div class="w-12 h-12 rounded-full bg-indigo-50 flex items-center justify-center mb-3">
+                            <i class="fas fa-redo text-indigo-600 text-xl"></i>
+                        </div>
+                        <span class="font-medium text-gray-800 text-center">Try Again</span>
+                    </button>
+                    
+                    <button onclick="changePaymentMethod()" class="flex flex-col items-center justify-center p-6 rounded-2xl border-2 border-green-100 bg-white hover:border-green-300 hover:shadow-md transition-all duration-300">
+                        <div class="w-12 h-12 rounded-full bg-green-50 flex items-center justify-center mb-3">
+                            <i class="fas fa-credit-card text-green-600 text-xl"></i>
+                        </div>
+                        <span class="font-medium text-gray-800 text-center">Change Method</span>
+                    </button>
+                    
+                    <button onclick="contactSupport()" class="flex flex-col items-center justify-center p-6 rounded-2xl border-2 border-amber-100 bg-white hover:border-amber-300 hover:shadow-md transition-all duration-300">
+                        <div class="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center mb-3">
+                            <i class="fas fa-headset text-amber-600 text-xl"></i>
+                        </div>
+                        <span class="font-medium text-gray-800 text-center">Get Help</span>
+                    </button>
+                </div>
+
+                <!-- Troubleshooting Section -->
+                <div class="bg-white rounded-2xl shadow-md p-6 mb-8">
+                    <div class="flex items-center mb-4">
+                        <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center mr-3">
+                            <i class="fas fa-tools text-blue-600"></i>
+                        </div>
+                        <h2 class="text-xl font-bold text-gray-800">Troubleshooting Tips</h2>
+                    </div>
+                    
+                    <div class="space-y-3">
+                        <div class="troubleshooting-item bg-blue-50 border-l-4 border-blue-500">
+                            <div class="flex items-start">
+                                <i class="fas fa-credit-card text-blue-600 mt-1 mr-3"></i>
+                                <div>
+                                    <h4 class="font-medium text-gray-800">Card Issues</h4>
+                                    <p class="text-gray-600 text-sm mt-1">Check card details, ensure sufficient funds, and confirm your card is enabled for online transactions.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="troubleshooting-item bg-green-50 border-l-4 border-green-500">
+                            <div class="flex items-start">
+                                <i class="fas fa-wifi text-green-600 mt-1 mr-3"></i>
+                                <div>
+                                    <h4 class="font-medium text-gray-800">Connection Issues</h4>
+                                    <p class="text-gray-600 text-sm mt-1">Ensure a stable internet connection and try disabling browser extensions that might interfere with payments.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="troubleshooting-item bg-purple-50 border-l-4 border-purple-500">
+                            <div class="flex items-start">
+                                <i class="fas fa-mobile-alt text-purple-600 mt-1 mr-3"></i>
+                                <div>
+                                    <h4 class="font-medium text-gray-800">Mobile Payments</h4>
+                                    <p class="text-gray-600 text-sm mt-1">If using UPI or mobile wallet, ensure the app is installed and working properly on your device.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Security Reassurance -->
+                <div class="bg-indigo-50 rounded-2xl p-6 text-center mb-8">
+                    <div class="flex justify-center mb-3">
+                        <div class="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-shield-alt text-indigo-600"></i>
+                        </div>
+                    </div>
+                    <h3 class="font-bold text-gray-800 mb-2">Your Security Matters</h3>
+                    <p class="text-gray-600 max-w-2xl mx-auto">
+                        All payment information is encrypted using industry-standard SSL technology. 
+                        Your payment details are never stored on our servers.
+                    </p>
+                </div>
+
+                <!-- Cart Status -->
+                <div class="bg-white rounded-2xl shadow-md p-6 border border-gray-100">
+                    <div class="flex items-center mb-3">
+                        <div class="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center mr-3">
+                            <i class="fas fa-shopping-cart text-amber-600"></i>
+                        </div>
+                        <h3 class="font-bold text-gray-800">Your Cart Is Safe</h3>
+                    </div>
+                    <p class="text-gray-600 mb-4">
+                        Your items are reserved and waiting for you. No changes have been made to your order.
+                    </p>
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                        <div class="mb-3 sm:mb-0">
+                            <p class="text-sm text-gray-700"><i class="fas fa-clock mr-2 text-amber-500"></i> Items reserved for: <span class="font-medium text-indigo-600">1 hour 45 minutes</span></p>
+                        </div>
+                        <button onclick="viewCart()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg font-medium transition-colors">
+                            <i class="fas fa-eye mr-2"></i> View Your Cart
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function retryPayment() {
+            window.location.href = '/payment';
+        }
+        
+        function changePaymentMethod() {
+            window.location.href = '/payment';
+        }
+        
+        function contactSupport() {
+            window.location.href = '/contact';
+        }
+        
+        function viewCart() {
+            window.location.href = '/cart';
+        }
+        
+        // Add subtle animation on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const errorCard = document.querySelector('.error-card');
+            if (errorCard) {
+                errorCard.style.opacity = '0';
+                errorCard.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    errorCard.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                    errorCard.style.opacity = '1';
+                    errorCard.style.transform = 'translateY(0)';
+                }, 300);
+            }
+        });
+    </script>
+</body>
+</html>
