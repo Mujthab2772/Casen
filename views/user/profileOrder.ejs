@@ -215,7 +215,7 @@
               <div class="p-5 md:p-6">
                 <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                   <div>
-                    <div class="text-lg font-semibold text-gray-900">Order <%= order.orderId.slice(0,8).toUpperCase() %></div>
+                    <div class="text-lg font-semibold text-gray-900">Order <%= order.orderId.slice(0,8) %></div>
                     <p class="text-gray-500 text-sm mt-1">Placed on <%= new Date(order.createdAt).toLocaleDateString() %></p>
                   </div>
                   <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
@@ -415,7 +415,7 @@
       const statusLabel = getOrderStatusLabel(order.orderStatus);
       Swal.fire({
         title: `<div class="text-center">
-          <div class="text-gray-900 text-xl font-bold">Order <span class="font-mono bg-gray-100 px-2 py-1 rounded">${order.orderId.toUpperCase()}</span></div>
+          <div class="text-gray-900 text-xl font-bold">Order <span class="font-mono bg-gray-100 px-2 py-1 rounded">${order.orderId}</span></div>
           <span class="mt-1 inline-block px-2 py-1 text-xs font-medium rounded-full ${statusClass}">${statusLabel}</span>
         </div>`,
         html: `

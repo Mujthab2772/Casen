@@ -17,6 +17,7 @@ import { exitsCheckout } from "../middlewares/checkoutMiddleware.js"
 import { cancelItem, cancelOrder, orderListing, returnProduct } from "../controllers/user/orderController.js"
 import { validateProfileUpdate } from "../middlewares/validateProfileUpdate.js"
 import { wishlist, wishlistadd, wishlistRemove } from "../controllers/user/wishlistController.js"
+import { wallet } from "../controllers/user/walletController.js"
 
 
 
@@ -145,6 +146,10 @@ router.get('/profile/wishlist', userProfile, wishlist)
 router.post('/profile/wishlist/add', userProfile, wishlistadd)
 
 router.delete('/wishlist/remove', userProfile, wishlistRemove)
+
+//Wallet
+
+router.get('/profile/wallet', userProfile, wallet)
 
 // password 
 

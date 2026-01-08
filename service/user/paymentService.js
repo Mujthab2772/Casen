@@ -28,13 +28,28 @@ function convertDecimal128ToNumber(value) {
   return value;
 }
 
-function sanitizeOrderItems(items) {
-  return items.map(item => ({
-    ...item,
-    price: convertDecimal128ToNumber(item.price),
-    originalPrice: convertDecimal128ToNumber(item.originalPrice),
-    quantity: parseInt(item.quantity) || 1
-  }));
+function sanitizeOrderItemsForSchema(items) {
+  return items.map(item => {
+    // Handle images array with max 3 items
+    let images = [];
+    if (Array.isArray(item.images)) {
+      images = item.images.slice(0, 3);
+    } else if (item.images) {
+      images = [item.images].slice(0, 3);
+    }
+
+    return {
+      orderItemId: uuidv4(),
+      productId: item.productId,
+      productName: item.productName,
+      variantId: item.variantId,
+      variantColor: item.variantColor || 'N/A',
+      quantity: parseInt(item.quantity) || 1,
+      price: convertDecimal128ToNumber(item.price),
+      images: images,
+      orderStatus: 'confirmed'
+    };
+  });
 }
 
 export const cashOnDelivery = async (req) => {
@@ -69,47 +84,47 @@ export const cashOnDelivery = async (req) => {
     userId
   );
   
+  // Sanitize address to include email (required by schema)
+  const sanitizedAddress = {
+    ...recalculated.addressDetails,
+    email: req.session.userDetail.email || recalculated.addressDetails.email
+  };
+  
+  // Prepare coupon data with strict schema compliance
+  let appliedCouponData = null;
+  if (priceCalculation.appliedCoupon) {
+    appliedCouponData = {
+      couponId: priceCalculation.appliedCoupon.couponId,
+      couponCode: priceCalculation.appliedCoupon.couponCode,
+      discountAmount: convertDecimal128ToNumber(priceCalculation.appliedCoupon.discountAmount)
+    };
+  }
+  
+  // Sanitize items for schema compliance
+  const sanitizedItems = sanitizeOrderItemsForSchema(recalculated.productList);
+  
   const orderData = {
     orderId: uuidv4(),
     userId,
-    address: recalculated.addressDetails,
-    items: recalculated.productList.map(i => ({
-      orderItemId: uuidv4(),
-      productId: i.productId,
-      productName: i.productName,
-      variantId: i.variantId,
-      variantColor: i.variantColor,
-      quantity: i.quantity,
-      price: convertDecimal128ToNumber(i.price),
-      originalPrice: convertDecimal128ToNumber(i.originalPrice),
-      discountAmount: convertDecimal128ToNumber(i.discountAmount),
-      hasOffer: i.hasOffer || false,
-      offerInfo: i.offerInfo || null,
-      images: i.images,
-      orderStatus: 'pending'
-    })),
+    address: sanitizedAddress,
+    items: sanitizedItems,
     subTotal: priceCalculation.subtotal,
     discountAmount: priceCalculation.discount,
     taxAmount: priceCalculation.tax,
     totalAmount: priceCalculation.total,
     paymentId: uuidv4(),
     paymentStatus: 'pending',
-    paymentMethod: 'cash',
     orderStatus: 'pending'
   };
   
-  if (priceCalculation.appliedCoupon) {
-    orderData.appliedCoupon = priceCalculation.appliedCoupon;
-  }
-  
-  if (recalculated.offersApplied) {
-    orderData.hasProductOffers = true;
+  if (appliedCouponData) {
+    orderData.appliedCoupon = appliedCouponData;
   }
   
   const order = new orderCollection(orderData);
   await order.save();
   
-  for (const item of recalculated.productList) {
+  for (const item of sanitizedItems) {
     await ProductVariant.updateOne(
       { variantId: item.variantId },
       { $inc: { stock: -item.quantity } }
@@ -153,10 +168,25 @@ export const createRazorpayOrderSession = async (req) => {
   
   const paymentSessionId = uuidv4();
   
+  // Sanitize address to include email
+  const sanitizedAddress = {
+    ...recalculated.addressDetails,
+    email: req.session.userDetail.email || recalculated.addressDetails.email
+  };
+  
+  // Prepare coupon data for session storage
+  let appliedCouponData = null;
+  if (priceCalculation.appliedCoupon) {
+    appliedCouponData = {
+      couponId: priceCalculation.appliedCoupon.couponId,
+      couponCode: priceCalculation.appliedCoupon.couponCode,
+      discountAmount: convertDecimal128ToNumber(priceCalculation.appliedCoupon.discountAmount)
+    };
+  }
   
   const orderDetails = {
     userId,
-    address: recalculated.addressDetails,
+    address: sanitizedAddress,
     contactEmail: req.session.userDetail.email,
     items: recalculated.productList.map(i => ({
       productId: i.productId,
@@ -165,18 +195,13 @@ export const createRazorpayOrderSession = async (req) => {
       variantColor: i.variantColor,
       quantity: i.quantity,
       price: convertDecimal128ToNumber(i.price),
-      originalPrice: convertDecimal128ToNumber(i.originalPrice),
-      discountAmount: convertDecimal128ToNumber(i.discountAmount),
-      hasOffer: i.hasOffer || false,
-      offerInfo: i.offerInfo || null,
       images: i.images
     })),
     subTotal: priceCalculation.subtotal,
     discountAmount: priceCalculation.discount,
     taxAmount: priceCalculation.tax,
     totalAmount: priceCalculation.total,
-    hasProductOffers: recalculated.offersApplied,
-    appliedCoupon: priceCalculation.appliedCoupon || null
+    appliedCoupon: appliedCouponData
   };
   
   const shortReceiptId = `session_${paymentSessionId.substring(0, 27)}`;
@@ -217,7 +242,7 @@ export const verifyRazorpayPayment = async ({
     
     const paymentDetails = await razorpay.payments.fetch(razorpay_payment_id);
     
-    
+    // Check for existing order
     let existingOrder = await orderCollection.findOne({
       'paymentSession.paymentSessionId': paymentSession.paymentSessionId
     });
@@ -226,11 +251,17 @@ export const verifyRazorpayPayment = async ({
       return existingOrder;
     }
     
-    const orderId = uuidv4();
-    const paymentId = uuidv4();
-    const sanitizedItems = sanitizeOrderItems(paymentSession.orderDetails.items);
+    // 1. SANITIZE ADDRESS WITH EMAIL
+    const addressDetails = paymentSession.orderDetails.address;
+    const sanitizedAddress = {
+      ...addressDetails,
+      email: paymentSession.orderDetails.contactEmail || addressDetails.email
+    };
     
+    // 2. SANITIZE ITEMS FOR SCHEMA COMPLIANCE
+    const sanitizedItems = sanitizeOrderItemsForSchema(paymentSession.orderDetails.items);
     
+    // 3. VALIDATE STOCK
     for (const item of sanitizedItems) {
       const variant = await ProductVariant.findOne(
         { variantId: item.variantId, isActive: true },
@@ -244,49 +275,35 @@ export const verifyRazorpayPayment = async ({
       }
     }
     
+    // 4. PREPARE COUPON DATA
+    let appliedCouponData = null;
+    if (paymentSession.orderDetails.appliedCoupon) {
+      appliedCouponData = {
+        couponId: paymentSession.orderDetails.appliedCoupon.couponId,
+        couponCode: paymentSession.orderDetails.appliedCoupon.couponCode,
+        discountAmount: convertDecimal128ToNumber(
+          paymentSession.orderDetails.appliedCoupon.discountAmount
+        )
+      };
+    }
     
+    // 5. CREATE ORDER DATA (STRICT SCHEMA COMPLIANCE)
     const orderData = {
-      orderId,
+      orderId: uuidv4(),
       userId,
-      address: paymentSession.orderDetails.address,
-      contactEmail: paymentSession.orderDetails.contactEmail || paymentSession.orderDetails.address.email,
-      items: sanitizedItems.map(i => ({
-        orderItemId: uuidv4(),
-        productId: i.productId,
-        productName: i.productName,
-        variantId: i.variantId,
-        variantColor: i.variantColor || 'N/A',
-        quantity: i.quantity,
-        price: convertDecimal128ToNumber(i.price),
-        originalPrice: convertDecimal128ToNumber(i.originalPrice),
-        discountAmount: convertDecimal128ToNumber(i.discountAmount),
-        hasOffer: i.hasOffer || false,
-        offerInfo: i.offerInfo || null,
-        images: Array.isArray(i.images) ? i.images : (i.images ? [i.images] : []),
-        orderStatus: 'confirmed'
-      })),
+      address: sanitizedAddress,
+      items: sanitizedItems,
       subTotal: convertDecimal128ToNumber(paymentSession.orderDetails.subTotal),
       discountAmount: convertDecimal128ToNumber(paymentSession.orderDetails.discountAmount) || 0,
       taxAmount: convertDecimal128ToNumber(paymentSession.orderDetails.taxAmount) || 0,
       totalAmount: convertDecimal128ToNumber(paymentSession.orderDetails.totalAmount),
-      paymentId,
+      paymentId: uuidv4(),
       paymentStatus: 'paid',
-      paymentMethod: 'online',
-      orderStatus: 'confirmed',
-      paymentSession: {
-        paymentSessionId: paymentSession.paymentSessionId,
-        razorpayOrderId: razorpay_order_id,
-        razorpayPaymentId: razorpay_payment_id
-      },
-      hasProductOffers: paymentSession.orderDetails.hasProductOffers || false
+      orderStatus: 'confirmed'
     };
     
-    
-    if (paymentSession.orderDetails.appliedCoupon) {
-      orderData.appliedCoupon = {
-        ...paymentSession.orderDetails.appliedCoupon,
-        discountAmount: convertDecimal128ToNumber(paymentSession.orderDetails.appliedCoupon.discountAmount)
-      };
+    if (appliedCouponData) {
+      orderData.appliedCoupon = appliedCouponData;
     }
     
     let order;
@@ -297,11 +314,12 @@ export const verifyRazorpayPayment = async ({
       session.startTransaction();
       
       try {
+        // Save order with schema-compliant data
         order = new orderCollection(orderData);
         await order.save({ session });
         console.log('Order created successfully:', order.orderId);
         
-        
+        // Update stock
         for (const item of order.items) {
           const updateResult = await ProductVariant.updateOne(
             { variantId: item.variantId },
@@ -313,21 +331,21 @@ export const verifyRazorpayPayment = async ({
           }
         }
         
-        
+        // Create payment record (separate from order schema)
         paymentRecord = new Payment({
-          paymentId,
+          paymentId: order.paymentId,
           orderId: order._id,
           razorpayOrderId: razorpay_order_id,
           razorpayPaymentId: razorpay_payment_id,
           razorpaySignature: razorpay_signature,
           method: paymentDetails.method,
-          amount: convertDecimal128ToNumber(paymentSession.orderDetails.totalAmount),
+          amount: order.totalAmount,
           status: 'captured',
           paidAt: new Date(),
           customerDetails: {
-            contact: paymentSession.orderDetails.address.phoneNumber || paymentSession.orderDetails.address.phone,
-            email: paymentSession.orderDetails.contactEmail || paymentSession.orderDetails.address.email,
-            shippingAddress: paymentSession.orderDetails.address
+            contact: sanitizedAddress.phoneNumber || sanitizedAddress.phone,
+            email: sanitizedAddress.email,
+            shippingAddress: sanitizedAddress
           },
           razorpayResponse: {
             orderId: razorpay_order_id,
@@ -351,12 +369,12 @@ export const verifyRazorpayPayment = async ({
     } catch (orderError) {
       console.error('Detailed order creation error:', orderError);
       
-      
+      // Attempt refund if payment was captured
       if (paymentDetails.status === 'captured') {
         try {
           console.log('Attempting to refund payment:', razorpay_payment_id);
           const refund = await razorpay.payments.refund(razorpay_payment_id, {
-            amount: convertDecimal128ToNumber(paymentSession.orderDetails.totalAmount) * 100 // in paise
+            amount: Math.round(orderData.totalAmount * 100)
           });
           console.log('Refund successful:', refund);
         } catch (refundError) {
@@ -364,7 +382,7 @@ export const verifyRazorpayPayment = async ({
         }
       }
       
-      
+      // Clean up partial order if created
       if (order && order._id) {
         try {
           await orderCollection.findByIdAndDelete(order._id);
@@ -374,6 +392,7 @@ export const verifyRazorpayPayment = async ({
         }
       }
       
+      // User-friendly error messages
       let errorMessage = 'Order creation failed after payment. Payment has been refunded.';
       if (orderError.message.includes('out of stock')) {
         errorMessage = orderError.message;
