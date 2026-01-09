@@ -17,6 +17,28 @@
       stroke: currentColor;
       stroke-width: 1.5;
     }
+    .transaction-card {
+      transition: all 0.2s ease;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+    }
+    .transaction-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    .transaction-type {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+    .transaction-date {
+      font-size: 0.75rem;
+      color: #94a3b8;
+    }
   </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
@@ -52,12 +74,10 @@
           </svg>
         </button>
         <!-- User Menu -->
-        <!-- User avatar would be here - using placeholder for demo -->
+        <% if (locals.user && user.profilePic) { %>
         <div class="relative" x-data="{ open: false }" @click.away="open = false">
-          <button @click="open = !open" class="w-8 h-8 flex items-center justify-center text-gray-600 hover:text-gray-900 transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-            </svg>
+          <button @click="open = !open" class="rounded-full overflow-hidden w-8 h-8 border border-transparent hover:border-gray-300 transition-colors focus:outline-none">
+            <img src="<%= user.profilePic %>" alt="Profile" class="w-full h-full object-cover" />
           </button>
           <div x-show="open"
                x-transition:enter="transition ease-out duration-150"
@@ -73,6 +93,28 @@
             </form>
           </div>
         </div>
+        <% } else if (locals.user) { %>
+        <div class="relative" x-data="{ open: false }" @click.away="open = false">
+          <button @click="open = !open" class="w-8 h-8 flex items-center justify-center text-gray-600 hover:text-gray-900 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+          </button>
+          <div x-show="open"
+               x-transition:enter="transition ease-out duration-150"
+               x-transition:enter-start="opacity-0 scale-95"
+               x-transition:enter-end="opacity-100 scale-100"
+               x-transition:leave="transition ease-in duration-100"
+               x-transition:leave-start="opacity-100 scale-100"
+               x-transition:leave-end="opacity-0 scale-95"
+               class="absolute right-0 mt-2 w-44 bg-white shadow-lg rounded-lg py-1 z-50">
+            <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Profile</a>
+            <form action="/logout" method="post">
+              <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Logout</button>
+            </form>
+          </div>
+        </div>
+        <% } %>
         <!-- Mobile Menu Button -->
         <button class="md:hidden text-gray-600 hover:text-gray-900">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -111,7 +153,7 @@
           <i class="fas fa-wallet text-sm"></i>
           <span class="font-medium text-sm">Wallet</span>
         </a>
-        <a href="/referral" class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
+        <a href="/profile/referral" class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
           <i class="fas fa-users text-sm"></i>
           <span class="font-medium text-sm">Referral</span>
         </a>
@@ -127,183 +169,212 @@
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <h1 class="text-2xl md:text-3xl font-bold text-gray-900">Wallet</h1>
         <div class="flex space-x-3">
-          <button class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors">
+          <button class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors"
+          onclick="window.location.href='/profile/wallet/add'">
             Add Funds
           </button>
-          <button class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors">
+          <!-- <button class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors">
             Withdraw
-          </button>
+          </button> -->
         </div>
       </div>
       
-      <!-- Wallet Balance -->
+      <!-- Wallet Balance - Updated with dynamic data -->
       <div class="bg-gradient-to-r from-black to-gray-900 rounded-xl p-6 mb-8 text-white">
         <div class="flex justify-between items-start mb-4">
           <div>
             <p class="text-sm opacity-80">Available Balance</p>
-            <p class="text-3xl md:text-4xl font-bold mt-1">$2,500.00</p>
+            <p class="text-3xl md:text-4xl font-bold mt-1">
+              <% if (wallet && wallet.balance) { %>
+                <%= wallet.balance.currency === 'INR' ? '₹' : '$' %><%= wallet.balance.amount.toString() %>
+              <% } else { %>
+                ₹0.00
+              <% } %>
+            </p>
           </div>
           <button class="text-2xl opacity-75 hover:opacity-100 transition-opacity">
             <i class="fas fa-ellipsis-v"></i>
           </button>
         </div>
         <div class="flex flex-wrap gap-2 pt-4">
-          <button class="px-4 py-1.5 bg-gray-800 rounded-lg text-sm font-medium hover:bg-gray-700 transition-colors">
-            $100
+          <button class="px-4 py-1.5 bg-gray-800 rounded-lg text-sm font-medium hover:bg-gray-700 transition-colors"
+                  onclick="addFunds(100)">
+            ₹100
           </button>
-          <button class="px-4 py-1.5 bg-gray-800 rounded-lg text-sm font-medium hover:bg-gray-700 transition-colors">
-            $250
+          <button class="px-4 py-1.5 bg-gray-800 rounded-lg text-sm font-medium hover:bg-gray-700 transition-colors"
+                  onclick="addFunds(250)">
+            ₹250
           </button>
-          <button class="px-4 py-1.5 bg-gray-800 rounded-lg text-sm font-medium hover:bg-gray-700 transition-colors">
-            $500
+          <button class="px-4 py-1.5 bg-gray-800 rounded-lg text-sm font-medium hover:bg-gray-700 transition-colors"
+                  onclick="addFunds(500)">
+            ₹500
           </button>
-          <button class="px-4 py-1.5 bg-gray-800 rounded-lg text-sm font-medium hover:bg-gray-700 transition-colors">
-            $1,000
+          <button class="px-4 py-1.5 bg-gray-800 rounded-lg text-sm font-medium hover:bg-gray-700 transition-colors"
+                  onclick="addFunds(1000)">
+            ₹1,000
           </button>
         </div>
       </div>
       
-      <!-- Recent Transactions -->
-      <div class="mb-8">
-        <div class="flex justify-between items-center mb-4">
-          <h2 class="text-xl font-bold text-gray-900">Recent Transactions</h2>
-          <a href="#" class="text-sm font-medium text-red-600 hover:text-red-700 transition-colors">
-            View All
-          </a>
+      <!-- Paginated Transactions -->
+      <div class="mb-10">
+        <div class="flex justify-between items-center mb-5">
+          <h2 class="text-xl font-bold text-gray-900">Transactions</h2>
+          
         </div>
-        <div class="space-y-4">
-          <!-- Transaction 1 -->
-          <div class="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
-            <div class="flex items-center space-x-3">
-              <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-600">
-                <i class="fas fa-shopping-cart"></i>
+        
+        <% if (locals.transaction && transaction.length > 0) { %>
+          <div class="grid grid-cols-1 gap-3">
+            <% transaction.forEach(transaction => { %>
+              <div class="transaction-card border border-gray-100 bg-white p-4 flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                  <div class="transaction-type 
+                    <%= transaction.type === 'topup' ? 'bg-green-100 text-green-600' : 
+                      transaction.type === 'payment' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600' %>">
+                    <% if (transaction.type === 'topup') { %>
+                      <i class="fas fa-plus"></i>
+                    <% } else if (transaction.type === 'payment') { %>
+                      <i class="fas fa-shopping-cart"></i>
+                    <% } else if (transaction.type === 'refund') { %>
+                      <i class="fas fa-undo"></i>
+                    <% } %>
+                  </div>
+                  <div>
+                    <p class="font-medium text-gray-900">
+                      <% if (transaction.type === 'topup') { %>
+                        Funds Added
+                      <% } else if (transaction.type === 'payment') { %>
+                        Purchase
+                      <% } else if (transaction.type === 'refund') { %>
+                        Refund
+                      <% } %>
+                    </p>
+                    <div class="flex items-center space-x-2">
+                      <% if (transaction.createdAt) { 
+                        const date = new Date(transaction.createdAt);
+                        const formattedDate = `${date.getDate()} ${date.toLocaleString('en-US', { month: 'short' })} ${date.getFullYear()}`;
+                      %>
+                        <span class="transaction-date"><%= formattedDate %></span>
+                      <% } else { %>
+                        <span class="transaction-date">No date</span>
+                      <% } %>
+                      <!-- <% if (transaction.reference) { %>
+                        <span class="text-xs text-gray-400">•</span>
+                        <% } %> -->
+                      </div>
+                      <span class="text-xs text-gray-400"><%= transaction.description %></span>
+                  </div>
+                </div>
+                <span class="font-bold text-lg 
+                  <%= transaction.type === 'topup' || transaction.type === 'refund' ? 'text-green-600' : 'text-red-600' %>">
+                  <%= transaction.type === 'topup' || transaction.type === 'refund' ? '+' : '-' %>
+                  <%= transaction.currency === 'INR' ? '₹' : '$' %><%= transaction.amount.toString() %>
+                </span>
               </div>
-              <div>
-                <p class="font-medium text-gray-900">Case Purchase</p>
-                <p class="text-sm text-gray-500">Apple Store</p>
-              </div>
-            </div>
-            <span class="text-red-600 font-medium">-$89.99</span>
+            <% }) %>
           </div>
+
+          <!-- Pagination Controls -->
+          <% if (locals.pagination && pagination.pages > 1) { %>
+            <div class="mt-6 flex justify-center">
+              <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                <!-- Previous Page -->
+                <a href="<%= pagination.page > 1 ? `/profile/wallet?page=${pagination.page - 1}&limit=${pagination.limit}` : 'javascript:void(0)' %>" 
+                   class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 <%= pagination.page === 1 ? 'opacity-50 cursor-not-allowed' : '' %>">
+                  <span class="sr-only">Previous</span>
+                  <i class="fas fa-chevron-left"></i>
+                </a>
+
+                <% 
+                // Calculate which page numbers to show
+                const maxVisiblePages = 5;
+                let startPage = Math.max(1, pagination.page - Math.floor(maxVisiblePages / 2));
+                let endPage = Math.min(pagination.pages, startPage + maxVisiblePages - 1);
+                
+                if (endPage - startPage + 1 < maxVisiblePages) {
+                  startPage = Math.max(1, endPage - maxVisiblePages + 1);
+                }
+                %>
+
+                <% for (let i = startPage; i <= endPage; i++) { %>
+                  <a href="/profile/wallet?page=<%= i %>&limit=<%= pagination.limit %>" 
+                     class="relative inline-flex items-center px-4 py-2 border <%= i === pagination.page ? 'bg-black text-white border-black z-10' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50' %> text-sm font-medium">
+                    <%= i %>
+                  </a>
+                <% } %>
+
+                <!-- Next Page -->
+                <a href="<%= pagination.page < pagination.pages ? `/profile/wallet?page=${pagination.page + 1}&limit=${pagination.limit}` : 'javascript:void(0)' %>" 
+                   class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 <%= pagination.page === pagination.pages ? 'opacity-50 cursor-not-allowed' : '' %>">
+                  <span class="sr-only">Next</span>
+                  <i class="fas fa-chevron-right"></i>
+                </a>
+              </nav>
+            </div>
+          <% } %>
           
-          <!-- Transaction 2 -->
-          <div class="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
-            <div class="flex items-center space-x-3">
-              <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600">
-                <i class="fas fa-plus"></i>
-              </div>
-              <div>
-                <p class="font-medium text-gray-900">Funds Added</p>
-                <p class="text-sm text-gray-500">Credit Card</p>
-              </div>
+          <div class="mt-4 text-center">
+            <div class="inline-block px-3 py-1 bg-gray-50 rounded-lg text-sm text-gray-600">
+              Showing <%= ((pagination.page - 1) * pagination.limit) + 1 %> to <%= Math.min(pagination.page * pagination.limit, pagination.total) %> of <%= pagination.total %> total transactions
             </div>
-            <span class="text-green-600 font-medium">+$250.00</span>
           </div>
-          
-          <!-- Transaction 3 -->
-          <div class="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
-            <div class="flex items-center space-x-3">
-              <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
-                <i class="fas fa-arrow-down"></i>
-              </div>
-              <div>
-                <p class="font-medium text-gray-900">Withdrawal</p>
-                <p class="text-sm text-gray-500">Bank Account</p>
-              </div>
+        <% } else { %>
+          <div class="border-2 border-dashed border-gray-200 rounded-xl p-10 text-center">
+            <div class="mx-auto w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mb-4">
+              <i class="fas fa-wallet text-2xl text-gray-400"></i>
             </div>
-            <span class="text-blue-600 font-medium">-$100.00</span>
+            <h3 class="text-lg font-medium text-gray-900 mb-1">No Transactions Yet</h3>
+            <p class="text-gray-500 mb-4">Your wallet transactions will appear here</p>
+            <button class="px-4 py-2 bg-black hover:bg-gray-800 text-white text-sm font-medium rounded-lg transition-colors"
+                    onclick="window.location.href='/profile/wallet/add'">
+              Add Funds to Get Started
+            </button>
           </div>
-          
-          <!-- Transaction 4 -->
-          <div class="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
-            <div class="flex items-center space-x-3">
-              <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-600">
-                <i class="fas fa-gift"></i>
-              </div>
-              <div>
-                <p class="font-medium text-gray-900">Referral Bonus</p>
-                <p class="text-sm text-gray-500">Friend signup</p>
-              </div>
-            </div>
-            <span class="text-green-600 font-medium">+$50.00</span>
-          </div>
-        </div>
+        <% } %>
       </div>
       
-      <!-- Payment Methods -->
-      <div>
-        <div class="flex justify-between items-center mb-4">
-          <h2 class="text-xl font-bold text-gray-900">Payment Methods</h2>
-          <button class="text-sm font-medium text-red-600 hover:text-red-700 transition-colors flex items-center">
-            <i class="fas fa-plus mr-1"></i>
-            Add Method
-          </button>
-        </div>
-        <div class="space-y-3">
-          <!-- Card 1 -->
-          <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-            <div class="flex items-center space-x-3">
-              <div class="w-10 h-6 bg-red-500 rounded flex items-center justify-center">
-                <span class="text-white text-xs font-medium">VISA</span>
-              </div>
-              <div>
-                <p class="font-medium text-gray-900">Visa Card</p>
-                <p class="text-sm text-gray-500">**** **** **** 2389</p>
-              </div>
+      <!-- Transaction Summary Section -->
+      <% if (locals.transaction && transaction.length > 0) { %>
+        <div class="bg-gray-50 rounded-xl p-5 mb-8">
+          <h3 class="text-lg font-semibold text-gray-900 mb-3">Summary</h3>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="text-center p-3 bg-white rounded-lg">
+              <p class="text-sm text-gray-500 mb-1">Total Added</p>
+              <p class="font-bold text-green-600">
+                <% 
+                const totalAdded = transaction.filter(t => t.type === 'topup').reduce((sum, t) => sum + Number(t.amount), 0);
+                %>
+                ₹<%= totalAdded %>
+              </p>
             </div>
-            <div class="flex space-x-2">
-              <button class="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:text-red-600 hover:bg-gray-200 transition-colors">
-                <i class="fas fa-pen text-xs"></i>
-              </button>
-              <button class="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:text-red-600 hover:bg-gray-200 transition-colors">
-                <i class="fas fa-trash text-xs"></i>
-              </button>
+            <div class="text-center p-3 bg-white rounded-lg">
+              <p class="text-sm text-gray-500 mb-1">Total Spent</p>
+              <p class="font-bold text-red-600">
+                <% 
+                const totalSpent = transaction.filter(t => t.type === 'payment').reduce((sum, t) => sum + Number(t.amount), 0);
+                %>
+                ₹<%= totalSpent %>
+              </p>
             </div>
-          </div>
-          
-          <!-- Card 2 -->
-          <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-            <div class="flex items-center space-x-3">
-              <div class="w-10 h-6 bg-blue-600 rounded flex items-center justify-center">
-                <span class="text-white text-xs font-medium">MC</span>
-              </div>
-              <div>
-                <p class="font-medium text-gray-900">Mastercard</p>
-                <p class="text-sm text-gray-500">**** **** **** 4512</p>
-              </div>
+            <div class="text-center p-3 bg-white rounded-lg">
+              <p class="text-sm text-gray-500 mb-1">Total Refunds</p>
+              <p class="font-bold text-blue-600">
+                <% 
+                const totalRefunds = transaction.filter(t => t.type === 'refund').reduce((sum, t) => sum + Number(t.amount), 0);
+                %>
+                ₹<%= totalRefunds %>
+              </p>
             </div>
-            <div class="flex space-x-2">
-              <button class="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:text-red-600 hover:bg-gray-200 transition-colors">
-                <i class="fas fa-pen text-xs"></i>
-              </button>
-              <button class="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:text-red-600 hover:bg-gray-200 transition-colors">
-                <i class="fas fa-trash text-xs"></i>
-              </button>
-            </div>
-          </div>
-          
-          <!-- PayPal -->
-          <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-            <div class="flex items-center space-x-3">
-              <div class="w-10 h-6 bg-blue-500 rounded flex items-center justify-center">
-                <i class="fab fa-paypal text-white text-sm"></i>
-              </div>
-              <div>
-                <p class="font-medium text-gray-900">PayPal</p>
-                <p class="text-sm text-gray-500">user@example.com</p>
-              </div>
-            </div>
-            <div class="flex space-x-2">
-              <button class="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:text-red-600 hover:bg-gray-200 transition-colors">
-                <i class="fas fa-pen text-xs"></i>
-              </button>
-              <button class="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:text-red-600 hover:bg-gray-200 transition-colors">
-                <i class="fas fa-trash text-xs"></i>
-              </button>
+            <div class="text-center p-3 bg-white rounded-lg">
+              <p class="text-sm text-gray-500 mb-1">Net Balance</p>
+              <p class="font-bold text-gray-900">
+                <% const netBalance = totalAdded - totalSpent + totalRefunds; %>
+                ₹<%= netBalance %>
+              </p>
             </div>
           </div>
         </div>
-      </div>
+      <% } %>
     </main>
   </div>
   <!-- Mobile Bottom Nav -->
@@ -329,5 +400,11 @@
       </a>
     </div>
   </div>
+
+  <script>
+    function addFunds(amount) {
+      window.location.href = `/profile/wallet/add?amount=${amount}`;
+    }
+  </script>
 </body>
 </html>

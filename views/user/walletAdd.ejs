@@ -3,13 +3,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>E-commerce Profile</title>
+  <title>Add Funds - Wallet</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.10/dist/cdn.min.js"></script>
+  <!-- SweetAlert library -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-    body { font-family: 'Inter', sans-serif; }
+    body { 
+      font-family: 'Inter', sans-serif; 
+      background-color: #f8fafc;
+    }
     .avatar-icon {
       width: 100%;
       height: 100%;
@@ -92,13 +97,6 @@
             </form>
           </div>
         </div>
-        <% } else { %>
-        <a href="/login" class="text-sm font-medium text-red-600 hover:text-red-700 transition-colors flex items-center">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-          </svg>
-          Sign In
-        </a>
         <% } %>
         <!-- Mobile Menu Button -->
         <button class="md:hidden text-gray-600 hover:text-gray-900">
@@ -109,12 +107,13 @@
       </div>
     </div>
   </header>
+
   <!-- Main Content -->
   <div class="container mx-auto px-4 py-8 flex flex-col lg:flex-row gap-6">
     <!-- Sidebar -->
     <aside class="lg:w-60 bg-white rounded-xl shadow-sm overflow-hidden">
       <nav class="p-4 space-y-1">
-        <a href="/profile" class="flex items-center space-x-3 px-4 py-3 bg-black text-white rounded-lg transition-colors">
+        <a href="/profile" class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
           <i class="fas fa-user text-sm"></i>
           <span class="font-medium text-sm">Profile</span>
         </a>
@@ -134,7 +133,7 @@
           <i class="fas fa-lock text-sm"></i>
           <span class="font-medium text-sm">Password</span>
         </a>
-        <a href="/profile/wallet" class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
+        <a href="/profile/wallet" class="flex items-center space-x-3 px-4 py-3 bg-black text-white rounded-lg transition-colors">
           <i class="fas fa-wallet text-sm"></i>
           <span class="font-medium text-sm">Wallet</span>
         </a>
@@ -149,68 +148,82 @@
         <form id="logout-form" action="/logout" method="post" class="hidden"></form>
       </nav>
     </aside>
+    
     <!-- Main Content -->
-    <main class="flex-1 bg-white rounded-xl shadow-sm p-6 md:p-8">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-        <h1 class="text-2xl md:text-3xl font-bold text-gray-900">Profile</h1>
-        <a href="/profile/edit" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors text-center">
-          Edit Profile
-        </a>
-      </div>
-      <!-- Profile Picture (Avatar Icon) -->
-      <div class="flex justify-center mb-8">
-        <div class="relative">
-          <% if (user.profilePic) { %>
-            <img 
-              src="<%= user.profilePic %>" 
-              alt="Profile" 
-              class="w-28 h-28 md:w-32 md:h-32 rounded-full object-cover border-4 border-white shadow-sm"
-            />
-          <% } else { %>
-            <svg class="w-28 h-28 md:w-32 md:h-32 rounded-full bg-gray-100 border-4 border-white shadow-sm text-gray-500" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+    <main class="flex-1">
+      <div class="bg-white rounded-xl shadow-sm p-6 md:p-8">
+        <!-- Page Header -->
+        <div class="flex items-center justify-between mb-8">
+          <h1 class="text-2xl md:text-3xl font-bold text-gray-900">Add Funds</h1>
+          <a href="/profile/wallet" class="flex items-center text-gray-600 hover:text-gray-900">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
-          <% } %>
+            Back to Wallet
+          </a>
+        </div>
+        
+        <!-- Add Funds Content -->
+        <h2 class="text-3xl font-bold text-gray-900 mb-2">Choose an Amount</h2>
+        <p class="text-gray-600 mb-8">Enter an amount to add to your wallet</p>
+        
+        <!-- Amount Selection -->
+    <div class="mb-8">
+      <label for="amount" class="block text-gray-700 mb-2">Enter Amount</label>
+      <div class="flex flex-col sm:flex-row gap-4">
+        <div class="relative flex-1">
+          <span class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500">₹</span>
+          <input type="number" id="amount" min="0" step="0.01" value="10.00" 
+                 class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none">
+        </div>
+        
+        <div class="flex gap-3">
+          <button class="px-6 py-3 bg-black text-white rounded-lg transition-colors amount-btn" data-amount="10"> 
+            ₹10
+          </button>
+          <button class="px-6 py-3 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors amount-btn" data-amount="25"> 
+            ₹25
+          </button>
+          <button class="px-6 py-3 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors amount-btn" data-amount="50"> 
+            ₹50
+          </button>
+          <button class="px-6 py-3 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors amount-btn" data-amount="100"> 
+            ₹100
+          </button>
         </div>
       </div>
-      <!-- Profile Fields (Read-only) -->
-      <div class="space-y-5">
-        <div class="pb-4 border-b border-gray-100 last:border-0">
-          <label class="block text-xs text-gray-500 uppercase tracking-wide mb-1">First Name</label>
-          <div class="text-lg font-medium text-gray-900"><%= user.firstName || '—' %></div>
+    </div>
+        
+        <!-- Description Field -->
+        <div class="mb-8">
+          <h3 class="text-xl font-bold text-gray-900 mb-4">Description</h3>
+          <textarea id="description" rows="3" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none" placeholder="Add a note for this transaction (optional)"></textarea>
         </div>
-        <div class="pb-4 border-b border-gray-100 last:border-0">
-          <label class="block text-xs text-gray-500 uppercase tracking-wide mb-1">Last Name</label>
-          <div class="text-lg font-medium text-gray-900"><%= user.lastName || '—' %></div>
+        
+        <!-- Proceed Button -->
+        <div class="text-center">
+          <button id="addFundsBtn" class="w-full md:w-64 bg-black hover:bg-gray-900 text-white font-medium py-3 px-6 rounded-lg transition-colors">
+            Add Funds
+          </button>
+          <div class="mt-6 flex items-center justify-center text-gray-500">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10-2 2m0 0l-2-2m2 2a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+            <span>100% Secure Transaction</span>
+          </div>
         </div>
-        <div class="pb-4 border-b border-gray-100 last:border-0">
-          <label class="block text-xs text-gray-500 uppercase tracking-wide mb-1">Email</label>
-          <div class="text-lg font-medium text-gray-900"><%= user.email || '—' %></div>
-        </div>
-        <div class="pb-4 border-b border-gray-100 last:border-0">
-          <label class="block text-xs text-gray-500 uppercase tracking-wide mb-1">Mobile Number</label>
-          <div class="text-lg font-medium text-gray-900"><%= user.phoneNumber || '—' %></div>
-        </div>
-
-        <!-- Default Address -->
-        <div class="pb-4 border-b border-gray-100 last:border-0">
-          <label class="block text-xs text-gray-500 uppercase tracking-wide mb-1">Default Address</label>
-          <% if (defaultAddress) { %>
-            <div class="text-lg font-medium text-gray-900">
-              <%= defaultAddress.fullName %><br>
-              <%= defaultAddress.streetAddress %><br>
-              <%= defaultAddress.city %>, <%= defaultAddress.state %> – <%= defaultAddress.postalCode %><br>
-              <%= defaultAddress.country %><br>
-              Phone: <%= defaultAddress.phoneNumber %>
-            </div>
-          <% } else { %>
-            <div class="text-lg font-medium text-gray-500">No default address set</div>
-          <% } %>
-        </div>
-
       </div>
+      
+      <!-- Footer -->
+      <footer class="mt-12 text-center text-gray-500 text-sm py-6 border-t border-gray-200">
+        <div class="container mx-auto px-4">
+          <a href="#" class="hover:text-gray-700 mr-6">Terms & Conditions</a>
+          <a href="#" class="hover:text-gray-700">Privacy Policy</a>
+        </div>
+      </footer>
     </main>
   </div>
+
   <!-- Mobile Bottom Nav -->
   <div class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-3">
     <div class="flex justify-around">
@@ -227,57 +240,114 @@
         <span>Wishlist</span>
       </a>
       <a href="/profile" class="flex flex-col items-center text-xs text-gray-600 hover:text-red-600 transition-colors">
-        <% if (user.profilePic) { %>
-          <img src="<%= user.profilePic %>" alt="User" class="w-6 h-6 rounded-full mb-1 object-cover" />
-        <% } else { %>
-          <svg class="w-6 h-6 rounded-full mb-1 text-gray-500 bg-gray-100" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-          </svg>
-        <% } %>
+        <svg class="w-6 h-6 rounded-full mb-1 text-gray-500 bg-gray-100" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+        </svg>
         <span>Profile</span>
       </a>
     </div>
   </div>
 
-  <!-- Success Modal -->
-  <% if (locals.successMessage) { %>
-  <div id="success-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div class="bg-white rounded-lg p-6 max-w-sm w-full mx-4">
-      <div class="flex justify-center mb-4">
-        <div class="bg-green-100 w-12 h-12 rounded-full flex items-center justify-center">
-          <i class="fas fa-check text-green-600 text-2xl"></i>
-        </div>
-      </div>
-      <h3 class="text-xl font-bold text-center text-gray-900 mb-2">Success!</h3>
-      <p class="text-center text-gray-600 mb-6"><%= successMessage %></p>
-      <button id="close-modal" class="w-full bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
-        OK
-      </button>
-    </div>
-  </div>
-
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const modal = document.getElementById('success-modal');
-      const closeBtn = document.getElementById('close-modal');
+    // Add functionality for quick amount buttons
+    document.querySelectorAll('.amount-btn').forEach(button => {
+      button.addEventListener('click', function() {
+        // Remove active class from all buttons
+        document.querySelectorAll('.amount-btn').forEach(btn => {
+          btn.classList.remove('bg-black', 'text-white');
+          btn.classList.add('bg-gray-100');
+        });
+        
+        // Add active class to clicked button
+        this.classList.remove('bg-gray-100');
+        this.classList.add('bg-black', 'text-white');
+        
+        // Set the amount input value
+        const amount = this.getAttribute('data-amount');
+        document.getElementById('amount').value = parseFloat(amount).toFixed(2);
+      });
+    });
+    
+    // Set default active button
+    document.querySelector('.amount-btn[data-amount="10"]').classList.add('bg-black', 'text-white');
+    
+    // Add funds button event listener
+    document.getElementById('addFundsBtn').addEventListener('click', async function() {
+      const amountInput = document.getElementById('amount');
+      const descriptionInput = document.getElementById('description');
       
-      if (modal) {
-        closeBtn.addEventListener('click', function() {
-          modal.remove();
+      // Get and validate amount
+      const amountValue = amountInput.value.trim();
+      const amount = parseFloat(amountValue);
+      
+      if (!amountValue || isNaN(amount) || amount <= 0) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Invalid Amount',
+          text: 'Please enter a valid amount greater than $0.00',
+          confirmButtonColor: '#000000'
         });
-        modal.addEventListener('click', function(e) {
-          if (e.target === modal) {
-            modal.remove();
-          }
+        return;
+      }
+      
+      // Show loading state
+      const originalButtonText = this.innerHTML;
+      this.innerHTML = '<span class="flex items-center justify-center"><svg class="animate-spin h-5 w-5 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Processing...</span>';
+      this.disabled = true;
+      
+      try {
+        // Make the API request
+        const response = await fetch('/profile/wallet/add/data', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({
+            amount: amount,
+            description: descriptionInput.value.trim()
+          })
         });
-        document.addEventListener('keydown', function(e) {
-          if (e.key === 'Escape' && modal) {
-            modal.remove();
-          }
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          // Show success message
+          await Swal.fire({
+            icon: 'success',
+            title: 'Funds Added Successfully!',
+            text: `Your wallet has been credited with $${amount.toFixed(2)}`,
+            confirmButtonColor: '#000000',
+            timer: 3000,
+            timerProgressBar: true
+          });
+          
+          // Redirect to wallet page after success
+          window.location.href = '/profile/wallet';
+        } else {
+          // Show error message from server
+          const errorMessage = data.message || 'Failed to add funds to your wallet. Please try again.';
+          await Swal.fire({
+            icon: 'error',
+            title: 'Failed to Add Funds',
+            text: errorMessage,
+            confirmButtonColor: '#000000'
+          });
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        await Swal.fire({
+          icon: 'error',
+          title: 'Network Error',
+          text: 'Unable to connect to the server. Please check your internet connection and try again.',
+          confirmButtonColor: '#000000'
         });
+      } finally {
+        // Restore button state
+        this.innerHTML = originalButtonText;
+        this.disabled = false;
       }
     });
   </script>
-  <% } %>
 </body>
 </html>
