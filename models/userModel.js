@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { v4 as uuidv4 } from 'uuid';
 
 const userSchema = new mongoose.Schema(
   {
@@ -7,6 +8,7 @@ const userSchema = new mongoose.Schema(
       required: true,
       unique: true,
       trim: true,
+      default: () => uuidv4(),
     },
     firstName: {
       type: String,
@@ -27,14 +29,14 @@ const userSchema = new mongoose.Schema(
     },
     phoneNumber: {
       type: String,
-      required: function() {
+      required: function () {
         return this.authProvider === "local"
       },
       trim: true
     },
     password: {
       type: String,
-      required: function() {
+      required: function () {
         return this.authProvider === "local"
       },
       minlength: 6,
@@ -44,7 +46,7 @@ const userSchema = new mongoose.Schema(
       default: null,
     },
     isVerified: {
-      type: Boolean, // true only after OTP verification
+      type: Boolean,
       default: false,
     },
     authProvider: {
@@ -56,12 +58,20 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    referralCode: {
+      type: String,
+      unique: true,
+      sparse: true,
+      default: null
+    }
   },
   { timestamps: true }
 );
 
-const user = mongoose.model("user", userSchema)
+userSchema.index({ referralCode: 1 }, { 
+  unique: true, 
+  sparse: true,
+  partialFilterExpression: { referralCode: { $exists: true, $ne: null } } 
+});
 
-
-
-export default user
+export default mongoose.model("user", userSchema);

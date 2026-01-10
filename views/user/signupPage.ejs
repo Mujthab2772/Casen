@@ -193,6 +193,7 @@
       const phone = document.getElementById('phone').value;
       const password = document.getElementById('password').value;
       const confirmPassword = document.getElementById('confirm_password').value;
+      const referral = document.getElementById('referral').value
 
       let isFormValid = true;
       isFormValid &= validateField('firstName', firstName);
@@ -208,7 +209,7 @@
         return;
       }
 
-      const data = { firstName, lastName, email, phone, password, confirmPassword };
+      const data = { firstName, lastName, email, phone, password, confirmPassword, referral };
 
       try {
         const response = await fetch('/signup', {

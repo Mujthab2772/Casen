@@ -6,6 +6,8 @@ import { ProductVariant } from "../../models/productVariantModel.js";
 import { tempOrder, calculateFinalPrice } from "../../service/user/checkoutService.js";
 import mongoose from 'mongoose';
 import crypto from 'crypto';
+import { Wallet } from "../../models/walletModel.js";
+import { Transaction } from "../../models/transactionsModel.js";
 
 function convertDecimal128ToNumber(value) {
   if (!value) return value;
@@ -409,6 +411,161 @@ export const verifyRazorpayPayment = async ({
   }
 };
 
+export const walletPayment = async (req) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  
+  try {
+    const userId = req.session.userDetail?._id;
+    if (!userId) throw new Error('User not authenticated');
+    
+    if (!req.session.checkout) throw new Error('Checkout session expired');
+    
+    const { shippingAddressId, contact, appliedCouponCode } = req.session.checkout;
+    
+    // Get wallet for user
+    const wallet = await Wallet.findOne({ userId }).session(session);
+    if (!wallet) {
+      throw new Error('Wallet not found. Please add funds to your wallet first.');
+    }
+    
+    // Recalculate order to get current total
+    const recalculated = await tempOrder(userId, {
+      shippingAddressId,
+      contact
+    });
+    
+    if (!recalculated?.productList?.length) {
+      throw new Error('Cart is empty or contains invalid items');
+    }
+    
+    // Check stock availability
+    for (const item of recalculated.productList) {
+      const variant = await ProductVariant.findOne(
+        { variantId: item.variantId, isActive: true },
+        { stock: 1 }
+      ).session(session);
+      
+      if (!variant || variant.stock < item.quantity) {
+        throw new Error(`"${item.productName}" is out of stock.`);
+      }
+    }
+    
+    // Calculate final price
+    const priceCalculation = await calculateFinalPrice(
+      recalculated.subtotal, 
+      appliedCouponCode, 
+      userId
+    );
+    
+    const orderTotal = priceCalculation.total;
+    
+    // Check wallet balance
+    const walletBalance = parseFloat(wallet.balance.amount.toString());
+    if (walletBalance < orderTotal) {
+      throw new Error(`Insufficient wallet balance. Your balance is ₹${walletBalance.toFixed(2)} but order total is ₹${orderTotal.toFixed(2)}.`);
+    }
+    
+    // Sanitize address to include email
+    const sanitizedAddress = {
+      ...recalculated.addressDetails,
+      email: req.session.userDetail.email || recalculated.addressDetails.email
+    };
+    
+    // Prepare coupon data
+    let appliedCouponData = null;
+    if (priceCalculation.appliedCoupon) {
+      appliedCouponData = {
+        couponId: priceCalculation.appliedCoupon.couponId,
+        couponCode: priceCalculation.appliedCoupon.couponCode,
+        discountAmount: convertDecimal128ToNumber(priceCalculation.appliedCoupon.discountAmount)
+      };
+    }
+    
+    // Sanitize items for schema compliance
+    const sanitizedItems = sanitizeOrderItemsForSchema(recalculated.productList);
+    
+    // Create order data
+    const orderData = {
+      orderId: uuidv4(),
+      userId,
+      address: sanitizedAddress,
+      items: sanitizedItems,
+      subTotal: priceCalculation.subtotal,
+      discountAmount: priceCalculation.discount,
+      taxAmount: priceCalculation.tax,
+      totalAmount: priceCalculation.total,
+      paymentId: uuidv4(),
+      paymentStatus: 'paid',
+      orderStatus: 'confirmed'
+    };
+    
+    if (appliedCouponData) {
+      orderData.appliedCoupon = appliedCouponData;
+    }
+    
+    // Create order
+    const order = new orderCollection(orderData);
+    await order.save({ session });
+    
+    // CORRECTED: Proper Decimal128 handling for negative values
+    const deductionAmount = new mongoose.Types.Decimal128((-orderTotal).toFixed(2));
+    
+    // Deduct amount from wallet
+    const updatedWallet = await Wallet.findByIdAndUpdate(
+      wallet._id,
+      { 
+        $inc: { 
+          'balance.amount': deductionAmount
+        }
+      },
+      { new: true, session }
+    );
+    
+    if (!updatedWallet) {
+      throw new Error('Failed to update wallet balance. Please try again.');
+    }
+    
+    // Create transaction record
+    const transaction = new Transaction({
+      wallet: wallet._id,
+      amount: new mongoose.Types.Decimal128(orderTotal.toFixed(2)),
+      currency: wallet.balance.currency,
+      type: 'payment',
+      status: 'completed',
+      description: `Payment for order ${order.orderId}`,
+      reference: {
+        orderId: order.orderId
+      }
+    });
+    
+    await transaction.save({ session });
+    
+    // Update stock after successful payment
+    for (const item of sanitizedItems) {
+      const updateResult = await ProductVariant.updateOne(
+        { variantId: item.variantId },
+        { $inc: { stock: -item.quantity } },
+        { session }
+      );
+      
+      if (updateResult.modifiedCount === 0) {
+        throw new Error(`Failed to update stock for product: ${item.productName}`);
+      }
+    }
+    
+    await session.commitTransaction();
+    session.endSession();
+    
+    return order;
+    
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    console.error('Wallet payment error:', error);
+    throw error;
+  }
+};
 export const orderDetails = async (userId, orderId) => {
   return await orderCollection.findOne({ userId, orderId });
 };

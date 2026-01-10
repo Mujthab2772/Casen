@@ -18,6 +18,7 @@ import { cancelItem, cancelOrder, orderListing, returnProduct } from "../control
 import { validateProfileUpdate } from "../middlewares/validateProfileUpdate.js"
 import { wishlist, wishlistadd, wishlistRemove } from "../controllers/user/wishlistController.js"
 import { wallet, walletAddNew, walletNewView } from "../controllers/user/walletController.js"
+import { referral } from "../controllers/user/referralController.js"
 
 
 
@@ -154,6 +155,10 @@ router.get('/profile/wallet', userProfile, wallet)
 router.get('/profile/wallet/add', userProfile, walletNewView)
 
 router.post('/profile/wallet/add/data', userProfile, walletAddNew)
+
+//referral
+
+router.get('/profile/referral', userProfile, referral)
 
 // password 
 

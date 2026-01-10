@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 const walletSchema = new mongoose.Schema({
   walletId: {
     type: String,
-    default: () => uuidv4(), // Auto-generated UUIDv4
+    default: () => uuidv4(),
     unique: true,
     required: true
   },
@@ -30,14 +30,7 @@ const walletSchema = new mongoose.Schema({
   timestamps: true,
 });
 
-// Virtual for API exposure (maps to UUID)
-walletSchema.virtual('id').get(function() {
-  return this.walletId;
-});
-
-// Indexes for performance
 walletSchema.index({ userId: 1 }, { unique: true });
 walletSchema.index({ walletId: 1 }, { unique: true });
-
 
 export const Wallet = mongoose.model('Wallet', walletSchema);

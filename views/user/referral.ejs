@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Refer & Earn | E-commerce</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.10/dist/cdn.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    .avatar-icon {
+      width: 100%;
+      height: 100%;
+      fill: currentColor;
+      stroke: currentColor;
+      stroke-width: 1.5;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+  <!-- Header -->
+  <header class="bg-white shadow-sm sticky top-0 z-50">
+    <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+      <!-- Logo -->
+      <div class="flex items-center">
+        <a href="/">
+          <img src="/logo.png" alt="Logo" class="h-8 object-contain">
+        </a>
+      </div>
+      <!-- Desktop Navigation -->
+      <nav class="hidden md:flex space-x-5">
+        <a href="/" class="text-sm font-medium transition-opacity hover:opacity-80">Home</a>
+        <a href="#" class="text-sm font-medium transition-opacity hover:opacity-80">About</a>
+        <a href="/products" class="text-sm font-medium transition-opacity hover:opacity-80">Phone Cases</a>
+        <a href="#" class="text-sm font-medium transition-opacity hover:opacity-80">Tablet Cases</a>
+        <a href="#" class="text-sm font-medium transition-opacity hover:opacity-80">Sale</a>
+      </nav>
+      <!-- Icons & Auth -->
+      <div class="flex items-center space-x-4">
+        <!-- Wishlist -->
+        <button class="p-2 rounded-full hover:bg-gray-100 transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" onclick="window.location.href='/profile/wishlist'">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+          </svg>
+        </button>
+        <!-- Cart -->
+        <button class="p-2 rounded-full hover:bg-gray-100 transition-colors relative" onclick="window.location.href='/cart'">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
+        </button>
+        <!-- User Menu -->
+        <div class="relative" x-data="{ open: false }" @click.away="open = false">
+          <button @click="open = !open" class="rounded-full overflow-hidden w-8 h-8 border border-transparent hover:border-gray-300 transition-colors focus:outline-none">
+            <img src="/profile-pic.jpg" alt="Profile" class="w-full h-full object-cover" />
+          </button>
+          <div x-show="open"
+               x-transition:enter="transition ease-out duration-150"
+               x-transition:enter-start="opacity-0 scale-95"
+               x-transition:enter-end="opacity-100 scale-100"
+               x-transition:leave="transition ease-in duration-100"
+               x-transition:leave-start="opacity-100 scale-100"
+               x-transition:leave-end="opacity-0 scale-95"
+               class="absolute right-0 mt-2 w-44 bg-white shadow-lg rounded-lg py-1 z-50">
+            <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">Profile</a>
+            <form action="/logout" method="post">
+              <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">Logout</button>
+            </form>
+          </div>
+        </div>
+        <!-- Mobile Menu Button -->
+        <button class="md:hidden text-gray-600 hover:text-gray-900">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <div class="container mx-auto px-4 py-8 flex flex-col lg:flex-row gap-6">
+    <!-- Sidebar -->
+    <aside class="lg:w-60 bg-white rounded-xl shadow-sm overflow-hidden">
+      <nav class="p-4 space-y-1">
+        <a href="/profile" class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
+          <i class="fas fa-user text-sm"></i>
+          <span class="font-medium text-sm">Profile</span>
+        </a>
+        <a href="/profile/orders" class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
+          <i class="fas fa-shopping-cart text-sm"></i>
+          <span class="font-medium text-sm">Orders</span>
+        </a>
+        <a href="/profile/wishlist" class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
+          <i class="far fa-heart text-sm"></i>
+          <span class="font-medium text-sm">Wishlist</span>
+        </a>
+        <a href="/profile/address" class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
+          <i class="fas fa-home text-sm"></i>
+          <span class="font-medium text-sm">Address</span>
+        </a>
+        <a href="/profile/newPassword" class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
+          <i class="fas fa-lock text-sm"></i>
+          <span class="font-medium text-sm">Password</span>
+        </a>
+        <a href="/profile/wallet" class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
+          <i class="fas fa-wallet text-sm"></i>
+          <span class="font-medium text-sm">Wallet</span>
+        </a>
+        <a href="/profile/referral" class="flex items-center space-x-3 px-4 py-3 bg-black text-white rounded-lg transition-colors">
+          <i class="fas fa-users text-sm"></i>
+          <span class="font-medium text-sm">Referral</span>
+        </a>
+        <a href="#" onclick="document.getElementById('logout-form').submit();" class="flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors mt-4">
+          <i class="fas fa-sign-out-alt text-sm"></i>
+          <span class="font-medium text-sm">Logout</span>
+        </a>
+        <form id="logout-form" action="/logout" method="post" class="hidden"></form>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 bg-white rounded-xl shadow-sm p-6 md:p-8">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+        <h1 class="text-2xl md:text-3xl font-bold text-gray-900">Refer & Earn</h1>
+      </div>
+
+      <!-- Referral Header -->
+      <div class="text-center mb-10">
+        <h2 class="text-3xl md:text-4xl font-bold mb-4">Invite Friends, Get Rewards</h2>
+        <p class="text-lg text-gray-600 max-w-3xl mx-auto">
+          Share your unique referral code with friends. When they make their first purchase, you both get rewarded!
+        </p>
+      </div>
+
+      <!-- Reward Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+        <div class="bg-gray-50 rounded-xl p-6 text-center border border-gray-100 hover:border-red-300 transition-colors">
+          <div class="w-16 h-16 mx-auto mb-4 bg-red-50 rounded-full flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.745 1.025C15.54 9.843 16 10.977 16 12.174v.016a2.998 2.998 0 01-0 6.003 2.998 2.998 0 01-0 6.003v.016c0 1.196-.492 2.324 1.255 3.194A4.001 4.001 0 0112 24c-1.11 0-2.08-.402-2.745-1.025C8.46 22.163 8 21.029 8 19.834v-.016a2.998 2.998 0 010-6.003 2.998 2.998 0 010-6.003v-.016c0-1.196.492-2.324 1.255-3.194A4.001 4.001 0 0112 8z" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold mb-2">You Get</h3>
+          <p class="text-2xl font-bold text-red-600 mb-2">₹20 Credit</p>
+          <p class="text-gray-600">in your wallet for every successful referral.</p>
+        </div>
+
+        <div class="bg-gray-50 rounded-xl p-6 text-center border border-gray-100 hover:border-red-300 transition-colors">
+          <div class="w-16 h-16 mx-auto mb-4 bg-red-50 rounded-full flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.586-6.586a2 2 0 00-2.828-2.828z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 11a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold mb-2">They Get</h3>
+          <p class="text-2xl font-bold text-red-600 mb-2">₹10</p>
+          <p class="text-gray-600">in their wallet for using your referral code</p>
+        </div>
+      </div>
+
+      <!-- Referral Code Section -->
+      <div x-data="{ copied: false }" class="bg-gray-50 rounded-xl p-8 text-center">
+        <h3 class="text-xl font-semibold mb-6">Your Unique Referral Code</h3>
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
+          <div class="bg-white px-6 py-3 rounded-lg border border-gray-200 text-2xl font-bold text-gray-800">
+            <%= referral %>
+          </div>
+          <button 
+            @click="
+              navigator.clipboard.writeText('<%= referral %>');
+              copied = true;
+              setTimeout(() => copied = false, 2000);
+            "
+            class="px-5 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors flex items-center"
+            :class="{ 'bg-green-600': copied }"
+            x-text="copied ? 'Copied!' : 'Copy Code'">
+          </button>
+        </div>
+
+        <p class="text-gray-600 mb-4">Or share your link directly:</p>
+        <div class="flex justify-center gap-3">
+          <button class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors">
+            <i class="fas fa-envelope text-gray-600"></i>
+          </button>
+          <button class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors">
+            <i class="fab fa-facebook-f text-gray-600"></i>
+          </button>
+          <button class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors">
+            <i class="fab fa-twitter text-gray-600"></i>
+          </button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Mobile Bottom Nav -->
+  <div class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-3">
+    <div class="flex justify-around">
+      <a href="/" class="flex flex-col items-center text-xs text-gray-600 hover:text-red-600 transition-colors">
+        <i class="fas fa-home text-lg mb-1"></i>
+        <span>Home</span>
+      </a>
+      <a href="/cart" class="flex flex-col items-center text-xs text-gray-600 hover:text-red-600 transition-colors">
+        <i class="fas fa-shopping-cart text-lg mb-1"></i>
+        <span>Cart</span>
+      </a>
+      <a href="/wishlist" class="flex flex-col items-center text-xs text-gray-600 hover:text-red-600 transition-colors">
+        <i class="far fa-heart text-lg mb-1"></i>
+        <span>Wishlist</span>
+      </a>
+      <a href="/profile" class="flex flex-col items-center text-xs text-gray-600 hover:text-red-600 transition-colors">
+        <img src="/profile-pic.jpg" alt="User" class="w-6 h-6 rounded-full mb-1 object-cover" />
+        <span>Profile</span>
+      </a>
+    </div>
+  </div>
+</body>
+</html>

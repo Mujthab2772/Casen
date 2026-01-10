@@ -1,13 +1,15 @@
 import razorpay from "../../config/razorpay.js";
+import { Wallet } from "../../models/walletModel.js";
 import {
   tempOrder,
-  calculateFinalPrice 
+  calculateFinalPrice
 } from "../../service/user/checkoutService.js";
 import {
   cashOnDelivery,
   createRazorpayOrderSession,
   verifyRazorpayPayment,
-  orderDetails
+  orderDetails,
+  walletPayment
 } from "../../service/user/paymentService.js";
 import crypto from 'crypto';
 
@@ -29,6 +31,10 @@ export const payment = async (req, res) => {
     const { shippingAddressId, contact, appliedCouponCode } = req.session.checkout;
     
     try {
+      // Fetch wallet balance for the user
+      const wallet = await Wallet.findOne({ userId });
+      user.walletBalance = wallet ? parseFloat(wallet.balance.amount.toString()) : 0;
+      
       const recalculated = await tempOrder(userId, {
         shippingAddressId,
         contact
@@ -134,9 +140,27 @@ export const paymentProcess = async (req, res) => {
       }
     }
     if (req.body.paymentMethod === 'wallet') {
-      req.flash('error', 'Wallet payment is not available at the moment. Please choose another payment method.');
-      return res.redirect('/payment');
+  try {
+    const result = await walletPayment(req);
+    req.flash('success', 'Payment successful! Your order has been placed using wallet balance.');
+    delete req.session.checkout;
+    return res.redirect(`/payment/success?orderId=${result.orderId}`);
+  } catch (error) {
+    console.log(`Wallet payment error:`, error);
+    let flashMessage = 'Wallet payment failed. Please try again.';
+    if (error.message.includes('Insufficient wallet balance')) {
+      flashMessage = error.message;
+    } else if (error.message.includes('Wallet not found')) {
+      flashMessage = 'Please create a wallet and add funds first.';
+    } else if (error.message.includes('out of stock')) {
+      flashMessage = error.message;
+    } else if (error.message.includes('not authenticated')) {
+      return res.redirect('/login');
     }
+    req.flash('error', flashMessage);
+    return res.redirect('/payment');
+  }
+}
     req.flash('error', 'Please select a valid payment method.');
     return res.redirect('/payment');
   } catch (error) {
@@ -184,7 +208,7 @@ export const verifyPayment = async (req, res) => {
       throw new Error('Payment verification failed: Invalid signature');
     }
     const paymentDetails = await razorpay.payments.fetch(verificationData.razorpay_payment_id);
-    
+
     if (paymentDetails.status !== 'captured') {
       const failDetails = {
         reason: `Payment status: ${paymentDetails.status}. ${paymentDetails.error_description || 'Payment was not completed.'}`,
@@ -195,7 +219,7 @@ export const verifyPayment = async (req, res) => {
       req.flash('error', 'Payment was not completed. Please try again.');
       return res.redirect('/payment/fail');
     }
-    
+
     const order = await verifyRazorpayPayment({
       ...verificationData,
       paymentSession: req.session.paymentSession,
@@ -263,7 +287,7 @@ export const paymentFail = async (req, res) => {
       return res.redirect('/login');
     }
 
-    
+
     const errorDetails = {
       code: req.query.code ? decodeURIComponent(req.query.code) : null,
       description: req.query.description ? decodeURIComponent(req.query.description) : null,
@@ -271,18 +295,18 @@ export const paymentFail = async (req, res) => {
       reason: req.query.reason ? decodeURIComponent(req.query.reason) : null
     };
 
-    
+
     const sessionErrorDetails = req.session.paymentFailDetails || {
       reason: req.flash('error')[0] || 'Payment failed',
       timestamp: new Date().toISOString()
     };
 
-    
+
     if (errorDetails.code && errorDetails.description) {
       sessionErrorDetails.razorpayError = errorDetails;
     }
 
-    
+
     delete req.session.paymentFailDetails;
 
     return res.render('paymentFail', {

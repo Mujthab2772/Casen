@@ -1,39 +1,47 @@
 import mongoose from "mongoose";
 
-const otpSchema = new mongoose.Schema(
-  {
-    email: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    firstName: {
-      type: String,
-    },
-    lastName: {
-      type: String,
-    },
-    phoneNumber: {
-      type: String,
-    },
-    password: {
-      type: String,
-    },
-    profilePic: {
-      type: String,
-      default: null
-    },
-    otp: {
-      type: String,
-      required: true,
-    },
-    otpExpiresAt: {
-      type: Date,
-    },
+const otpSchema = new mongoose.Schema({
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    lowercase: true,
+    trim: true,
   },
-  { timestamps: true }
-);
+  firstName: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  lastName: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  phoneNumber: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  password: {
+    type: String,
+    required: true,
+  },
+  otp: {
+    type: String,
+    required: true,
+  },
+  otpExpiresAt: {
+    type: Date,
+    required: true,
+  },
+  referralCode: {
+    type: String,
+    trim: true,
+    default: null,
+  },
+}, { timestamps: true });
 
-const otpCollection = mongoose.model("otp", otpSchema);
+otpSchema.index({ otpExpiresAt: 1 }, { expireAfterSeconds: 0 });
 
-export default otpCollection;
+export default mongoose.model("otp", otpSchema);
