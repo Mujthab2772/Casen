@@ -14,101 +14,106 @@
 </head>
 <body class="font-sans">
     <!-- Header Navigation -->
-<header class="bg-white shadow-sm sticky top-0 z-50">
-    <div class="container mx-auto px-4 py-3 flex items-center justify-between">
-      <!-- Logo -->
-      <div class="flex items-center">
-        <a href="/">
-            <img src="/logo.png" alt="Logo" class="h-8 object-contain">
-        </a>
-      </div>
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+            <!-- Logo -->
+            <div class="flex items-center">
+                <a href="/">
+                    <img src="/logo.png" alt="Logo" class="h-8 object-contain">
+                </a>
+            </div>
 
-      <!-- Desktop Navigation -->
-      <nav class="hidden md:flex space-x-5">
-        <a href="/" class="text-sm font-medium transition-opacity hover:opacity-80">Home</a>
-        <a href="#" class="text-sm font-medium transition-opacity hover:opacity-80">About</a>
-        <a href="/products" class="text-sm font-medium transition-opacity hover:opacity-80">Phone Cases</a>
-        <a href="#" class="text-sm font-medium transition-opacity hover:opacity-80">Tablet Cases</a>
-        <a href="#" class="text-sm font-medium transition-opacity hover:opacity-80">Sale</a>
-      </nav>
+            <!-- Desktop Navigation -->
+            <nav class="hidden md:flex space-x-5">
+                <a href="/" class="text-sm font-medium transition-opacity hover:opacity-80">Home</a>
+                <a href="#" class="text-sm font-medium transition-opacity hover:opacity-80">About</a>
+                <a href="/products" class="text-sm font-medium transition-opacity hover:opacity-80">Phone Cases</a>
+                <a href="#" class="text-sm font-medium transition-opacity hover:opacity-80">Tablet Cases</a>
+                <a href="#" class="text-sm font-medium transition-opacity hover:opacity-80">Sale</a>
+            </nav>
 
-      <!-- Icons & Auth -->
-      <div class="flex items-center space-x-4">
-        <!-- Wishlist -->
-        <button class="p-2 rounded-full hover:bg-gray-100 transition-colors">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" onclick="window.location.href='/profile/wishlist'">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-          </svg>
-        </button>
+            <!-- Icons & Auth -->
+            <div class="flex items-center space-x-4">
+                <!-- Wishlist -->
+                <button class="p-2 rounded-full hover:bg-gray-100 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" onclick="window.location.href='/profile/wishlist'">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                    </svg>
+                </button>
 
-        <!-- Cart -->
-        <button class="p-2 rounded-full hover:bg-gray-100 transition-colors relative" onclick="window.location.href='/cart'">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-          </svg>
-        </button>
+                <!-- Cart -->
+                <button class="p-2 rounded-full hover:bg-gray-100 transition-colors relative" onclick="window.location.href='/cart'">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                </button>
 
-        <!-- User Menu -->
-        <% if (locals.user && user.profilePic) { %>
-        <div class="relative" x-data="{ open: false }" @click.away="open = false">
-          <button @click="open = !open" class="rounded-full overflow-hidden w-8 h-8 border border-transparent hover:border-gray-300 transition-colors focus:outline-none">
-            <img src="<%= user.profilePic %>" alt="Profile" class="w-full h-full object-cover" />
-          </button>
-          <div x-show="open"
-               x-transition:enter="transition ease-out duration-150"
-               x-transition:enter-start="opacity-0 scale-95"
-               x-transition:enter-end="opacity-100 scale-100"
-               x-transition:leave="transition ease-in duration-100"
-               x-transition:leave-start="opacity-100 scale-100"
-               x-transition:leave-end="opacity-0 scale-95"
-               class="absolute right-0 mt-2 w-44 bg-white shadow-lg rounded-lg py-1 z-50">
-            <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">Profile</a>
-            <form action="/logout" method="post">
-              <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">Logout</button>
-            </form>
-          </div>
+                <!-- User Menu -->
+                <% if (locals.user && user.profilePic) { %>
+                <div class="relative" x-data="{ open: false, imageError: false }" @click.away="open = false">
+                    <button @click="open = !open" class="rounded-full overflow-hidden w-8 h-8 border border-transparent hover:border-gray-300 transition-colors focus:outline-none">
+                        <template x-if="!imageError">
+                            <img src="<%= user.profilePic %>" @error="imageError = true" alt="Profile" class="w-full h-full object-cover" />
+                        </template>
+                        <template x-if="imageError">
+                            <div class="w-full h-full bg-gray-300 flex items-center justify-center text-gray-600 rounded-full">
+                                <span class="font-medium text-sm"><%= user.name ? user.name.charAt(0).toUpperCase() : 'U' %></span>
+                            </div>
+                        </template>
+                    </button>
+                    <div x-show="open"
+                         x-transition:enter="transition ease-out duration-150"
+                         x-transition:enter-start="opacity-0 scale-95"
+                         x-transition:enter-end="opacity-100 scale-100"
+                         x-transition:leave="transition ease-in duration-100"
+                         x-transition:leave-start="opacity-100 scale-100"
+                         x-transition:leave-end="opacity-0 scale-95"
+                         class="absolute right-0 mt-2 w-44 bg-white shadow-lg rounded-lg py-1 z-50">
+                        <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">Profile</a>
+                        <form action="/logout" method="post">
+                            <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">Logout</button>
+                        </form>
+                    </div>
+                </div>
+                <% } else if (locals.user) { %>
+                <div class="relative" x-data="{ open: false }" @click.away="open = false">
+                    <button @click="open = !open" class="w-8 h-8 flex items-center justify-center text-gray-600 hover:text-gray-900 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                    </button>
+                    <div x-show="open"
+                         x-transition:enter="transition ease-out duration-150"
+                         x-transition:enter-start="opacity-0 scale-95"
+                         x-transition:enter-end="opacity-100 scale-100"
+                         x-transition:leave="transition ease-in duration-100"
+                         x-transition:leave-start="opacity-100 scale-100"
+                         x-transition:leave-end="opacity-0 scale-95"
+                         class="absolute right-0 mt-2 w-44 bg-white shadow-lg rounded-lg py-1 z-50">
+                        <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Profile</a>
+                        <form action="/logout" method="post">
+                            <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Logout</button>
+                        </form>
+                    </div>
+                </div>
+                <% } else { %>
+                <a href="/login" class="text-sm font-medium hover: transition-colors flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                    Sign In
+                </a>
+                <% } %>
+
+                <!-- Mobile Menu Button -->
+                <button class="md:hidden text-gray-600 hover:text-gray-900">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+            </div>
         </div>
-
-        <% } else if (locals.user) { %>
-        <div class="relative" x-data="{ open: false }" @click.away="open = false">
-          <button @click="open = !open" class="w-8 h-8 flex items-center justify-center text-gray-600 hover:text-gray-900 transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-            </svg>
-          </button>
-          <div x-show="open"
-               x-transition:enter="transition ease-out duration-150"
-               x-transition:enter-start="opacity-0 scale-95"
-               x-transition:enter-end="opacity-100 scale-100"
-               x-transition:leave="transition ease-in duration-100"
-               x-transition:leave-start="opacity-100 scale-100"
-               x-transition:leave-end="opacity-0 scale-95"
-               class="absolute right-0 mt-2 w-44 bg-white shadow-lg rounded-lg py-1 z-50">
-            <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Profile</a>
-            <form action="/logout" method="post">
-              <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Logout</button>
-            </form>
-          </div>
-        </div>
-
-        <% } else { %>
-        <a href="/login" class="text-sm font-medium  hover: transition-colors flex items-center">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-          </svg>
-          Sign In
-        </a>
-        <% } %>
-
-        <!-- Mobile Menu Button -->
-        <button class="md:hidden text-gray-600 hover:text-gray-900">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        </button>
-      </div>
-    </div>
-  </header>
+    </header>
 
     <section class="relative overflow-hidden" style="height: 650px;">
         <!-- Video Container -->

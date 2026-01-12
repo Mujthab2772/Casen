@@ -4,12 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>My Orders</title>
-    
     <!-- ✅ Fixed CDN URLs -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.10/dist/cdn.min.js"></script>
-    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         
@@ -283,100 +281,132 @@
             align-items: center;
             gap: 8px;
         }
+        
+        .cancelled-badge {
+            display: inline-block;
+            background-color: #fee2e2;
+            color: #b91c1c;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 500;
+            font-size: 12px;
+            margin-top: 4px;
+        }
+        
+        .returned-badge {
+            display: inline-block;
+            background-color: #fef3c7;
+            color: #b45309;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 500;
+            font-size: 12px;
+            margin-top: 4px;
+        }
     </style>
 </head>
-
 <body class="bg-gray-50">
     <!-- Header -->
-    <header class="bg-white shadow-sm sticky top-0 z-50">
+<header class="bg-white shadow-sm sticky top-0 z-50">
         <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+            <!-- Logo -->
             <div class="flex items-center">
                 <a href="/">
                     <img src="/logo.png" alt="Logo" class="h-8 object-contain">
                 </a>
             </div>
-            
+
+            <!-- Desktop Navigation -->
             <nav class="hidden md:flex space-x-5">
-                <a href="/" class="text-sm font-medium text-gray-700 hover:text-black transition">Home</a>
-                <a href="#" class="text-sm font-medium text-gray-700 hover:text-black transition">About</a>
-                <a href="/products" class="text-sm font-medium text-gray-700 hover:text-black transition">Phone Cases</a>
-                <a href="#" class="text-sm font-medium text-gray-700 hover:text-black transition">Tablet Cases</a>
-                <a href="#" class="text-sm font-medium text-gray-700 hover:text-black transition">Sale</a>
+                <a href="/" class="text-sm font-medium transition-opacity hover:opacity-80">Home</a>
+                <a href="#" class="text-sm font-medium transition-opacity hover:opacity-80">About</a>
+                <a href="/products" class="text-sm font-medium transition-opacity hover:opacity-80">Phone Cases</a>
+                <a href="#" class="text-sm font-medium transition-opacity hover:opacity-80">Tablet Cases</a>
+                <a href="#" class="text-sm font-medium transition-opacity hover:opacity-80">Sale</a>
             </nav>
-            
+
+            <!-- Icons & Auth -->
             <div class="flex items-center space-x-4">
+                <!-- Wishlist -->
                 <button class="p-2 rounded-full hover:bg-gray-100 transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                        onclick="window.location.href='/profile/wishlist'">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" onclick="window.location.href='/profile/wishlist'">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                     </svg>
                 </button>
-                
-                <button class="p-2 rounded-full hover:bg-gray-100 transition-colors relative"
-                    onclick="window.location.href='/cart'">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+
+                <!-- Cart -->
+                <button class="p-2 rounded-full hover:bg-gray-100 transition-colors relative" onclick="window.location.href='/cart'">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
                 </button>
-                
-                <!-- Profile Menu -->
+
+                <!-- User Menu -->
                 <% if (locals.user && user.profilePic) { %>
-                <div class="relative" x-data="{ open: false }" @click.away="open = false">
-                    <button @click="open = !open"
-                        class="rounded-full overflow-hidden w-8 h-8 border border-transparent hover:border-gray-300 transition">
-                        <img src="<%= user.profilePic %>" alt="Profile" class="w-full h-full object-cover" />
+                <div class="relative" x-data="{ open: false, imageError: false }" @click.away="open = false">
+                    <button @click="open = !open" class="rounded-full overflow-hidden w-8 h-8 border border-transparent hover:border-gray-300 transition-colors focus:outline-none">
+                        <template x-if="!imageError">
+                            <img src="<%= user.profilePic %>" @error="imageError = true" alt="Profile" class="w-full h-full object-cover" />
+                        </template>
+                        <template x-if="imageError">
+                            <div class="w-full h-full bg-gray-300 flex items-center justify-center text-gray-600 rounded-full">
+                                <span class="font-medium text-sm"><%= user.name ? user.name.charAt(0).toUpperCase() : 'U' %></span>
+                            </div>
+                        </template>
                     </button>
-                    <div x-show="open" x-transition class="absolute right-0 mt-2 w-44 bg-white shadow-lg rounded-lg py-1 z-50">
-                        <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Profile</a>
+                    <div x-show="open"
+                         x-transition:enter="transition ease-out duration-150"
+                         x-transition:enter-start="opacity-0 scale-95"
+                         x-transition:enter-end="opacity-100 scale-100"
+                         x-transition:leave="transition ease-in duration-100"
+                         x-transition:leave-start="opacity-100 scale-100"
+                         x-transition:leave-end="opacity-0 scale-95"
+                         class="absolute right-0 mt-2 w-44 bg-white shadow-lg rounded-lg py-1 z-50">
+                        <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">Profile</a>
                         <form action="/logout" method="post">
-                            <button type="submit"
-                                class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Logout</button>
+                            <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">Logout</button>
                         </form>
                     </div>
                 </div>
                 <% } else if (locals.user) { %>
                 <div class="relative" x-data="{ open: false }" @click.away="open = false">
-                    <button @click="open = !open"
-                        class="w-8 h-8 flex items-center justify-center text-gray-600 hover:text-gray-900">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    <button @click="open = !open" class="w-8 h-8 flex items-center justify-center text-gray-600 hover:text-gray-900 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
                     </button>
-                    <div x-show="open" x-transition
-                        class="absolute right-0 mt-2 w-44 bg-white shadow-lg rounded-lg py-1 z-50">
+                    <div x-show="open"
+                         x-transition:enter="transition ease-out duration-150"
+                         x-transition:enter-start="opacity-0 scale-95"
+                         x-transition:enter-end="opacity-100 scale-100"
+                         x-transition:leave="transition ease-in duration-100"
+                         x-transition:leave-start="opacity-100 scale-100"
+                         x-transition:leave-end="opacity-0 scale-95"
+                         class="absolute right-0 mt-2 w-44 bg-white shadow-lg rounded-lg py-1 z-50">
                         <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Profile</a>
                         <form action="/logout" method="post">
-                            <button type="submit"
-                                class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Logout</button>
+                            <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Logout</button>
                         </form>
                     </div>
                 </div>
                 <% } else { %>
-                <a href="/login" class="text-sm font-medium text-red-600 hover:text-red-700 flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                <a href="/login" class="text-sm font-medium hover: transition-colors flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
                     Sign In
                 </a>
                 <% } %>
-                
-                <button class="md:hidden text-gray-600">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
+
+                <!-- Mobile Menu Button -->
+                <button class="md:hidden text-gray-600 hover:text-gray-900">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                     </svg>
                 </button>
             </div>
         </div>
     </header>
-
     <div class="container mx-auto px-4 py-8 flex flex-col lg:flex-row gap-6">
         <!-- Sidebar -->
         <aside class="lg:w-60 bg-white rounded-xl shadow-sm p-4">
@@ -423,7 +453,6 @@
                 <form id="logout-form" action="/logout" method="post" class="hidden"></form>
             </nav>
         </aside>
-        
         <!-- Orders Content -->
         <main class="flex-1">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
@@ -432,7 +461,6 @@
                     <p class="text-gray-500 mt-1">Track and manage your recent purchases</p>
                 </div>
             </div>
-            
             <!-- Order Search -->
             <div class="mb-6">
                 <form method="GET" class="max-w-md">
@@ -453,7 +481,6 @@
                     <% } %>
                 </form>
             </div>
-            
             <!-- Order Filters -->
             <div class="mb-6 border-b border-gray-200">
                 <div class="flex space-x-6 pb-2">
@@ -468,158 +495,149 @@
                         class="pb-2 border-b-2 <%= locals.currentStatus === 'cancelled' ? 'border-black font-medium text-gray-900' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-800' %>">Cancelled</a>
                 </div>
             </div>
-            
             <!-- Dynamic Order List -->
             <div class="space-y-5">
                 <% if (locals.orders && orders.length > 0) { %>
-                    <% orders.forEach(order => { %>
-                        <%
-                        let effectiveTotal;
-                        const isEntireOrderCancelled = (order.orderStatus || '').toLowerCase() === 'cancelled';
-                        if (isEntireOrderCancelled) {
-                            // Handle Decimal128 values from MongoDB
-                            if (order.totalAmount && typeof order.totalAmount === 'object' && '$numberDecimal' in order.totalAmount) {
-                                effectiveTotal = parseFloat(order.totalAmount.$numberDecimal);
-                            } else if (typeof order.totalAmount === 'number') {
-                                effectiveTotal = order.totalAmount;
-                            } else {
-                                effectiveTotal = parseFloat(order.totalAmount) || 0;
-                            }
-                            
+                <% orders.forEach(order => { %>
+                <%
+                    let effectiveTotal;
+                    const isEntireOrderCancelled = (order.orderStatus || '').toLowerCase() === 'cancelled';
+                    if (isEntireOrderCancelled) {
+                        // Handle Decimal128 values from MongoDB
+                        if (order.totalAmount && typeof order.totalAmount === 'object' && '$numberDecimal' in order.totalAmount) {
+                            effectiveTotal = parseFloat(order.totalAmount.$numberDecimal);
+                        } else if (typeof order.totalAmount === 'number') {
+                            effectiveTotal = order.totalAmount;
                         } else {
-                            // Recalculate only for active orders
-                            effectiveTotal = 0;
-                            if (order.items) {
-                                for (let item of order.items.flat()) {
-                                    if (item.orderStatus) {
-                                        let price = 0;
-                                        if (item.price) {
-                                            if (item.price.$numberDecimal) price = parseFloat(item.price.$numberDecimal);
-                                            else if (typeof item.price === 'string') price = parseFloat(item.price);
-                                            else price = parseFloat(item.price) || 0;
-                                        }
-                                        effectiveTotal += price * (item.quantity || 1);
+                            effectiveTotal = parseFloat(order.totalAmount) || 0;
+                        }
+                    } else {
+                        // Recalculate only for active orders
+                        effectiveTotal = 0;
+                        if (order.items) {
+                            for (let item of order.items.flat()) {
+                                if (item.orderStatus) {
+                                    let price = 0;
+                                    if (item.price) {
+                                        if (item.price.$numberDecimal) price = parseFloat(item.price.$numberDecimal);
+                                        else if (typeof item.price === 'string') price = parseFloat(item.price);
+                                        else price = parseFloat(item.price) || 0;
                                     }
+                                    effectiveTotal += price * (item.quantity || 1);
                                 }
                             }
-                            const orderDiscount = order.discountAmount || 0;
-                            effectiveTotal = Math.max(0, effectiveTotal - orderDiscount);
                         }
-                        let statusClass = '';
-                        const os = (order.orderStatus || '').toLowerCase();
-                        if (os === 'delivered') statusClass = 'bg-green-100 text-green-800';
-                        else if (os === 'cancelled') statusClass = 'bg-red-100 text-red-800';
-                        else if (os === 'shipped') statusClass = 'bg-purple-100 text-purple-800';
-                        else if (os === 'returned' || os === 'return requested') statusClass = 'bg-amber-100 text-amber-800';
-                        else if (['pending', 'processing', 'active'].includes(os)) statusClass = 'bg-blue-100 text-blue-800';
-                        else statusClass = 'bg-gray-100 text-gray-800';
-                        
-                        %>
-                        <div
-                            class="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
-                            data-order-id="<%= order._id %>" onclick="showOrderDetails('<%= order._id %>')">
-                            <div class="p-5 md:p-6">
-                                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                                    <div>
-                                        <div class="text-lg font-semibold text-gray-900">Order <%= order.orderId.slice(0, 8) %></div>
-                                        <p class="text-gray-500 text-sm mt-1">Placed on <%= new Date(order.createdAt).toLocaleDateString() %></p>
-                                    </div>
-                                    <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                                        <div class="text-lg font-bold text-gray-800">₹<%= effectiveTotal.toFixed(2) %></div>
-                                        <span class="px-3 py-1 text-xs font-medium rounded-full <%= statusClass %>">
-                                            <%= order.orderStatus.charAt(0).toUpperCase() + order.orderStatus.slice(1) %>
-                                        </span>
-                                    </div>
-                                </div>
+                        const orderDiscount = order.discountAmount || 0;
+                        effectiveTotal = Math.max(0, effectiveTotal - orderDiscount);
+                    }
+                    let statusClass = '';
+                    const os = (order.orderStatus || '').toLowerCase();
+                    if (os === 'delivered') statusClass = 'bg-green-100 text-green-800';
+                    else if (os === 'cancelled') statusClass = 'bg-red-100 text-red-800';
+                    else if (os === 'shipped') statusClass = 'bg-purple-100 text-purple-800';
+                    else if (os === 'returned' || os === 'return requested') statusClass = 'bg-amber-100 text-amber-800';
+                    else if (['pending', 'processing', 'active'].includes(os)) statusClass = 'bg-blue-100 text-blue-800';
+                    else statusClass = 'bg-gray-100 text-gray-800';
+                %>
+                <div
+                    class="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+                    data-order-id="<%= order._id %>" onclick="showOrderDetails('<%= order._id %>')">
+                    <div class="p-5 md:p-6">
+                        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                            <div>
+                                <div class="text-lg font-semibold text-gray-900">Order <%= order.orderId.slice(0, 8) %></div>
+                                <p class="text-gray-500 text-sm mt-1">Placed on <%= new Date(order.createdAt).toLocaleDateString() %></p>
+                            </div>
+                            <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                                <div class="text-lg font-bold text-gray-800">₹<%= effectiveTotal.toFixed(2) %></div>
+                                <span class="px-3 py-1 text-xs font-medium rounded-full <%= statusClass %>">
+                                    <%= order.orderStatus.charAt(0).toUpperCase() + order.orderStatus.slice(1) %>
+                                </span>
                             </div>
                         </div>
-                    <% }); %>
-                <% } else { %>
-                    <div class="bg-white rounded-xl border border-gray-200 p-12 text-center">
-                        <div class="text-gray-400 mb-2">
-                            <i class="fas fa-box-open text-4xl"></i>
-                        </div>
-                        <h3 class="text-lg font-medium text-gray-900">No orders found</h3>
-                        <p class="text-gray-500 mt-1">Try adjusting your search or filter.</p>
-                        <a href="/products"
-                            class="mt-4 inline-block px-4 py-2 bg-black text-white text-sm rounded-lg hover:bg-gray-800 transition">Start
-                            Shopping</a>
                     </div>
+                </div>
+                <% }); %>
+                <% } else { %>
+                <div class="bg-white rounded-xl border border-gray-200 p-12 text-center">
+                    <div class="text-gray-400 mb-2">
+                        <i class="fas fa-box-open text-4xl"></i>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-900">No orders found</h3>
+                    <p class="text-gray-500 mt-1">Try adjusting your search or filter.</p>
+                    <a href="/products"
+                        class="mt-4 inline-block px-4 py-2 bg-black text-white text-sm rounded-lg hover:bg-gray-800 transition">Start
+                        Shopping</a>
+                </div>
                 <% } %>
             </div>
-            
             <!-- PAGINATION -->
             <% if (locals.pagination && pagination.totalPages > 1) { %>
-                <div class="mt-8 flex items-center justify-between">
-                    <div class="text-sm text-gray-500">
-                        Showing <%= (pagination.currentPage - 1) * pagination.limit + 1 %> to
-                        <%= Math.min(pagination.currentPage * pagination.limit, pagination.totalOrders) %> of
-                        <%= pagination.totalOrders %> orders
-                    </div>
-                    <div class="flex space-x-2">
-                        <%
+            <div class="mt-8 flex items-center justify-between">
+                <div class="text-sm text-gray-500">
+                    Showing <%= (pagination.currentPage - 1) * pagination.limit + 1 %> to
+                    <%= Math.min(pagination.currentPage * pagination.limit, pagination.totalOrders) %> of
+                    <%= pagination.totalOrders %> orders
+                </div>
+                <div class="flex space-x-2">
+                    <%
                         const urlParams = new URLSearchParams();
                         if (pagination.status && pagination.status !== 'all') urlParams.set('status', pagination.status);
                         if (pagination.search) urlParams.set('search', pagination.search);
-                        %>
-                        <% if (pagination.hasPrevPage) { %>
-                            <%
-                            urlParams.set('page', pagination.currentPage - 1);
-                            %>
-                            <a href="?<%= urlParams.toString() %>"
-                                class="px-3 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition">
-                                <i class="fas fa-chevron-left"></i>
-                            </a>
-                        <% } else { %>
-                            <span class="px-3 py-2 rounded-lg border border-gray-200 text-gray-400 cursor-not-allowed">
-                                <i class="fas fa-chevron-left"></i>
-                            </span>
-                        <% } %>
-                        
-                        <% for (let i = Math.max(1, pagination.currentPage - 1); i <= Math.min(pagination.totalPages, pagination.currentPage + 1); i++) { %>
-                            <%
-                            urlParams.set('page', i);
-                            %>
-                            <a href="?<%= urlParams.toString() %>" class="px-3 py-2 rounded-lg border
-                                <%= i === pagination.currentPage ? 'bg-black text-white border-black' : 'border-gray-300 text-gray-700 hover:bg-gray-50' %>
-                                transition">
-                                <%= i %>
-                            </a>
-                        <% } %>
-                        
-                        <% if (pagination.hasNextPage) { %>
-                            <%
-                            urlParams.set('page', pagination.currentPage + 1);
-                            %>
-                            <a href="?<%= urlParams.toString() %>"
-                                class="px-3 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition">
-                                <i class="fas fa-chevron-right"></i>
-                            </a>
-                        <% } else { %>
-                            <span class="px-3 py-2 rounded-lg border border-gray-200 text-gray-400 cursor-not-allowed">
-                                <i class="fas fa-chevron-right"></i>
-                            </span>
-                        <% } %>
-                    </div>
+                    %>
+                    <% if (pagination.hasPrevPage) { %>
+                    <%
+                        urlParams.set('page', pagination.currentPage - 1);
+                    %>
+                    <a href="?<%= urlParams.toString() %>"
+                        class="px-3 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                    <% } else { %>
+                    <span class="px-3 py-2 rounded-lg border border-gray-200 text-gray-400 cursor-not-allowed">
+                        <i class="fas fa-chevron-left"></i>
+                    </span>
+                    <% } %>
+                    <% for (let i = Math.max(1, pagination.currentPage - 1); i <= Math.min(pagination.totalPages, pagination.currentPage + 1); i++) { %>
+                    <%
+                        urlParams.set('page', i);
+                    %>
+                    <a href="?<%= urlParams.toString() %>" class="px-3 py-2 rounded-lg border
+                    <%= i === pagination.currentPage ? 'bg-black text-white border-black' : 'border-gray-300 text-gray-700 hover:bg-gray-50' %>
+                    transition">
+                        <%= i %>
+                    </a>
+                    <% } %>
+                    <% if (pagination.hasNextPage) { %>
+                    <%
+                        urlParams.set('page', pagination.currentPage + 1);
+                    %>
+                    <a href="?<%= urlParams.toString() %>"
+                        class="px-3 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                    <% } else { %>
+                    <span class="px-3 py-2 rounded-lg border border-gray-200 text-gray-400 cursor-not-allowed">
+                        <i class="fas fa-chevron-right"></i>
+                    </span>
+                    <% } %>
                 </div>
+            </div>
             <% } %>
         </main>
     </div>
-    
     <!-- Hidden order data container -->
     <div id="order-data-container" class="hidden">
         <% if (locals.orders && orders.length > 0) { %>
-            <% orders.forEach(order => { %>
-                <div id="order-data-<%= order._id %>" class="hidden">
-                    <%= JSON.stringify(order) %>
-                </div>
-            <% }); %>
+        <% orders.forEach(order => { %>
+        <div id="order-data-<%= order._id %>" class="hidden">
+            <%= JSON.stringify(order) %>
+        </div>
+        <% }); %>
         <% } %>
     </div>
-    
     <!-- ✅ SweetAlert2 CDN -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    
     <script>
         // Store order data in memory to avoid JSON parsing issues
         const orderDataCache = {};
@@ -630,7 +648,6 @@
                 try {
                     // Get the inner HTML content (not textContent) to preserve structure
                     let content = el.innerHTML.trim();
-                    
                     // Remove HTML entities and extra whitespace
                     content = content
                         .replace(/&quot;/g, '"')
@@ -647,17 +664,14 @@
                     // Find the start and end of valid JSON
                     const firstCurly = content.indexOf('{');
                     const lastCurly = content.lastIndexOf('}');
-                    
                     if (firstCurly !== -1 && lastCurly !== -1 && lastCurly > firstCurly) {
                         // Extract only the valid JSON portion
                         let jsonData = content.substring(firstCurly, lastCurly + 1);
-                        
                         // Add missing closing brackets if needed
                         const openBraces = (jsonData.match(/{/g) || []).length;
                         const closeBraces = (jsonData.match(/}/g) || []).length;
                         const openBrackets = (jsonData.match(/\[/g) || []).length;
                         const closeBrackets = (jsonData.match(/]/g) || []).length;
-                        
                         jsonData += '}'.repeat(Math.max(0, openBraces - closeBraces));
                         jsonData += ']'.repeat(Math.max(0, openBrackets - closeBrackets));
                         
@@ -754,13 +768,11 @@
                 const color = item.variantColor || '—';
                 const quantity = item.quantity || 1;
                 let price = 0;
-                
                 if (item.price) {
                     if (item.price.$numberDecimal) price = parseFloat(item.price.$numberDecimal);
                     else if (typeof item.price === 'string') price = parseFloat(item.price);
                     else price = parseFloat(item.price) || 0;
                 }
-                
                 const isCancelled = item.orderStatus === 'cancelled' || isEntireOrderCancelled;
                 const total = (price * quantity).toFixed(2);
                 const images = Array.isArray(item.images) ? item.images : [];
@@ -770,7 +782,6 @@
                 let itemActions = '';
                 const nonCancellableStatuses = ['delivered', 'cancelled', 'returned', 'return requested'];
                 const os = (order.orderStatus || '').toLowerCase();
-                
                 if (!isCancelled && !nonCancellableStatuses.includes(os) && items.length > 1) {
                     itemActions = `
                     <div class="mt-2 flex justify-end">
@@ -827,7 +838,7 @@
                     class="flex-1 sm:flex-none px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center justify-center gap-2">
                     <i class="fas fa-download"></i> Download Invoice
                 </button>`;
-            
+                
             if (showCancelEntireButton) {
                 actionButtonsHtml += `
                 <button
@@ -960,7 +971,6 @@
                         </div>
                     </div>
                 </div>
-                
                 <!-- Items Section -->
                 <div class="mb-5">
                     <h4 class="font-semibold text-gray-900 mb-3 text-lg flex items-center">
@@ -968,10 +978,8 @@
                     </h4>
                     ${itemsHtml || '<p class="text-gray-500">No items found in this order.</p>'}
                 </div>
-                
                 <!-- Enhanced Shipping Address Section -->
                 ${addressHtml}
-                
                 <!-- Order Summary Section - Fixed to use backend values -->
                 <div class="bg-white rounded-xl border border-gray-200 p-4 mt-5">
                     <h4 class="font-semibold text-gray-900 mb-3 text-lg flex items-center">
@@ -998,7 +1006,6 @@
                         </div>
                     </div>
                 </div>
-                
                 <!-- Action Buttons -->
                 ${actionButtonsHtml}
             </div>`;
@@ -1113,25 +1120,21 @@
                     const reason = document.getElementById('return-reason').value.trim();
                     const errorEl = document.getElementById('return-error');
                     errorEl.classList.add('hidden');
-                    
                     if (!reason) {
                         errorEl.textContent = 'Reason is required.';
                         errorEl.classList.remove('hidden');
                         return false;
                     }
-                    
                     if (reason.length < 5) {
                         errorEl.textContent = 'Reason must be at least 5 characters long.';
                         errorEl.classList.remove('hidden');
                         return false;
                     }
-                    
                     return reason;
                 },
                 didOpen: () => {
                     const textarea = document.getElementById('return-reason');
                     const errorEl = document.getElementById('return-error');
-                    
                     textarea.addEventListener('input', () => {
                         errorEl.classList.add('hidden');
                     });
@@ -1291,34 +1294,61 @@
                 return '₹' + parseFloat(amount).toFixed(2);
             };
             
-            // Generate items table rows
+            // Generate items table rows with enhanced cancelled item highlighting
             const itemsHtml = items.map(item => {
                 const productName = item.productName || 'Unknown Product';
                 const color = item.variantColor || '—';
                 const quantity = item.quantity || 1;
                 let price = 0;
-                
                 if (item.price) {
                     if (item.price.$numberDecimal) price = parseFloat(item.price.$numberDecimal);
                     else if (typeof item.price === 'string') price = parseFloat(item.price);
                     else price = parseFloat(item.price) || 0;
                 }
-                
                 const total = (price * quantity).toFixed(2);
                 const isCancelled = item.orderStatus === 'cancelled';
-                const rowClass = isCancelled ? 'bg-red-50/50' : '';
-                const nameClass = isCancelled ? 'line-through text-gray-500' : '';
-                const priceClass = isCancelled ? 'line-through text-gray-500' : '';
+                const isReturned = item.orderStatus === 'returned' || item.orderStatus === 'return requested';
+                
+                // Set classes based on status
+                let rowClass = '';
+                let nameClass = '';
+                let priceClass = '';
+                let statusBadge = '';
+                
+                if (isCancelled) {
+                    rowClass = 'bg-red-50/70 border-l-4 border-red-500';
+                    nameClass = 'line-through text-gray-500';
+                    priceClass = 'text-red-600 font-medium line-through';
+                    statusBadge = '<span class="cancelled-badge ml-2">CANCELLED</span>';
+                } else if (isReturned) {
+                    rowClass = 'bg-amber-50/70 border-l-4 border-amber-500';
+                    nameClass = 'line-through text-gray-500';
+                    priceClass = 'text-amber-600 font-medium line-through';
+                    statusBadge = '<span class="returned-badge ml-2">RETURNED</span>';
+                } else {
+                    rowClass = '';
+                    nameClass = 'font-medium text-gray-900';
+                    priceClass = 'font-medium text-gray-900';
+                    statusBadge = '';
+                }
                 
                 return `
                 <tr class="${rowClass}">
                     <td class="p-3 border-b border-gray-200">
-                        <div class="font-medium ${nameClass}">${productName}</div>
+                        <div class="${nameClass} flex items-start justify-between">
+                            <span>${productName}</span>
+                            ${statusBadge}
+                        </div>
                         <div class="text-sm text-gray-600 mt-1">Color: ${color}</div>
+                        ${isCancelled || isReturned ? `
+                        <div class="text-xs ${isCancelled ? 'text-red-600' : 'text-amber-600'} mt-1 font-medium">
+                            ${isCancelled ? 'This item was cancelled' : 'This item was returned'}
+                        </div>
+                        ` : ''}
                     </td>
                     <td class="p-3 border-b border-gray-200 text-center">${quantity}</td>
                     <td class="p-3 border-b border-gray-200 text-right ${priceClass}">${formatInvoiceCurrency(price)}</td>
-                    <td class="p-3 border-b border-gray-200 text-right font-medium ${priceClass}">${formatInvoiceCurrency(total)}</td>
+                    <td class="p-3 border-b border-gray-200 text-right ${priceClass}">${formatInvoiceCurrency(total)}</td>
                 </tr>
                 `;
             }).join('');
@@ -1507,6 +1537,28 @@
                         transform: translateY(0);
                     }
                     
+                    .cancelled-badge {
+                        display: inline-block;
+                        background-color: #fee2e2;
+                        color: #b91c1c;
+                        padding: 2px 8px;
+                        border-radius: 4px;
+                        font-weight: 500;
+                        font-size: 12px;
+                        margin-top: 4px;
+                    }
+                    
+                    .returned-badge {
+                        display: inline-block;
+                        background-color: #fef3c7;
+                        color: #b45309;
+                        padding: 2px 8px;
+                        border-radius: 4px;
+                        font-weight: 500;
+                        font-size: 12px;
+                        margin-top: 4px;
+                    }
+                    
                     @media print {
                         .no-print { display: none; }
                         body { -webkit-print-color-adjust: exact; }
@@ -1617,7 +1669,6 @@
                 Swal.fire('Warning', 'Popup blocked. Please allow popups to view the invoice.', 'warning');
                 return;
             }
-            
             printWindow.document.write(printableContent);
             printWindow.document.close();
             
