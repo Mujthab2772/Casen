@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>E-Commerce Sales Reports</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="/logoTab.png" />
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              200: '#bae6fd',
+              300: '#7dd3fc',
+              400: '#38bdf8',
+              500: '#0ea5e9',
+              600: '#0284c7',
+              700: '#0369a1',
+              800: '#075985',
+              900: '#0c4a6e',
+            }
+          },
+          spacing: {
+            sidebar: '227px',
+          }
+        }
+      }
+    }
+  </script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+
+    .status-badge {
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      display: inline-block;
+    }
+
+    .status-active {
+      background-color: #dcfce7;
+      color: #166534;
+    }
+
+    .status-inactive {
+      background-color: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .pagination-btn {
+      transition: all 0.2s ease;
+      border: 1px solid #e5e7eb;
+      background-color: #f9fafb;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      color: #374151;
+    }
+
+    .pagination-btn:hover:not(:disabled) {
+      background-color: #f3f4f6;
+      border-color: #d1d5db;
+      color: #1f2937;
+    }
+
+    .pagination-btn:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+      background-color: #f9fafb;
+      border-color: #e5e7eb;
+    }
+
+    .pagination-info {
+      font-size: 13px;
+      color: #6b7280;
+    }
+
+    .pagination-number {
+      font-size: 13px;
+      font-weight: 500;
+      color: #374151;
+    }
+
+    .metric-card {
+      transition: all 0.3s ease;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 1.5rem;
+      background-color: #f9fafb;
+    }
+
+    .metric-card:hover {
+      border-color: #1e40af;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    .metric-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #1f2937;
+    }
+
+    .metric-change {
+      display: inline-flex;
+      align-items: center;
+      font-size: 0.85rem;
+      font-weight: 500;
+      margin-top: 0.25rem;
+    }
+
+    .metric-change-up {
+      color: #16a34a;
+    }
+
+    .metric-change-down {
+      color: #dc2626;
+    }
+
+    .date-input {
+      position: relative;
+    }
+
+    .date-input .calendar-icon {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #6b7280;
+      pointer-events: none;
+    }
+
+    .report-table th {
+      background-color: #f9fafb;
+      position: sticky;
+      top: 0;
+    }
+
+    .print-hidden {
+      display: block;
+    }
+
+    @media print {
+      .print-hidden {
+        display: none !important;
+      }
+
+      body {
+        -webkit-print-color-adjust: exact;
+      }
+
+      .report-table {
+        width: 100% !important;
+      }
+
+      .report-table th,
+      .report-table td {
+        border: 1px solid #e5e7eb !important;
+        padding: 8px !important;
+      }
+    }
+
+    /* Custom Dropdown Styling */
+    .custom-dropdown {
+      position: relative;
+      width: 100%;
+    }
+
+    .custom-dropdown select {
+      appearance: none;
+      background-color: white;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      padding: 0.75rem 1rem 0.75rem 1.25rem;
+      font-size: 0.875rem;
+      color: #374151;
+      width: 100%;
+      transition: all 0.2s ease;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M7 10l3 3 3-3'/%3E%3C/svg%3E");
+      background-position: right 0.75rem center;
+      background-repeat: no-repeat;
+      background-size: 1.2em 1.2em;
+    }
+
+    .custom-dropdown select:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    }
+
+    .custom-dropdown select:hover {
+      border-color: #9ca3af;
+    }
+
+    /* Custom Date Picker Styling */
+    .date-input input[type="date"] {
+      appearance: none;
+      background-color: white;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      padding: 0.75rem 1rem 0.75rem 1.25rem;
+      font-size: 0.875rem;
+      color: #374151;
+      width: 100%;
+      transition: all 0.2s ease;
+    }
+
+    .date-input input[type="date"]:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    }
+
+    .date-input input[type="date"]:hover {
+      border-color: #9ca3af;
+    }
+
+    /* Filter Chip Styling */
+    .filter-chip {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.25rem 0.75rem;
+      background-color: #eff6ff;
+      color: #1e40af;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    .filter-chip:hover {
+      background-color: #dbeafe;
+    }
+
+    .filter-chip .remove-filter {
+      margin-left: 0.5rem;
+      color: #3b82f6;
+      cursor: pointer;
+      opacity: 0.7;
+      transition: opacity 0.2s ease;
+    }
+
+    .filter-chip .remove-filter:hover {
+      opacity: 1;
+    }
+
+    /* Mobile Table Stacking */
+    @media (max-width: 768px) {
+      .report-table-container {
+        display: block;
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .report-table {
+        min-width: 700px;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .stacked-table tr {
+        display: block;
+        margin-bottom: 1rem;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 1rem;
+      }
+
+      .stacked-table td {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.25rem 0 !important;
+        border: none !important;
+      }
+
+      .stacked-table td:before {
+        content: attr(data-label);
+        font-weight: 500;
+        color: #374151;
+      }
+
+      .stacked-table thead {
+        display: none;
+      }
+
+      .stacked-table tr.bg-gray-50 {
+        background-color: #f9fafb !important;
+      }
+
+      .stacked-table tr.bg-gray-50 td:before {
+        font-weight: 700;
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-gray-50 font-sans antialiased">
+  <div class="min-h-screen flex flex-col md:flex-row">
+    <!-- Overlay for mobile sidebar -->
+    <div id="overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden hidden"></div>
+    <!-- Sidebar -->
+    <aside id="sidebar"
+      class="fixed md:static left-0 top-0 h-screen md:h-auto bg-white border-r border-gray-200 md:w-sidebar w-64 z-50 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out overflow-y-auto">
+      <div class="px-4 py-6 flex items-center gap-3 border-b border-gray-200">
+        <div class="w-10 h-10 bg-black rounded-md flex items-center justify-center flex-shrink-0">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="3" y="3" width="18" height="18" rx="2" fill="white" />
+            <rect x="7" y="7" width="4" height="4" fill="black" />
+            <rect x="13" y="7" width="4" height="4" fill="black" />
+            <rect x="7" y="13" width="10" height="4" fill="black" />
+          </svg>
+        </div>
+        <span class="text-sm font-semibold text-black hidden md:block">E-Commerce</span>
+      </div>
+      <nav class="flex-1 py-4 flex flex-col">
+        <a href="/admin/dashboard"
+          class="flex items-center gap-3 px-4 py-3 text-gray-500 text-sm transition hover:bg-gray-100 hover:text-black no-underline">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4z" />
+            <path d="M3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6z" />
+            <path d="M14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" />
+          </svg>
+          <span>Dashboard</span>
+        </a>
+        <a href="/admin/order"
+          class="flex items-center gap-3 px-4 py-3 text-gray-500 text-sm transition hover:bg-gray-100 hover:text-black no-underline">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+            <path
+              d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 6H6.28l-.31-1.243A1 1 0 005 4H3z" />
+            <path d="M16 16a2 2 0 11-4 0 2 2 0 014 0z" />
+            <path d="M4 16a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
+          <span>Orders</span>
+        </a>
+        <a href="/admin/products"
+          class="flex items-center gap-3 px-4 py-3 text-gray-500 text-sm transition hover:bg-gray-100 hover:text-black no-underline">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M3 1a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V1z" />
+            <path d="M3 5a1 1 0 011-1h12a1 1 0 011 1v12a2 2 0 01-2 2H5a2 2 0 01-2-2V5z" />
+          </svg>
+          <span>Products</span>
+        </a>
+        <a href="/admin/customers"
+          class="flex items-center gap-3 px-4 py-3 text-gray-500 text-sm transition hover:bg-gray-100 hover:text-black no-underline">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+            <path
+              d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v1h8v-1zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
+          </svg>
+          <span>Customers</span>
+        </a>
+        <a href="#"
+          class="flex items-center gap-3 px-4 py-3 text-gray-500 text-sm transition hover:bg-gray-100 hover:text-black no-underline bg-gray-100 border-l-4 border-black">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+            <path
+              d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" />
+          </svg>
+          <span>Analytics</span>
+        </a>
+        <a href="/admin/coupons"
+          class="flex items-center gap-3 px-4 py-3 text-gray-500 text-sm transition hover:bg-gray-100 hover:text-black no-underline">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+            <path
+              d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" />
+          </svg>
+          <span>Coupons</span>
+        </a>
+        <a href="/admin/category"
+          class="flex items-center gap-3 px-4 py-3 text-gray-500 text-sm transition hover:bg-gray-100 hover:text-black no-underline">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M7 3a1 1 0 011-1h10a1 1 0 011 1v3a2 2 0 01-2 2H6a2 2 0 01-2-2V7zm2 3a1 1 0 100 2 1 1 0 000-2z" />
+          </svg>
+          <span>Categories</span>
+        </a>
+        <a href="/admin/offers"
+          class="flex items-center gap-3 px-4 py-3 text-gray-500 text-sm transition hover:bg-gray-100 hover:text-black no-underline">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+            <path
+              d="M4.5 3a2.5 2.5 0 015 0V4h4V3a2.5 2.5 0 015 0v1h2.006a1 1 0 01.994.89l1.348 13.48A2 2 0 0118.334 20H1.666a2 2 0 01-1.994-2.21L1 4.89A1 1 0 012 4h2V3a2.5 2.5 0 012.5-2.5z" />
+          </svg>
+          <span>Offers</span>
+        </a>
+      </nav>
+      <div class="p-4 border-t border-gray-200 md:absolute md:inset-x-0 md:bottom-0">
+        <div class="flex items-center gap-3 mb-4">
+          <div
+            class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center font-semibold text-blue-800 flex-shrink-0">
+            <span class="font-bold">A</span>
+          </div>
+          <div class="hidden md:block">
+            <div class="text-sm font-semibold text-gray-900">Admin</div>
+            <div class="text-xs text-gray-500 truncate">admin@example.com</div>
+          </div>
+        </div>
+        <button
+          class="w-full flex items-center justify-center gap-2 py-2 bg-gray-100 rounded-md text-gray-900 text-sm hover:bg-gray-200 transition-colors">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor">
+            <path d="M10.5 1.5H3a1.5 1.5 0 00-1.5 1.5v10a1.5 1.5 0 001.5 1.5h7.5a1.5 1.5 0 001.5-1.5v-4"
+              stroke-width="1.5" fill="none" />
+            <path d="M10.5 5l3-3m0 0l-3-3m3 3H6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+              fill="none" />
+          </svg>
+          <span class="hidden md:inline">Logout</span>
+        </button>
+      </div>
+    </aside>
+    <!-- Main Content -->
+    <main class="flex-1 min-h-screen bg-gray-50">
+      <!-- Top Bar -->
+      <header class="bg-white border-b border-gray-200 px-4 sm:px-6 py-4 sticky top-0 z-30">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <!-- Mobile Menu Button -->
+          <button id="menuToggle" class="md:hidden p-2 text-gray-600 hover:text-gray-900 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+          <h1 class="text-2xl font-semibold text-gray-900">Sales Reports</h1>
+          <div class="flex items-center gap-2 flex-wrap justify-end">
+            <button id="exportPdf"
+              class="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium shadow-sm hover:shadow">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="white">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <span class="xs:inline">Export to PDF</span>
+            </button>
+          </div>
+        </div>
+      </header>
+      <!-- Content Area -->
+      <div class="p-4 sm:p-6">
+        <!-- Filter Controls -->
+        <div class="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 mb-6 print-hidden">
+          <h2 class="text-lg font-semibold text-gray-900 mb-4">Filter Sales Data</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div class="custom-dropdown">
+              <label class="block text-sm font-medium text-gray-700 mb-1.5">Report Period</label>
+              <select id="reportPeriod"
+                class="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm">
+                <option <%=data.filters.selectedPeriod==='today' ? 'selected' : '' %>>Today</option>
+                <option <%=data.filters.selectedPeriod==='last7days' ? 'selected' : '' %>>Last 7 days</option>
+                <option <%=data.filters.selectedPeriod==='last30days' ? 'selected' : '' %>>Last 30 days</option>
+                <option <%=data.filters.selectedPeriod==='thismonth' ? 'selected' : '' %>>This month</option>
+                <option <%=data.filters.selectedPeriod==='thisyear' ? 'selected' : '' %>>This year</option>
+                <option <%=data.filters.selectedPeriod==='custom' ? 'selected' : '' %>>Custom range</option>
+              </select>
+            </div>
+            <div id="customDateRange"
+              class="<%= data.filters.selectedPeriod !== 'custom' ? 'hidden' : '' %> col-span-full">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 pt-4 border-t border-gray-200">
+                <div class="date-input">
+                  <label class="block text-sm font-medium text-gray-700 mb-1.5">From</label>
+                  <div class="relative">
+                    <input type="date" id="startDate"
+                      class="w-full border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm"
+                      value="<%= data.filters.startDate %>">
+                    <svg class="calendar-icon w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
+                      </path>
+                    </svg>
+                  </div>
+                </div>
+                <div class="date-input">
+                  <label class="block text-sm font-medium text-gray-700 mb-1.5">To</label>
+                  <div class="relative">
+                    <input type="date" id="endDate"
+                      class="w-full border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm"
+                      value="<%= data.filters.endDate %>">
+                    <svg class="calendar-icon w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
+                      </path>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="flex flex-col sm:flex-row sm:justify-end gap-3 pt-2">
+            <button id="applyFilters"
+              class="flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 w-full sm:w-auto transition-all hover:shadow-md">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+              </svg>
+              Apply Filters
+            </button>
+          </div>
+          <!-- Applied Filters -->
+          <div class="mt-4 pt-4 border-t border-gray-200">
+            <div class="flex flex-wrap gap-2">
+              <% if (data.filters.selectedPeriod==='custom' && data.filters.startDate && data.filters.endDate) { %>
+                <span class="filter-chip">
+                  <%= new Date(data.filters.startDate).toLocaleDateString() %> to <%= new
+                      Date(data.filters.endDate).toLocaleDateString() %>
+                      <span class="remove-filter" data-action="clear-custom">×</span>
+                </span>
+                <% } else { %>
+                  <span class="filter-chip">
+                    <%= data.filters.selectedPeriod==='today' ? 'Today' : data.filters.selectedPeriod==='last7days'
+                      ? 'Last 7 days' : data.filters.selectedPeriod==='last30days' ? 'Last 30 days' :
+                      data.filters.selectedPeriod==='thismonth' ? 'This month' : 'This year' %>
+                      <span class="remove-filter" data-action="clear-period">×</span>
+                  </span>
+                  <% } %>
+                    <span class="filter-chip">
+                      View: <%= data.reportDetails.period.charAt(0).toUpperCase() + data.reportDetails.period.slice(1)
+                        %>
+                        <span class="remove-filter" data-action="reset-view">×</span>
+                    </span>
+            </div>
+          </div>
+        </div>
+        <!-- Sales Summary Metrics -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+          <!-- Total Sales -->
+          <div class="metric-card">
+            <div class="flex justify-between items-start">
+              <div>
+                <h3 class="text-sm font-medium text-gray-500 mb-1">Total Sales</h3>
+                <p class="metric-value">₹<%= data.summary.totalSales %>
+                </p>
+                <span
+                  class="metric-change <%= data.summary.changes.totalSales.isPositive ? 'metric-change-up' : 'metric-change-down' %>">
+                  <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                    <% if (data.summary.changes.totalSales.isPositive) { %>
+                      <path fill-rule="evenodd"
+                        d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z"
+                        clip-rule="evenodd" />
+                      <% } else { %>
+                        <path fill-rule="evenodd"
+                          d="M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 112 0v7.586l2.293-2.293a1 1 0 011.414 0z"
+                          clip-rule="evenodd" />
+                        <% } %>
+                  </svg>
+                  <%= data.summary.changes.totalSales.value %>% vs previous period
+                </span>
+              </div>
+              <div class="text-blue-500">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.745 1.025C15.54 7.845 16 8.973 16 10.117V14a2 2 0 01-4 0v-3.883C12.029 10.5 11.54 10 11 10c-.54 0-1.029.5-1.029 1.117V14a2 2 0 01-4 0v-3.883C5.971 10.5 5.482 10 5 10c-1.11 0-2.08.402-2.745 1.025C1.54 11.845 1 12.973 1 14.117V16a2 2 0 002 2h18a2 2 0 002-2v-1.883c0-1.144-.54-2.173-1.255-2.975C21.03 10.402 20.11 10 19 10c-1.11 0-2.08.402-2.745 1.025C15.54 11.845 15 12.973 15 14.117V16a2 2 0 002 2h2a2 2 0 002-2v-1.883c0-1.144-.54-2.173-1.255-2.975C19.03 10.402 18.11 10 17 10c-.54 0-1.029.5-1.029 1.117V14a2 2 0 01-4 0v-3.883C11.971 10.5 11.482 10 11 10c-1.11 0-2.08.402-2.745 1.025C7.54 11.845 7 12.973 7 14.117V16a2 2 0 002 2h2a2 2 0 002-2v-1.883c0-1.144-.54-2.173-1.255-2.975C11.03 10.402 10.11 10 9 10c-.54 0-1.029.5-1.029 1.117V14a2 2 0 01-4 0v-3.883C3.971 10.5 3.482 10 3 10c-1.11 0-2.08.402-2.745 1.025C.54 11.845 0 12.973 0 14.117V16a2 2 0 002 2h18a2 2 0 002-2v-1.883c0-1.144-.54-2.173-1.255-2.975C20.03 10.402 19.11 10 18 10c-1.11 0-2.08.402-2.745 1.025C14.54 11.845 14 12.973 14 14.117V16a2 2 0 002 2h2a2 2 0 002-2v-1.883c0-1.144-.54-2.173-1.255-2.975C18.03 10.402 17.11 10 16 10c-.54 0-1.029.5-1.029 1.117V14a2 2 0 01-4 0v-3.883C10.971 10.5 10.482 10 10 10c-1.11 0-2.08.402-2.745 1.025C6.54 11.845 6 12.973 6 14.117V16a2 2 0 002 2h2a2 2 0 002-2v-1.883c0-1.144-.54-2.173-1.255-2.975C8.03 10.402 7.11 10 6 10c-.54 0-1.029.5-1.029 1.117V14a2 2 0 01-4 0v-3.883C.971 10.5.482 10 0 10z" />
+                </svg>
+              </div>
+            </div>
+          </div>
+          <!-- Total Orders -->
+          <div class="metric-card">
+            <div class="flex justify-between items-start">
+              <div>
+                <h3 class="text-sm font-medium text-gray-500 mb-1">Total Orders</h3>
+                <p class="metric-value">
+                  <%= data.summary.totalOrders.toLocaleString() %>
+                </p>
+                <span
+                  class="metric-change <%= data.summary.changes.totalOrders.isPositive ? 'metric-change-up' : 'metric-change-down' %>">
+                  <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                    <% if (data.summary.changes.totalOrders.isPositive) { %>
+                      <path fill-rule="evenodd"
+                        d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z"
+                        clip-rule="evenodd" />
+                      <% } else { %>
+                        <path fill-rule="evenodd"
+                          d="M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 112 0v7.586l2.293-2.293a1 1 0 011.414 0z"
+                          clip-rule="evenodd" />
+                        <% } %>
+                  </svg>
+                  <%= data.summary.changes.totalOrders.value %>% vs previous period
+                </span>
+              </div>
+              <div class="text-blue-500">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M3 3h2a1 1 0 011 1v1h10a2 2 0 012 2v1a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h12a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V9a1 1 0 011-1H6a1 1 0 000-2H5a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-1a2 2 0 00-2-2H6a2 2 0 00-2 2v1a1 1 0 001 1h2a1 1 0 001-1v-3a1 1 0 012 0v3a1 1 0 001 1h2a1 1 0 001-1v-3a1 1 0 012 0v3a1 1 0 001 1h2a1 1 0 001-1v-1a2 2 0 00-2-2H4a2 2 0 00-2 2v1a1 1 0 001 1z" />
+                </svg>
+              </div>
+            </div>
+          </div>
+          <!-- Total Discount -->
+          <div class="metric-card">
+            <div class="flex justify-between items-start">
+              <div>
+                <h3 class="text-sm font-medium text-gray-500 mb-1">Total Discount</h3>
+                <p class="metric-value">₹<%= data.summary.totalDiscount %>
+                </p>
+                <span
+                  class="metric-change <%= data.summary.changes.totalDiscount.isPositive ? 'metric-change-down' : 'metric-change-up' %>">
+                  <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                    <% if (!data.summary.changes.totalDiscount.isPositive) { %>
+                      <path fill-rule="evenodd"
+                        d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z"
+                        clip-rule="evenodd" />
+                      <% } else { %>
+                        <path fill-rule="evenodd"
+                          d="M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 112 0v7.586l2.293-2.293a1 1 0 011.414 0z"
+                          clip-rule="evenodd" />
+                        <% } %>
+                  </svg>
+                  <%= data.summary.changes.totalDiscount.value %>% vs previous period
+                </span>
+              </div>
+              <div class="text-blue-500">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Sales Report Table -->
+        <div class="bg-white rounded-xl border border-gray-200 overflow-hidden mb-6">
+          <div
+            class="px-4 py-3 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <h2 class="text-lg font-semibold text-gray-900">Sales Report Details</h2>
+            <div class="flex items-center gap-2">
+              <span class="text-sm text-gray-500 hidden sm:inline">View:</span>
+              <div class="custom-dropdown w-32">
+                <select id="reportView"
+                  class="border border-gray-300 rounded-md py-1 px-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                  <option <%=data.filters.selectedView==='daily' ? 'selected' : '' %>>Daily</option>
+                  <option <%=data.filters.selectedView==='weekly' ? 'selected' : '' %>>Weekly</option>
+                  <option <%=data.filters.selectedView==='monthly' ? 'selected' : '' %>>Monthly</option>
+                  <option <%=data.filters.selectedView==='yearly' ? 'selected' : '' %>>Yearly</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="report-table-container overflow-x-auto">
+            <table class="report-table min-w-full divide-y divide-gray-200 text-sm">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Date
+                    Period</th>
+                  <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Orders
+                  </th>
+                  <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Gross
+                    Sales</th>
+                  <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Discounts
+                  </th>
+                  <th
+                    class="hidden md:table-cell px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Coupons Applied</th>
+                  <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Net Sales
+                  </th>
+                  <th
+                    class="hidden lg:table-cell px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Avg. Order Value</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                <% data.reportDetails.data.forEach((item, index)=> { %>
+                  <tr class="<%= index % 2 === 0 ? 'hover:bg-gray-50' : 'bg-gray-50 hover:bg-gray-100' %>">
+                    <td data-label="Date Period" class="px-4 py-3 whitespace-nowrap font-medium text-gray-900">
+                      <%= item.datePeriod %>
+                    </td>
+                    <td data-label="Orders" class="px-4 py-3 whitespace-nowrap text-gray-500">
+                      <%= item.orders %>
+                    </td>
+                    <td data-label="Gross Sales" class="px-4 py-3 whitespace-nowrap text-gray-900">₹<%= item.grossSales
+                        %>
+                    </td>
+                    <td data-label="Discounts" class="px-4 py-3 whitespace-nowrap text-red-600">-₹<%= item.discounts %>
+                    </td>
+                    <td data-label="Coupons Applied"
+                      class="hidden md:table-cell px-4 py-3 whitespace-nowrap text-red-600">
+                      <% let couponsValue=item.couponsApplied || 0; couponsValue=Number(couponsValue); if
+                        (isNaN(couponsValue) || couponsValue===0) { %>-N/A<% } else { %>- ₹<%= couponsValue.toFixed(2)
+                            %>
+                            <% } %>
+                    </td>
+                    <td data-label="Net Sales" class="px-4 py-3 whitespace-nowrap font-medium text-green-600">₹<%=
+                        item.netSales %>
+                    </td>
+                    <td data-label="Avg. Order Value"
+                      class="hidden lg:table-cell px-4 py-3 whitespace-nowrap text-gray-900">₹<%= item.avgOrderValue %>
+                    </td>
+                  </tr>
+                  <% }); %>
+                    <!-- Totals Row -->
+                    <tr class="bg-gray-50 font-semibold">
+                      <td data-label="Total" class="px-4 py-3 whitespace-nowrap">Total (<%=
+                          data.reportDetails.data.length %>
+                          <%= data.reportDetails.period %>)</td>
+                      <td data-label="Orders" class="px-4 py-3 whitespace-nowrap">
+                        <%= data.reportDetails.totals.orders %>
+                      </td>
+                      <td data-label="Gross Sales" class="px-4 py-3 whitespace-nowrap">₹<%=
+                          data.reportDetails.totals.grossSales %>
+                      </td>
+                      <td data-label="Discounts" class="px-4 py-3 whitespace-nowrap text-red-600">-₹<%=
+                          data.reportDetails.totals.discounts %>
+                      </td>
+                      <td data-label="Coupons Applied"
+                        class="hidden md:table-cell px-4 py-3 whitespace-nowrap text-red-600">
+                        <% let totalCouponsValue=data.reportDetails.totals.couponsApplied || 0;
+                          totalCouponsValue=Number(totalCouponsValue); if (isNaN(totalCouponsValue) ||
+                          totalCouponsValue===0) { %>-N/A<% } else { %>- ₹<%= totalCouponsValue.toFixed(2) %>
+                              <% } %>
+                      </td>
+                      <td data-label="Net Sales" class="px-4 py-3 whitespace-nowrap text-green-600">₹<%=
+                          data.reportDetails.totals.netSales %>
+                      </td>
+                      <td data-label="Avg. Order Value" class="hidden lg:table-cell px-4 py-3 whitespace-nowrap">₹<%=
+                          data.reportDetails.totals.avgOrderValue %>
+                      </td>
+                    </tr>
+              </tbody>
+            </table>
+          </div>
+          <!-- ✅ Product Sales Chart - Real Data from Backend -->
+          <div class="px-4 py-4 border-t border-gray-200">
+            <h3 class="text-sm font-medium text-gray-700 mb-2">Top Selling Products</h3>
+            <div class="h-64">
+              <canvas id="productSalesChart"></canvas>
+            </div>
+          </div>
+        </div>
+        <!-- Coupon & Discount Analysis -->
+        <div class="bg-white rounded-xl border border-gray-200 p-4 mb-6 print-hidden">
+          <h2 class="text-lg font-semibold text-gray-900 mb-4">Discount & Coupon Analysis</h2>
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200 text-sm stacked-table">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Coupon
+                  </th>
+                  <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Usage
+                  </th>
+                  <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Total
+                    Discount</th>
+                  <th
+                    class="hidden md:table-cell px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Avg. Per Use</th>
+                  <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                <% if (data.couponAnalysis.length> 0) { %>
+                  <% data.couponAnalysis.forEach(coupon=> { %>
+                    <tr class="hover:bg-gray-50">
+                      <td data-label="Coupon" class="px-4 py-3">
+                        <div class="font-medium text-gray-900">
+                          <%= coupon.code %>
+                        </div>
+                        <div class="text-xs text-gray-500">
+                          <%= coupon.description %>
+                        </div>
+                      </td>
+                      <td data-label="Usage" class="px-4 py-3 text-gray-500">
+                        <%= coupon.usageCount %>
+                      </td>
+                      <td data-label="Total Discount" class="px-4 py-3 text-gray-900">₹<%= coupon.totalDiscount %>
+                      </td>
+                      <td data-label="Avg. Per Use" class="hidden md:table-cell px-4 py-3 text-gray-900">
+                        <% let avgDiscount=Number(coupon.avgDiscountPerUse); if (isNaN(avgDiscount) || avgDiscount===0)
+                          { %>N/A<% } else { %>₹<%= avgDiscount.toFixed(2) %>
+                              <% } %>
+                      </td>
+                      <td data-label="Status" class="px-4 py-3">
+                        <span
+                          class="status-badge <%= coupon.status === 'active' ? 'status-active' : 'status-inactive' %> text-xs">
+                          <%= coupon.status.charAt(0).toUpperCase() + coupon.status.slice(1) %>
+                        </span>
+                      </td>
+                    </tr>
+                    <% }); %>
+                      <% } else { %>
+                        <tr>
+                          <td colspan="5" class="px-4 py-3 text-center text-gray-500">No coupon data available for the
+                            selected period</td>
+                        </tr>
+                        <% } %>
+                          <!-- Totals Row -->
+                          <% if (data.couponAnalysis.length> 0) { %>
+                            <tr class="bg-gray-50 font-semibold">
+                              <td data-label="Total" class="px-4 py-3">Total</td>
+                              <td data-label="Usage" class="px-4 py-3">
+                                <%= data.couponAnalysis.reduce((sum, coupon)=> sum + coupon.usageCount, 0) %>
+                              </td>
+                              <td data-label="Total Discount" class="px-4 py-3">₹<%= data.couponAnalysis.reduce((sum,
+                                  coupon)=> sum + parseFloat(coupon.totalDiscount), 0).toFixed(2) %></td>
+                              <td data-label="Avg. Per Use" class="hidden md:table-cell px-4 py-3">
+                                <% const totalUsage=data.couponAnalysis.reduce((sum, coupon)=> sum + coupon.usageCount,
+                                  0);
+                                  const totalDiscount = data.couponAnalysis.reduce((sum, coupon) => sum +
+                                  parseFloat(coupon.totalDiscount), 0);
+                                  const avgPerUse = totalDiscount / totalUsage;
+                                  if (isNaN(avgPerUse) || totalUsage === 0) {
+                                  %>N/A<% } else { %>₹<%= avgPerUse.toFixed(2) %>
+                                      <% } %>
+                              </td>
+                              <td data-label="Status" class="px-4 py-3"></td>
+                            </tr>
+                            <% } %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <!-- Pagination -->
+        <div class="bg-white rounded-xl border border-gray-200 p-4 print-hidden">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div class="pagination-info text-sm">
+              Showing <%= (data.pagination.currentPage - 1) * data.pagination.itemsPerPage + 1 %> to
+                <%= Math.min(data.pagination.currentPage * data.pagination.itemsPerPage, data.pagination.totalItems) %>
+                  of <%= data.pagination.totalItems %>
+                    <%= data.reportDetails.period %> reports
+            </div>
+            <div class="pagination-controls flex items-center gap-2 justify-center sm:justify-end">
+              <button
+                class="pagination-btn <%= data.pagination.currentPage <= 1 ? 'disabled opacity-50 cursor-not-allowed' : '' %>"
+                <% if (data.pagination.currentPage> 1) { %>
+                data-page="<%= data.pagination.currentPage - 1 %>"
+                  <% } else { %>
+                    disabled
+                    <% } %>
+                      >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M15 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                          stroke-linejoin="round" />
+                      </svg>
+              </button>
+              <div class="pagination-number text-sm">
+                <%= data.pagination.currentPage %> / <%= data.pagination.totalPages || 1 %>
+              </div>
+              <button
+                class="pagination-btn <%= data.pagination.currentPage >= data.pagination.totalPages ? 'disabled opacity-50 cursor-not-allowed' : '' %>"
+                <% if (data.pagination.currentPage < data.pagination.totalPages) { %>
+                data-page="<%= data.pagination.currentPage + 1 %>"
+                  <% } else { %>
+                    disabled
+                    <% } %>
+                      >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                          stroke-linejoin="round" />
+                      </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+    </main>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      // --- UI Interactions ---
+      const menuToggle = document.getElementById('menuToggle');
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('overlay');
+      if (menuToggle) {
+        menuToggle.addEventListener('click', () => {
+          sidebar.classList.toggle('-translate-x-full');
+          overlay.classList.toggle('hidden');
+          document.body.classList.toggle('overflow-hidden');
+        });
+      }
+      if (overlay) {
+        overlay.addEventListener('click', () => {
+          sidebar.classList.add('-translate-x-full');
+          overlay.classList.add('hidden');
+          document.body.classList.remove('overflow-hidden');
+        });
+      }
+
+      // --- Date Range Toggle ---
+      const reportPeriodSelect = document.getElementById('reportPeriod');
+      const customDateRange = document.getElementById('customDateRange');
+      if (reportPeriodSelect && customDateRange) {
+        reportPeriodSelect.addEventListener('change', function () {
+          if (this.value === 'Custom range') {
+            customDateRange.classList.remove('hidden');
+          } else {
+            customDateRange.classList.add('hidden');
+          }
+        });
+        const today = new Date().toISOString().split('T')[0];
+        const startDateInput = document.getElementById('startDate');
+        const endDateInput = document.getElementById('endDate');
+        if (startDateInput && !startDateInput.value) startDateInput.value = today;
+        if (endDateInput && !endDateInput.value) endDateInput.value = today;
+      }
+
+      // --- Apply Filters ---
+      const applyFiltersBtn = document.getElementById('applyFilters');
+      if (applyFiltersBtn) {
+        applyFiltersBtn.addEventListener('click', function () {
+          const reportPeriod = document.getElementById('reportPeriod').value;
+          const startDate = reportPeriod === 'Custom range' ? document.getElementById('startDate').value : '';
+          const endDate = reportPeriod === 'Custom range' ? document.getElementById('endDate').value : '';
+          const reportView = document.getElementById('reportView').value;
+          const params = new URLSearchParams();
+          params.append('reportPeriod', reportPeriod.toLowerCase().replace(/\s+/g, ''));
+          if (reportPeriod === 'Custom range' && startDate && endDate) {
+            params.append('startDate', startDate);
+            params.append('endDate', endDate);
+          }
+          params.append('view', reportView);
+          params.append('page', '1');
+          window.location.href = `/admin/analytics?${params.toString()}`;
+        });
+      }
+
+      // --- Report View Change ---
+      const reportViewSelect = document.getElementById('reportView');
+      if (reportViewSelect) {
+        reportViewSelect.addEventListener('change', function () {
+          const reportPeriod = document.getElementById('reportPeriod').value;
+          const startDate = reportPeriod === 'Custom range' ? document.getElementById('startDate').value : '';
+          const endDate = reportPeriod === 'Custom range' ? document.getElementById('endDate').value : '';
+          const params = new URLSearchParams();
+          params.append('reportPeriod', reportPeriod.toLowerCase().replace(/\s+/g, ''));
+          if (reportPeriod === 'Custom range' && startDate && endDate) {
+            params.append('startDate', startDate);
+            params.append('endDate', endDate);
+          }
+          params.append('view', this.value);
+          params.append('page', '1');
+          window.location.href = `/admin/analytics?${params.toString()}`;
+        });
+      }
+
+      // --- Export PDF ---
+      const pdfExportBtn = document.getElementById('exportPdf');
+      if (pdfExportBtn) {
+        pdfExportBtn.addEventListener('click', function () {
+          const reportPeriod = document.getElementById('reportPeriod').value;
+          const startDate = reportPeriod === 'Custom range' ? document.getElementById('startDate').value : '';
+          const endDate = reportPeriod === 'Custom range' ? document.getElementById('endDate').value : '';
+          const reportView = document.getElementById('reportView').value;
+          const params = new URLSearchParams();
+          params.append('reportPeriod', reportPeriod.toLowerCase().replace(/\s+/g, ''));
+          if (reportPeriod === 'Custom range' && startDate && endDate) {
+            params.append('startDate', startDate);
+            params.append('endDate', endDate);
+          }
+          params.append('view', reportView);
+          window.location.href = `/admin/sales-reports/export/pdf?${params.toString()}`;
+        });
+      }
+
+      // --- Filter Chip Removal ---
+      document.querySelectorAll('.remove-filter').forEach(button => {
+        button.addEventListener('click', function (e) {
+          e.stopPropagation();
+          const action = this.getAttribute('data-action');
+          const params = new URLSearchParams(window.location.search);
+          if (action === 'clear-custom' || action === 'clear-period') {
+            params.set('reportPeriod', 'last7days');
+            params.delete('startDate');
+            params.delete('endDate');
+          } else if (action === 'reset-view') {
+            params.set('view', 'weekly');
+          }
+          window.location.href = `/admin/analytics?${params.toString()}`;
+        });
+      });
+
+      // --- Window Resize ---
+      window.addEventListener('resize', function () {
+        if (window.innerWidth >= 768) {
+          sidebar.classList.remove('-translate-x-full');
+          overlay.classList.add('hidden');
+          document.body.classList.remove('overflow-hidden');
+        }
+      });
+
+      // --- Pagination ---
+      document.querySelectorAll('.pagination-btn:not([disabled])').forEach(button => {
+        button.addEventListener('click', function (e) {
+          e.preventDefault();
+          const newPage = this.getAttribute('data-page');
+          if (!newPage) return;
+          const urlParams = new URLSearchParams(window.location.search);
+          urlParams.set('page', newPage);
+          window.location.href = `${window.location.pathname}?${urlParams.toString()}`;
+        });
+      });
+
+      // --- ✅ PRODUCT SALES CHART - Real Data from Backend (URL Encoded Method) ---
+      const chartCanvas = document.getElementById('productSalesChart');
+      if (chartCanvas) {
+        const ctx = document.getElementById('productSalesChart').getContext('2d');
+
+        // ✅ URL ENCODED METHOD - SAFE AND RELIABLE
+        const chartDataUrl = '<%= encodeURIComponent(JSON.stringify(data.productSales || {labels: ["No Data"], data: [0], backgroundColors: ["#e5e7eb"], borderColors: ["#9ca3af"]})) %>';
+        let chartData;
+
+        try {
+          chartData = JSON.parse(decodeURIComponent(chartDataUrl));
+        } catch (e) {
+          console.error('Error parsing chart data:', e);
+          chartData = {
+            labels: ['Error Loading Data'],
+            data: [0],
+            backgroundColors: ['#e5e7eb'],
+            borderColors: ['#9ca3af']
+          };
+        }
+
+        new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: chartData.labels || ['No Data'],
+            datasets: [{
+              label: 'Units Sold',
+              data: chartData.data || [0],
+              backgroundColor: chartData.backgroundColors || ['#e5e7eb'],
+              borderColor: chartData.borderColors || ['#9ca3af'],
+              borderWidth: 1,
+              hoverBackgroundColor: (chartData.backgroundColors || ['#e5e7eb']).map(color =>
+                color.includes('rgb') ? color.replace('rgb', 'rgba').replace(')', ', 0.8)') : color + 'CC'
+              )
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              title: {
+                display: true,
+                text: 'Top Selling Products',
+                font: {
+                  size: 16,
+                  weight: 'bold'
+                },
+                padding: {
+                  top: 10,
+                  bottom: 20
+                }
+              },
+              legend: {
+                display: false
+              },
+              tooltip: {
+                callbacks: {
+                  label: function (context) {
+                    return `Units Sold: ${context.raw}`;
+                  }
+                }
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                title: {
+                  display: true,
+                  text: 'Units Sold',
+                  font: {
+                    size: 12,
+                    weight: 'bold'
+                  }
+                },
+                grid: {
+                  color: 'rgba(0, 0, 0, 0.1)'
+                },
+                ticks: {
+                  precision: 0,
+                  font: {
+                    size: 11
+                  }
+                }
+              },
+              x: {
+                grid: {
+                  display: false
+                },
+                ticks: {
+                  font: {
+                    size: 11
+                  },
+                  autoSkip: false,
+                  maxRotation: 45,
+                  minRotation: 45
+                }
+              }
+            },
+            animation: {
+              duration: 1000,
+              easing: 'easeOutQuart'
+            }
+          }
+        });
+      }
+    });
+  </script>
+</body>
+
+</html>

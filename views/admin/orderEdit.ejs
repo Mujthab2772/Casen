@@ -232,14 +232,14 @@
               <!-- Totals -->
               <div class="mt-6 pt-4 border-t border-gray-100">
                 <div class="space-y-1.5 text-sm">
-                  <div class="flex justify-between"><span class="text-gray-600">Subtotal</span> <span>₹<%- (order.subTotal || 0).toFixed(2) %></span></div>
-                  <div class="flex justify-between"><span class="text-gray-600">Discount</span> <span>-₹<%- (order.discountAmount || 0).toFixed(2) %></span></div>
-                  <div class="flex justify-between"><span class="text-gray-600">Shipping</span> <span>₹<%- (order.shipping || 0).toFixed(2) %></span></div>
-                  <div class="flex justify-between"><span class="text-gray-600">Tax</span> <span>₹<%- (order.tax || 0).toFixed(2) %></span></div>
+                  <div class="flex justify-between"><span class="text-gray-600">Subtotal</span> <span>₹<%- (Number(order.subTotal) || 0).toFixed(2) %></span></div>
+                  <div class="flex justify-between"><span class="text-gray-600">Discount</span> <span>-₹<%- (Number(order.discountAmount) || 0).toFixed(2) %></span></div>
+                  <div class="flex justify-between"><span class="text-gray-600">Shipping</span> <span>₹<%- (Number(order.shipping) || 0).toFixed(2) %></span></div>
+                  <div class="flex justify-between"><span class="text-gray-600">Tax</span> <span>₹<%- (Number(order.tax) || 0).toFixed(2) %></span></div>
                 </div>
                 <div class="flex justify-between mt-3 pt-3 border-t border-gray-200">
                   <span class="font-semibold text-gray-900">Total</span>
-                  <span class="text-lg font-bold text-gray-900">₹<%- (order.totalAmount || 0).toFixed(2) %></span>
+                  <span class="text-lg font-bold text-gray-900">₹<%- (Number(order.totalAmount) || 0).toFixed(2) %></span>
                 </div>
               </div>
             </div>

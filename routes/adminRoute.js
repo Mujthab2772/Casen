@@ -11,6 +11,7 @@ import { addNewCoupon, couponFetch, editActive, editCoupon, newCoupon, updateEdi
 import { handleValidationErrors, validateCoupon } from "../middlewares/couponValidate.js"
 import { newOffer, offerAdd, offerDetail, offerEdit, offerToggle, offerUpdate } from "../controllers/admin/offerController.js"
 import { validateOfferCreation } from "../middlewares/offerMIddleware.js"
+import { dashboard, salesReportController } from "../controllers/admin/dashBoardController.js"
 
 const router = express.Router()
 
@@ -93,6 +94,15 @@ router.put('/offer/update/:offerId', adminCheck, offerUpdate)
 
 router.patch('/offer/toggle/:offerId', adminCheck, offerToggle)
 
+// dashboard
+
+router.get('/dashboard', adminCheck, dashboard)
+
+// Analytics
+
+router.get('/analytics', adminCheck, salesReportController.getSalesReportPage);
+
+router.get('/sales-reports/export/pdf', adminCheck, salesReportController.exportSalesReportPDF);
 
 //logout 
 

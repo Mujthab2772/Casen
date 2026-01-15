@@ -5,7 +5,6 @@ import { ProductVariant } from "../../models/productVariantModel.js"; // Added i
 import { Wallet } from "../../models/walletModel.js"; // Added import
 import { Transaction } from "../../models/transactionsModel.js"; // Added import
 
-// Refund utility function (copied from user service)
 async function refundToWallet(userId, amount, orderId, description) {
   try {
     let wallet = await Wallet.findOne({ userId });
@@ -125,35 +124,37 @@ export const orderSingle = async (orderId) => {
 export const statusUpdate = async (orderId, status, userId) => {
   try {
     const order = await orderModal.findOne({ _id: orderId, userId });
-    if (!order) throw new Error('Order not found');
-
-    if (order.orderStatus === status) {
-      return 'Current status and update are the same';
+    if (!order) {
+      throw new Error('Order not found or unauthorized access');
     }
 
-    if (status === 'cancelled') {
+    if (order.orderStatus === status) {
+      return { 
+        message: 'Status unchanged', 
+        currentStatus: order.orderStatus 
+      };
+    }
+
+   if (status === 'cancelled') {
       return await orderCancelEntire(orderId, userId);
     }
 
     if (status === 'returned') {
-      // Handle return with refund logic
       if (order.orderStatus !== 'requestingReturn') {
-        throw new Error('Only requestingReturn orders can be returned');
+        throw new Error(`Invalid transition: ${order.orderStatus} → returned. Only 'requestingReturn' orders can be returned`);
       }
 
-      // Restore stock for all items
       for (const item of order.items) {
         if (item.orderStatus !== 'cancelled') {
           const variant = await ProductVariant.findOne({ variantId: item.variantId });
-          if (variant) {
-            variant.stock += item.quantity;
-            await variant.save();
-            item.orderStatus = 'cancelled'; // Mark item as cancelled
-          }
+          if (!variant) continue;
+          
+          variant.stock += item.quantity;
+          await variant.save();
+          item.orderStatus = 'cancelled'; 
         }
       }
 
-      // Update order status and payment status
       order.orderStatus = 'returned';
       if (order.paymentStatus === 'paid') {
         order.paymentStatus = 'refunded';
@@ -161,7 +162,6 @@ export const statusUpdate = async (orderId, status, userId) => {
 
       await order.save();
 
-      // Process refund if order was paid
       if (order.paymentStatus === 'refunded' && order.totalAmount > 0) {
         const refundAmount = new mongoose.Types.Decimal128(order.totalAmount.toFixed(2));
         await refundToWallet(
@@ -175,11 +175,22 @@ export const statusUpdate = async (orderId, status, userId) => {
       return order;
     }
 
+    if (status === 'delivered') {
+      if (order.paymentStatus !== 'paid') {
+        order.paymentStatus = 'paid';
+      }
+    }
+
     order.orderStatus = status;
     await order.save();
+
     return order;
   } catch (error) {
-    console.log(`error from statusUpdate ${error}`);
-    throw error
+    console.error(`[statusUpdate] Order ID: ${orderId} | Error: ${error.message}`, {
+      stack: error.stack,
+      userId,
+      newStatus: status
+    });
+    throw new Error(`Status update failed: ${error.message}`);
   }
 };

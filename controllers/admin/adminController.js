@@ -31,7 +31,7 @@ export const adminLoginVerify = async (req, res) => {
         }
 
         req.session.adminUsr = adminUsername
-        return res.status(STATUS_CODE.OK).redirect("/admin/products")
+        return res.status(STATUS_CODE.OK).redirect("/admin/dashboard")
 
     } catch (error) {
         console.error(`Error from adminLoginPost: ${error}`)
