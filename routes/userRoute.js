@@ -10,7 +10,7 @@ import { editProfile, newPassword, otpResend, otpVerify, ProfileUser, setNewPass
 import upload from "../middlewares/multer.js"
 import { address, addressEdit, addressEditUpdate, addressFetch, addressNew, deleteAddress } from "../controllers/user/addressController.js"
 import { validateAddress } from "../middlewares/addressMiddleware.js"
-import { cart, newCart, removeCart, updateCart } from "../controllers/user/cartController.js"
+import { cart, checkInventoryRoute, newCart, removeCart, updateCart } from "../controllers/user/cartController.js"
 import { checkout, checkoutDatas, getAvailableCoupons, previewCheckout } from "../controllers/user/checkoutController.js"
 import { payment, paymentFail, paymentProcess, paymentSuccess, verifyPayment } from "../controllers/user/paymentController.js"
 import { exitsCheckout } from "../middlewares/checkoutMiddleware.js"
@@ -104,6 +104,8 @@ router.post('/cart/add', userProfile, newCart)
 router.put('/cart/update', userProfile, updateCart)
 
 router.delete('/cart/remove', userProfile, removeCart)
+
+router.post('/inventory/check',userProfile, checkInventoryRoute);
 
 // checkout
 
