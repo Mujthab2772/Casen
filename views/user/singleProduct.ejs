@@ -85,128 +85,139 @@
       gap: 4px;
       box-shadow: 0 2px 4px rgba(255, 65, 108, 0.3);
     }
+
+    .scrollbar-hide::-webkit-scrollbar {
+      display: none;
+    }
+
+    .scrollbar-hide {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
   </style>
 </head>
 
 <body class="bg-white text-gray-800 font-sans" x-data="productApp({
-productId: '<%= product._id %>',
-productName: '<%= product.productName %>',
-categoryName: '<%= product.category?.categoryName || '' %>',
-description: `<%= product.description || 'No description available.' %>`,
-isLoggedIn: <%= locals.user ? 'true' : 'false' %>,
-variants: <%= JSON.stringify(product.variants.map(v => ({
-_id: v._id.toString(),
-color: (v.color || 'Unknown').trim(),
-originalPrice: typeof v.originalPrice === 'number' ? v.originalPrice : (typeof v.price === 'number' ? v.price : 0),
-price: typeof v.price === 'number' ? v.price : (parseFloat(v.price) || 0),
-stock: typeof v.stock === 'number' ? v.stock : (parseInt(v.stock, 10) || 0),
-images: Array.isArray(v.images) ? v.images : ['https://placehold.co/600x600?text=No+Image'],
-hasOffer: v.hasOffer || false,
-offerInfo: v.offerInfo || null
-}))) %>,
-offerInfo: <%= product.offerInfo ? JSON.stringify(product.offerInfo) : 'null' %>
+  productId: '<%= product._id %>',
+  productName: '<%= product.productName %>',
+  categoryName: '<%= product.category?.categoryName || '' %>',
+  description: `<%= product.description || 'No description available.' %>`,
+  isLoggedIn: <%= locals.user ? 'true' : 'false' %>,
+  variants: <%= JSON.stringify(product.variants.map(v => ({
+    _id: v._id.toString(),
+    color: (v.color || 'Unknown').trim(),
+    originalPrice: typeof v.originalPrice === 'number' ? v.originalPrice : (typeof v.price === 'number' ? v.price : 0),
+    price: typeof v.price === 'number' ? v.price : (parseFloat(v.price) || 0),
+    stock: typeof v.stock === 'number' ? v.stock : (parseInt(v.stock, 10) || 0),
+    images: Array.isArray(v.images) ? v.images : ['https://placehold.co/600x600?text=No+Image'],
+    hasOffer: v.hasOffer || false,
+    offerInfo: v.offerInfo || null
+  }))) %>,
+  offerInfo: <%= product.offerInfo ? JSON.stringify(product.offerInfo) : 'null' %>,
+  wishlistVariantIds: <%= JSON.stringify(locals.wishlistVariantIds || []) %>
 })" x-init="init()">
   <!-- Header -->
-<header class="bg-white shadow-sm sticky top-0 z-50">
-        <div class="container mx-auto px-4 py-3 flex items-center justify-between">
-            <!-- Logo -->
-            <div class="flex items-center">
-                <a href="/">
-                    <img src="/logo.png" alt="Logo" class="h-8 object-contain">
-                </a>
-            </div>
+  <header class="bg-white shadow-sm sticky top-0 z-50">
+    <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+      <!-- Logo -->
+      <div class="flex items-center">
+        <a href="/">
+          <img src="/logo.png" alt="Logo" class="h-8 object-contain">
+        </a>
+      </div>
 
-            <!-- Desktop Navigation -->
-            <nav class="hidden md:flex space-x-5">
-                <a href="/" class="text-sm font-medium transition-opacity hover:opacity-80">Home</a>
-                <a href="#" class="text-sm font-medium transition-opacity hover:opacity-80">About</a>
-                <a href="/products" class="text-sm font-medium transition-opacity hover:opacity-80">Phone Cases</a>
-                <a href="#" class="text-sm font-medium transition-opacity hover:opacity-80">Tablet Cases</a>
-                <a href="#" class="text-sm font-medium transition-opacity hover:opacity-80">Sale</a>
-            </nav>
+      <!-- Desktop Navigation -->
+      <nav class="hidden md:flex space-x-5">
+        <a href="/" class="text-sm font-medium transition-opacity hover:opacity-80">Home</a>
+        <a href="#" class="text-sm font-medium transition-opacity hover:opacity-80">About</a>
+        <a href="/products" class="text-sm font-medium transition-opacity hover:opacity-80">Phone Cases</a>
+        <a href="#" class="text-sm font-medium transition-opacity hover:opacity-80">Tablet Cases</a>
+        <a href="#" class="text-sm font-medium transition-opacity hover:opacity-80">Sale</a>
+      </nav>
 
-            <!-- Icons & Auth -->
-            <div class="flex items-center space-x-4">
-                <!-- Wishlist -->
-                <button class="p-2 rounded-full hover:bg-gray-100 transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" onclick="window.location.href='/profile/wishlist'">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                    </svg>
-                </button>
+      <!-- Icons & Auth -->
+      <div class="flex items-center space-x-4">
+        <!-- Wishlist -->
+        <button class="p-2 rounded-full hover:bg-gray-100 transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" onclick="window.location.href='/profile/wishlist'">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+          </svg>
+        </button>
 
-                <!-- Cart -->
-                <button class="p-2 rounded-full hover:bg-gray-100 transition-colors relative" onclick="window.location.href='/cart'">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
-                </button>
+        <!-- Cart -->
+        <button class="p-2 rounded-full hover:bg-gray-100 transition-colors relative" onclick="window.location.href='/cart'">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
+        </button>
 
-                <!-- User Menu -->
-                <% if (locals.user && user.profilePic) { %>
-                <div class="relative" x-data="{ open: false, imageError: false }" @click.away="open = false">
-                    <button @click="open = !open" class="rounded-full overflow-hidden w-8 h-8 border border-transparent hover:border-gray-300 transition-colors focus:outline-none">
-                        <template x-if="!imageError">
-                            <img src="<%= user.profilePic %>" @error="imageError = true" alt="Profile" class="w-full h-full object-cover" />
-                        </template>
-                        <template x-if="imageError">
-                            <div class="w-full h-full bg-gray-300 flex items-center justify-center text-gray-600 rounded-full">
-                                <span class="font-medium text-sm"><%= user.name ? user.name.charAt(0).toUpperCase() : 'U' %></span>
-                            </div>
-                        </template>
-                    </button>
-                    <div x-show="open"
-                         x-transition:enter="transition ease-out duration-150"
-                         x-transition:enter-start="opacity-0 scale-95"
-                         x-transition:enter-end="opacity-100 scale-100"
-                         x-transition:leave="transition ease-in duration-100"
-                         x-transition:leave-start="opacity-100 scale-100"
-                         x-transition:leave-end="opacity-0 scale-95"
-                         class="absolute right-0 mt-2 w-44 bg-white shadow-lg rounded-lg py-1 z-50">
-                        <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">Profile</a>
-                        <form action="/logout" method="post">
-                            <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">Logout</button>
-                        </form>
-                    </div>
-                </div>
-                <% } else if (locals.user) { %>
-                <div class="relative" x-data="{ open: false }" @click.away="open = false">
-                    <button @click="open = !open" class="w-8 h-8 flex items-center justify-center text-gray-600 hover:text-gray-900 transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg>
-                    </button>
-                    <div x-show="open"
-                         x-transition:enter="transition ease-out duration-150"
-                         x-transition:enter-start="opacity-0 scale-95"
-                         x-transition:enter-end="opacity-100 scale-100"
-                         x-transition:leave="transition ease-in duration-100"
-                         x-transition:leave-start="opacity-100 scale-100"
-                         x-transition:leave-end="opacity-0 scale-95"
-                         class="absolute right-0 mt-2 w-44 bg-white shadow-lg rounded-lg py-1 z-50">
-                        <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Profile</a>
-                        <form action="/logout" method="post">
-                            <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Logout</button>
-                        </form>
-                    </div>
-                </div>
-                <% } else { %>
-                <a href="/login" class="text-sm font-medium hover: transition-colors flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
-                    Sign In
-                </a>
-                <% } %>
-
-                <!-- Mobile Menu Button -->
-                <button class="md:hidden text-gray-600 hover:text-gray-900">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                    </svg>
-                </button>
-            </div>
+        <!-- User Menu -->
+        <% if (locals.user && user.profilePic) { %>
+        <div class="relative" x-data="{ open: false, imageError: false }" @click.away="open = false">
+          <button @click="open = !open" class="rounded-full overflow-hidden w-8 h-8 border border-transparent hover:border-gray-300 transition-colors focus:outline-none">
+            <template x-if="!imageError">
+              <img src="<%= user.profilePic %>" @error="imageError = true" alt="Profile" class="w-full h-full object-cover" />
+            </template>
+            <template x-if="imageError">
+              <div class="w-full h-full bg-gray-300 flex items-center justify-center text-gray-600 rounded-full">
+                <span class="font-medium text-sm"><%= user.name ? user.name.charAt(0).toUpperCase() : 'U' %></span>
+              </div>
+            </template>
+          </button>
+          <div x-show="open"
+               x-transition:enter="transition ease-out duration-150"
+               x-transition:enter-start="opacity-0 scale-95"
+               x-transition:enter-end="opacity-100 scale-100"
+               x-transition:leave="transition ease-in duration-100"
+               x-transition:leave-start="opacity-100 scale-100"
+               x-transition:leave-end="opacity-0 scale-95"
+               class="absolute right-0 mt-2 w-44 bg-white shadow-lg rounded-lg py-1 z-50">
+            <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">Profile</a>
+            <form action="/logout" method="post">
+              <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">Logout</button>
+            </form>
+          </div>
         </div>
-    </header>
+        <% } else if (locals.user) { %>
+        <div class="relative" x-data="{ open: false }" @click.away="open = false">
+          <button @click="open = !open" class="w-8 h-8 flex items-center justify-center text-gray-600 hover:text-gray-900 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+          </button>
+          <div x-show="open"
+               x-transition:enter="transition ease-out duration-150"
+               x-transition:enter-start="opacity-0 scale-95"
+               x-transition:enter-end="opacity-100 scale-100"
+               x-transition:leave="transition ease-in duration-100"
+               x-transition:leave-start="opacity-100 scale-100"
+               x-transition:leave-end="opacity-0 scale-95"
+               class="absolute right-0 mt-2 w-44 bg-white shadow-lg rounded-lg py-1 z-50">
+            <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Profile</a>
+            <form action="/logout" method="post">
+              <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Logout</button>
+            </form>
+          </div>
+        </div>
+        <% } else { %>
+        <a href="/login" class="text-sm font-medium hover: transition-colors flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          </svg>
+          Sign In
+        </a>
+        <% } %>
+
+        <!-- Mobile Menu Button -->
+        <button class="md:hidden text-gray-600 hover:text-gray-900">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+  
   <nav aria-label="breadcrumb" class="container mx-auto px-4 mt-4">
     <ol class="flex items-center space-x-2 text-sm text-gray-500">
       <li><a href="/" class="hover:text-gray-700">Home</a></li>
@@ -218,6 +229,7 @@ offerInfo: <%= product.offerInfo ? JSON.stringify(product.offerInfo) : 'null' %>
       </li>
     </ol>
   </nav>
+  
   <main class="container mx-auto px-4 py-8">
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
       <!-- Image Gallery -->
@@ -229,11 +241,10 @@ offerInfo: <%= product.offerInfo ? JSON.stringify(product.offerInfo) : 'null' %>
           <% if (product.variants && product.variants.some(v=> v.hasOffer)) { %>
             <div class="absolute top-2 left-2 z-10">
               <span class="offer-badge">
-                <i class="fas fa-tag"></i> Save <%= Math.round(product.variants[0].offerInfo?.discountPercentage || 0)
-                  %>%
+                <i class="fas fa-tag"></i> Save <%= Math.round(product.variants[0].offerInfo?.discountPercentage || 0) %>%
               </span>
             </div>
-            <% } %>
+          <% } %>
         </div>
         <div id="thumbnailGallery" class="flex space-x-2 overflow-x-auto pb-1">
           <template x-for="img in selectedVariant.images.slice(0, 5)" :key="img">
@@ -295,10 +306,10 @@ offerInfo: <%= product.offerInfo ? JSON.stringify(product.offerInfo) : 'null' %>
           <div class="flex space-x-3">
             <template x-for="(variant, index) in variants" :key="index">
               <div class="w-10 h-10 rounded-full cursor-pointer border-2 flex-shrink-0" :class="{
-'border-blue-500': selectedVariantIndex === index,
-'border-transparent': selectedVariantIndex !== index,
-[getColorClass(variant.color)]: true
-}" @click="selectVariant(index)" :title="variant.color">
+              'border-blue-500': selectedVariantIndex === index,
+              'border-transparent': selectedVariantIndex !== index,
+              [getColorClass(variant.color)]: true
+            }" @click="selectVariant(index)" :title="variant.color">
                 <template x-if="variant.hasOffer">
                   <div
                     class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
@@ -337,13 +348,13 @@ offerInfo: <%= product.offerInfo ? JSON.stringify(product.offerInfo) : 'null' %>
           <div class="flex items-center space-x-4">
             <div class="flex items-center">
               <button class="w-10 h-10 rounded-full bg-gray-100 text-gray-700 flex items-center justify-center
-hover:bg-gray-200 hover:shadow-sm transition-all duration-200 active:scale-95" @click="updateQuantity(-1)"
+              hover:bg-gray-200 hover:shadow-sm transition-all duration-200 active:scale-95" @click="updateQuantity(-1)"
                 :disabled="quantity <= 1">
                 <i class="fas fa-minus text-sm"></i>
               </button>
               <span class="mx-4 w-8 text-center text-lg font-medium text-gray-800" x-text="quantity"></span>
               <button class="w-10 h-10 rounded-full bg-gray-100 text-gray-700 flex items-center justify-center
-hover:bg-gray-200 hover:shadow-sm transition-all duration-200 active:scale-95" @click="updateQuantity(1)"
+              hover:bg-gray-200 hover:shadow-sm transition-all duration-200 active:scale-95" @click="updateQuantity(1)"
                 :disabled="selectedVariant.stock > 0 && quantity >= selectedVariant.stock">
                 <i class="fas fa-plus text-sm"></i>
               </button>
@@ -354,10 +365,14 @@ hover:bg-gray-200 hover:shadow-sm transition-all duration-200 active:scale-95" @
             </button>
           </div>
           <button
-            class="flex items-center justify-center space-x-2 border border-gray-300 text-gray-700 py-3 rounded-full font-medium hover:bg-gray-50 transition"
-            @click="addToWishList">
-            <i class="far fa-heart"></i>
-            <span>Add to Wishlist</span>
+            class="flex items-center justify-center space-x-2 py-3 rounded-full font-medium transition" 
+            :class="{
+              'bg-red-500 text-white hover:bg-red-600': isCurrentVariantInWishlist, 
+              'border border-gray-300 text-gray-700 hover:bg-gray-50': !isCurrentVariantInWishlist
+            }"
+            @click="toggleWishlist">
+            <i class="fas" :class="isCurrentVariantInWishlist ? 'fa-heart' : 'far fa-heart'"></i>
+            <span x-text="isCurrentVariantInWishlist ? 'Added to Wishlist' : 'Add to Wishlist'"></span>
           </button>
         </div>
         <div class="flex items-center space-x-4 text-sm">
@@ -394,15 +409,13 @@ hover:bg-gray-200 hover:shadow-sm transition-all duration-200 active:scale-95" @
         </button>
         <div id="product-carousel" class="overflow-x-auto pb-4 space-x-4 scrollbar-hide flex">
           <div class="flex space-x-4 min-w-max px-2">
-            <% for (let i=0; i < allproducts.length; i++) { %>
-              <% const p=allproducts[i];
-               const variant=p.variants || {}; 
-               const priceNum=(typeof variant.price==='number'
-                ) ? variant.price : 0; 
-                const originalPrice=(variant.offerInfo && variant.offerInfo.originalPrice) ?
-                variant.offerInfo.originalPrice : priceNum; const hasOffer=variant.hasOffer || false; 
-                const imageUrl=(variant.images && Array.isArray(variant.images) && variant.images[0]) ? variant.images[0]
-                : 'https://via.placeholder.com/300' ; %>
+            <% for (let i = 0; i < allproducts.length; i++) { %>
+              <% const p = allproducts[i];
+                const variant = p.variants || {}; 
+                const priceNum = (typeof variant.price === 'number') ? variant.price : 0; 
+                const originalPrice = (variant.offerInfo && variant.offerInfo.originalPrice) ? variant.offerInfo.originalPrice : priceNum; 
+                const hasOffer = variant.hasOffer || false; 
+                const imageUrl = (variant.images && Array.isArray(variant.images) && variant.images[0]) ? variant.images[0] : 'https://via.placeholder.com/300'; %>
                 <div class="bg-white rounded-lg overflow-hidden shadow-sm w-48 flex-shrink-0">
                   <a href="/product?product=<%= p.productId %>" class="block">
                     <div class="relative">
@@ -413,7 +426,7 @@ hover:bg-gray-200 hover:shadow-sm transition-all duration-200 active:scale-95" @
                             Save <%= Math.round(allproducts[i].offerInfo?.discountPercentage || 0) %>%
                           </span>
                         </div>
-                        <% } %>
+                      <% } %>
                     </div>
                     <div class="p-4">
                       <div class="text-xs text-gray-500 mb-1">Casen</div>
@@ -424,26 +437,28 @@ hover:bg-gray-200 hover:shadow-sm transition-all duration-200 active:scale-95" @
                         <% if (hasOffer) { %>
                           <span class="text-sm font-bold text-red-500">Rs. <%= variant.price.toFixed(2) %></span>
                           <span class="text-gray-400 line-through text-xs">Rs. <%= allproducts[i].offerInfo?.originalPrice %></span>
-                          <% } else { %>
-                            <span class="text-sm font-bold text-red-500">
-                              Rs. <%= priceNum.toFixed(2) %>
-                            </span>
-                            <% } %>
+                        <% } else { %>
+                          <span class="text-sm font-bold text-red-500">
+                            Rs. <%= priceNum.toFixed(2) %>
+                          </span>
+                        <% } %>
                       </div>
                     </div>
                   </a>
                 </div>
-                <% } %>
+            <% } %>
           </div>
         </div>
       </div>
     </section>
   </main>
+  
   <footer class="bg-black text-white pt-12 pb-8 mt-16">
     <div class="container mx-auto px-4 text-center">
       <p>&copy; 2025 Casen. All rights reserved.</p>
     </div>
   </footer>
+  
   <!-- Add to Cart Modal -->
   <div x-show="showModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
     @click="showModal = false" x-transition>
@@ -478,6 +493,7 @@ hover:bg-gray-200 hover:shadow-sm transition-all duration-200 active:scale-95" @
       </div>
     </div>
   </div>
+  
   <!-- Alpine.js Logic -->
   <script>
     function productApp(initialData) {
@@ -493,12 +509,20 @@ hover:bg-gray-200 hover:shadow-sm transition-all duration-200 active:scale-95" @
         showModal: false,
         openSections: { description: false, spec: false },
         offerInfo: initialData.offerInfo,
+        wishlistVariantIds: initialData.wishlistVariantIds || [],
+        
         get selectedVariant() {
           return this.variants[this.selectedVariantIndex] || {};
         },
+        
+        get isCurrentVariantInWishlist() {
+          return this.selectedVariant._id && this.wishlistVariantIds.includes(this.selectedVariant._id);
+        },
+        
         init() {
           this.initZoom();
         },
+        
         getColorClass(color) {
           if (!color) return 'color-fallback-gray';
           const c = color.toLowerCase().trim();
@@ -514,6 +538,7 @@ hover:bg-gray-200 hover:shadow-sm transition-all duration-200 active:scale-95" @
           if (c.includes('violet') || c.includes('grape')) return 'color-fallback-violet';
           return 'color-fallback-gray';
         },
+        
         selectVariant(index) {
           if (index >= 0 && index < this.variants.length) {
             this.selectedVariantIndex = index;
@@ -521,11 +546,13 @@ hover:bg-gray-200 hover:shadow-sm transition-all duration-200 active:scale-95" @
             this.updateMainImage(this.selectedVariant.images[0]);
           }
         },
+        
         updateMainImage(src) {
           const img = document.getElementById('mainImage');
           if (img) img.src = src;
           this.resetZoom();
         },
+        
         updateQuantity(change) {
           // Enforce max 10 per variant, even if stock is higher
           const maxAllowed = Math.min(this.selectedVariant.stock, 10);
@@ -535,6 +562,7 @@ hover:bg-gray-200 hover:shadow-sm transition-all duration-200 active:scale-95" @
           if (newQty > maxAllowed) newQty = maxAllowed;
           this.quantity = newQty;
         },
+        
         addToCart() {
           // 🔑 Check login first
           if (!this.isLoggedIn) {
@@ -584,7 +612,7 @@ hover:bg-gray-200 hover:shadow-sm transition-all duration-200 active:scale-95" @
           })
             .then(response => response.json())
             .then(data => {
-              if (data.success === 'success') {
+              if (data.success) {
                 // Show success modal
                 this.showModal = true;
               } else if (data.success === 'fail') {
@@ -609,12 +637,13 @@ hover:bg-gray-200 hover:shadow-sm transition-all duration-200 active:scale-95" @
               });
             });
         },
-        addToWishList() {
+        
+        toggleWishlist() {
           if (!this.isLoggedIn) {
             Swal.fire({
               icon: 'info',
               title: 'Please Sign In',
-              text: 'You need to be logged in to add items to your cart.',
+              text: 'You need to be logged in to add items to your wishlist.',
               confirmButtonText: 'Go to Login',
               showCancelButton: true,
               cancelButtonText: 'Cancel'
@@ -626,64 +655,97 @@ hover:bg-gray-200 hover:shadow-sm transition-all duration-200 active:scale-95" @
             return;
           }
 
-          fetch('/profile/wishlist/add', {
+          const wasInWishlist = this.isCurrentVariantInWishlist;
+          const variantId = this.selectedVariant._id;
+          
+          // Toggle local state for immediate feedback
+          if (wasInWishlist) {
+            this.wishlistVariantIds = this.wishlistVariantIds.filter(id => id !== variantId);
+          } else {
+            this.wishlistVariantIds = [...this.wishlistVariantIds, variantId];
+          }
+          
+          fetch('/profile/wishlist/toggle', {
             method: 'POST',
-            headers: {'Content-Type': 'application/json'},
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               productId: this.productId,
               variantId: this.selectedVariant._id
             })
           })
-           .then(response => response.json())
-            .then(data => {
-              if (data.success === 'success') {
-                // Show success modal
-               Swal.fire({
+          .then(response => response.json())
+          .then(data => {
+            if (data.success === 'success') {
+              if (!wasInWishlist) {
+                Swal.fire({
                   icon: 'success',
                   title: 'Added to Wishlist',
-                  text: 'You can check in wishlist',
+                  text: 'You can check your wishlist anytime.',
                   confirmButtonText: 'OK',
                   showDenyButton: true, 
-                  denyButtonText: 'wishlist'
+                  denyButtonText: 'View Wishlist'
                 }).then(result => {
-                  if(result.isDenied) {
-                    window.location.href = '/profile/wishlist'
+                  if (result.isDenied) {
+                    window.location.href = '/profile/wishlist';
                   }
-                })
-              } else if (data.success === 'already in wishlist') {
-                // Backend blocked due to cart limit (e.g., total > 10 for variant)
-                Swal.fire({
-                  icon: 'warning',
-                  title: 'Already in Wishlist',
-                  text: 'You can only add product once in wishlist.',
-                  confirmButtonText: 'OK'
-                });
-              }else if (data.success === 'already in cart') {
-                // Backend blocked due to cart limit (e.g., total > 10 for variant)
-                Swal.fire({
-                  icon: 'warning',
-                  title: 'Already in Cart',
-                  text: 'Your product already in cart.',
-                  confirmButtonText: 'OK'
                 });
               }
-               else {
-                throw new Error('Invalid response');
-              }
-            })
-            .catch(err => {
-              console.error('Add to wishlist failed:', err);
+            } else if (data.success === 'removed') {
               Swal.fire({
-                icon: 'error',
-                title: 'Oops...',
-                text: 'Failed to add item to cart. Please try again.',
+                icon: 'success',
+                title: 'Removed from Wishlist',
+                text: 'The item has been removed from your wishlist.',
                 confirmButtonText: 'OK'
               });
+            } else if (data.success === 'already in wishlist') {
+              // This shouldn't happen with proper local state management
+              this.wishlistVariantIds = [...this.wishlistVariantIds, variantId];
+              Swal.fire({
+                icon: 'info',
+                title: 'Already in Wishlist',
+                text: 'This item is already in your wishlist.',
+                confirmButtonText: 'OK'
+              });
+            } else if (data.success === 'not in wishlist') {
+              // This shouldn't happen with proper local state management
+              this.wishlistVariantIds = this.wishlistVariantIds.filter(id => id !== variantId);
+              Swal.fire({
+                icon: 'info',
+                title: 'Not in Wishlist',
+                text: 'This item was not in your wishlist.',
+                confirmButtonText: 'OK'
+              });
+            } else {
+              // Revert local state change if server operation failed
+              if (wasInWishlist) {
+                this.wishlistVariantIds = [...this.wishlistVariantIds, variantId];
+              } else {
+                this.wishlistVariantIds = this.wishlistVariantIds.filter(id => id !== variantId);
+              }
+              throw new Error('Invalid response');
+            }
+          })
+          .catch(err => {
+            console.error('Wishlist toggle failed:', err);
+            // Revert local state change if operation failed
+            if (wasInWishlist) {
+              this.wishlistVariantIds = [...this.wishlistVariantIds, variantId];
+            } else {
+              this.wishlistVariantIds = this.wishlistVariantIds.filter(id => id !== variantId);
+            }
+            Swal.fire({
+              icon: 'error',
+              title: 'Oops...',
+              text: 'Failed to update wishlist. Please try again.',
+              confirmButtonText: 'OK'
             });
+          });
         },
+        
         toggleAccordion(section) {
           this.openSections[section] = !this.openSections[section];
         },
+        
         initZoom() {
           const container = document.getElementById('zoomContainer');
           const img = document.getElementById('mainImage');
@@ -711,6 +773,7 @@ hover:bg-gray-200 hover:shadow-sm transition-all duration-200 active:scale-95" @
             img.style.transform = `scale(${zoomLevel})`;
           });
         },
+        
         resetZoom() {
           const img = document.getElementById('mainImage');
           const lens = document.getElementById('zoomLens');
@@ -721,6 +784,7 @@ hover:bg-gray-200 hover:shadow-sm transition-all duration-200 active:scale-95" @
         }
       };
     }
+    
     // Carousel logic
     document.addEventListener('DOMContentLoaded', () => {
       const carousel = document.getElementById('product-carousel');

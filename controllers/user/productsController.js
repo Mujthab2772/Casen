@@ -1,3 +1,5 @@
+import mongoose from "mongoose";
+import Wishlist from "../../models/wishlist.js";
 import { productDetailsFilter } from "../../service/user/landingpageService.js";
 import { productDetails, singleProductFetch } from "../../service/user/productService.js";
 import { STATUS_CODE } from "../../util/statusCodes.js";
@@ -50,16 +52,29 @@ export const singleProduct = async (req, res) => {
         const productId = req.query.product;
         if (!productId) return res.status(STATUS_CODE.BAD_REQUEST).redirect('/products');
         
+        const user = req.session.userDetail;
         const result = await singleProductFetch(productId);
         const products = await productDetailsFilter();
         
+        // Get wishlist variant IDs instead of just a boolean
+        let wishlistVariantIds = [];
+        if (user) {
+            const userId = new mongoose.Types.ObjectId(user._id);
+            const wishlistItems = await Wishlist.find({ 
+                userId, 
+                productId: new mongoose.Types.ObjectId(result?._id) 
+            });
+            wishlistVariantIds = wishlistItems.map(item => item.variantId.toString());
+        }
+        
         if (!result) return res.status(STATUS_CODE.NOT_FOUND).redirect('/products');
         if (!result.variants || result.variants.length === 0) return res.status(STATUS_CODE.NOT_FOUND).redirect('/products');
-        
+
         res.render('singleProduct', { 
             product: result, 
-            user: req.session.userDetail, 
-            allproducts: products 
+            user,
+            wishlistVariantIds, // Pass the array of variant IDs in wishlist
+            allproducts: products
         });
     } catch (error) {
         console.log(`error from singleProduct ${error}`);
