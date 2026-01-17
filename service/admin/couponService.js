@@ -13,7 +13,6 @@ export const fetchCouponsWithFilters = async ({
   const now = new Date();
   const query = {};
 
-  // Search
   if (search) {
     const regex = new RegExp(search.trim(), 'i');
     query.$or = [
@@ -22,28 +21,22 @@ export const fetchCouponsWithFilters = async ({
     ];
   }
 
-  // Status filter
   if (status !== 'all') {
     if (status === 'active') {
-      // Active: isActive + within date range
       query.isActive = true;
       query.startDate = { $lte: now };
       query.endDate = { $gte: now };
     } else if (status === 'expired') {
-      // Expired: isActive but endDate is in the past
       query.isActive = true;
       query.endDate = { $lt: now };
     } else if (status === 'scheduled') {
-      // Scheduled: isActive but startDate is in the future
       query.isActive = true;
       query.startDate = { $gt: now };
     } else if (status === 'inactive') {
-      // Inactive: manually disabled
       query.isActive = false;
     }
   }
 
-  // Discount type
   if (discountType !== 'all') {
     query.discountType = discountType;
   }
@@ -115,27 +108,22 @@ export const couponUpdate = async (couponDetails) => {
     perUserLimit
   } = couponDetails;
 
-  // 1. Fetch the existing coupon
   const existingCoupon = await couponModel.findOne({ couponCode });
   if (!existingCoupon) {
     throw new Error('Coupon not found');
   }
 
-  // 2. Enforce: discountType cannot be changed
   if (newDiscountType !== existingCoupon.discountType) {
     throw new Error('Changing discount type after creation is not allowed');
   }
 
-  // 3. Prepare update object
   const update = {
     discountAmount: parseFloat(discountAmount),
     startDate: new Date(startDate),
     endDate: new Date(endDate),
     perUserLimit: parseInt(perUserLimit, 10)
-    // Note: discountType is NOT included — it stays as-is
-  };
+    };
 
-  // Optional fields
   if (minAmount != null && minAmount > 0) {
     update.minAmount = parseFloat(minAmount);
   }
@@ -143,7 +131,6 @@ export const couponUpdate = async (couponDetails) => {
     update.maxAmount = parseFloat(maxAmount);
   }
 
-  // 4. Perform update
   const updated = await couponModel.findOneAndUpdate(
     { couponCode },
     update,

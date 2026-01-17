@@ -51,23 +51,6 @@ export const toggleBlockAndUnblock = async (categoryid) => {
             await categoryCollection.updateOne({categoryId: categoryid}, {$set: {isValid: true}})
         }
 
-        // const productSameAs = await Product.aggregate([
-        //     {$match: {categoryId: categoryDetail._id}},
-        //     {
-        //         $lookup: {
-        //             from: 'productvariants',
-        //             localField: "variantId",
-        //             foreignField: "_id",
-        //             as: 'variant'
-        //         }
-        //     },
-        //     {$unwind: "$variant"},
-        //     {$match: {'variant.stock': {$gt: 5}}}
-        // ])
-
-
-        // console.log(productSameAs[0].variant.stock)
-
     } catch (error) {
         console.log(`Error from toggleBlockAndUnblock ${error}`);
         throw error

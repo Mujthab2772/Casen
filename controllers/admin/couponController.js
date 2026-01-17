@@ -32,7 +32,7 @@ export const couponFetch = async (req, res) => {
     });
   } catch (error) {
     console.error(`Error in couponFetch: ${error}`);
-    res.status(500).send('Server error');
+    res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).send('Server error');
   }
 };
 
@@ -90,13 +90,13 @@ export const updateEditCoupon = async (req, res) => {
       ...req.body
     });
 
-    return res.status(200).json({
+    return res.status(STATUS_CODE.OK).json({
       success: true,
       message: 'Coupon updated successfully'
     });
   } catch (error) {
     console.error(`Error in updateEditCoupon: ${error.message}`);
-    return res.status(500).json({
+    return res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: error.message || 'Failed to update coupon'
     });

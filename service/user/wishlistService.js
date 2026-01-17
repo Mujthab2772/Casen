@@ -37,7 +37,7 @@ export const wishlistItems = async (userId, skip, limit) => {
   try {
     const userIdObj = new mongoose.Types.ObjectId(userId);
     const cartitem = await Cart.findOne({userId})
-    if (cartitem && cartitem.products) {
+    if (cartitem && cartitem?.products) {
       for (let key of cartitem.products) {
         await Wishlist.deleteOne({variantId: key.variantId});
       }

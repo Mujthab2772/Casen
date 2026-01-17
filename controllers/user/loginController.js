@@ -17,7 +17,7 @@ export const loginGet = (req, res) => {
     res.render('loginPage', { loginErr, loginPassErr });
   } catch (error) {
     console.error(`Error in loginGet: ${error}`);
-    res.status(500).redirect('/login');
+    res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).redirect('/login');
   }
 }
 

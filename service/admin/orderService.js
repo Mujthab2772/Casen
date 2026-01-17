@@ -197,7 +197,6 @@ export const statusUpdate = async (orderId, status, userId) => {
   }
 };
 
-// New function to handle single item status updates for returns
 export const itemStatusUpdate = async (orderId, orderItemId, status) => {
   try {
     const order = await orderModal.findById(orderId);
@@ -210,12 +209,10 @@ export const itemStatusUpdate = async (orderId, orderItemId, status) => {
       throw new Error('Item not found in this order');
     }
 
-    // Validate current item status
     if (!['requestingReturn'].includes(item.orderStatus)) {
       throw new Error(`Invalid item status: ${item.orderStatus}. Only items with 'requestingReturn' status can be processed for return`);
     }
 
-    // Check if status is unchanged
     if (status === 'approved' && item.orderStatus === 'returned') {
       return { 
         message: 'Item already returned', 
@@ -230,32 +227,25 @@ export const itemStatusUpdate = async (orderId, orderItemId, status) => {
       };
     }
 
-    // Process approved return
     if (status === 'approved') {
-      // Find the variant and update stock
       const variant = await ProductVariant.findOne({ variantId: item.variantId });
       if (variant) {
         variant.stock += item.quantity;
         await variant.save();
       }
 
-      // Calculate refund amount for this item
       const itemTotal = item.price * item.quantity;
       
-      // Update item status
       item.orderStatus = 'returned';
       item.returnApprovedAt = new Date();
       
-      // Check if all items are returned or cancelled
       const allItemsReturnedOrCancelled = order.items.every(i => 
         ['returned', 'cancelled'].includes(i.orderStatus)
       );
       
-      // Update order status if all items are returned/cancelled
       if (allItemsReturnedOrCancelled) {
         order.orderStatus = 'returned';
         
-        // Check if any items were not refunded (cancelled without refund)
         const itemsWithRefund = order.items.filter(i => 
           i.orderStatus === 'returned'
         );
@@ -264,18 +254,14 @@ export const itemStatusUpdate = async (orderId, orderItemId, status) => {
           order.paymentStatus = 'refunded';
         }
       } else {
-        // If not all items are returned, check if we need to update order status
         const hasRequestingReturn = order.items.some(i => i.orderStatus === 'requestingReturn');
         if (!hasRequestingReturn) {
-          // No more items requesting return, but not all are returned/cancelled
           if (order.orderStatus === 'requestingReturn') {
-            // Determine the most common status among items
             const statusCounts = {};
             order.items.forEach(i => {
               statusCounts[i.orderStatus] = (statusCounts[i.orderStatus] || 0) + 1;
             });
             
-            // Set order status to the most common item status
             let mostCommonStatus = 'pending';
             let maxCount = 0;
             Object.entries(statusCounts).forEach(([s, count]) => {
@@ -290,7 +276,6 @@ export const itemStatusUpdate = async (orderId, orderItemId, status) => {
         }
       }
       
-      // Process refund for this item
       if (order.paymentStatus !== 'refunded' || !allItemsReturnedOrCancelled) {
         await refundToWallet(
           order.userId,
@@ -304,26 +289,21 @@ export const itemStatusUpdate = async (orderId, orderItemId, status) => {
       await order.save();
       return { success: true, order, item };
     } 
-    // Process denied return
     else if (status === 'denied') {
-      item.orderStatus = 'delivered'; // Reset to pending status
-      item.returnReason = null; // Clear return reason
-      item.returnRequestedAt = null; // Clear request timestamp
+      item.orderStatus = 'delivered'; 
+      item.returnReason = null; 
+      item.returnRequestedAt = null; 
       
-      // Check if any other items are still requesting return
       const stillHasRequestingReturns = order.items.some(i => 
         i.orderStatus === 'requestingReturn' && i.orderItemId !== orderItemId
       );
       
-      // Update order status if needed
       if (order.orderStatus === 'requestingReturn' && !stillHasRequestingReturns) {
-        // Determine the most common status among items
         const statusCounts = {};
         order.items.forEach(i => {
           statusCounts[i.orderStatus] = (statusCounts[i.orderStatus] || 0) + 1;
         });
         
-        // Set order status to the most common item status
         let mostCommonStatus = 'pending';
         let maxCount = 0;
         Object.entries(statusCounts).forEach(([s, count]) => {

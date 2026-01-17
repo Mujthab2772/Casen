@@ -213,7 +213,7 @@
                          data-max-per-order="<%= maxPerOrder %>"
                          data-qty="<%= qty %>"
                          data-is-invalid="<%= isInvalid ? 'true' : 'false' %>">
-                        <img src="<%= item.variant.images[0] %>" alt="<%= item.product.productName %>" class="w-20 h-20 object-cover mr-4">
+                        <img src="<%= item.variant.images[0] || '/images/placeholder.png' %>" alt="<%= item.product.productName %>" class="w-20 h-20 object-cover mr-4">
                         <div class="flex-grow">
                             <a href="/product?product=<%= item.product.productId %>">
                                 <p class="font-medium"><%= item.product.productName %></p>
@@ -774,7 +774,7 @@
                                 cartItem.remove();
                                 recalculateTotals();
                                 const itemsLeft = document.querySelectorAll('[data-cart-product-id]').length;
-                                
+                                window.location.reload()
                                 if (itemsLeft === 0) {
                                     window.location.href = '/cart';
                                 }

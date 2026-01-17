@@ -1,809 +1,754 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="icon" type="image/png" sizes="32x32" href="/logoTab.png">
-  <title>
-    <%= product.productName %> - Casen
-  </title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.10/dist/cdn.min.js"></script>
-  <style>
-    .color-fallback-black {
-      background-color: #000;
-    }
-
-    .color-fallback-white {
-      background-color: #fff;
-      border: 1px solid #ccc;
-    }
-
-    .color-fallback-wine-red {
-      background-color: #722F37;
-    }
-
-    .color-fallback-red {
-      background-color: #ef4444;
-    }
-
-    .color-fallback-blue {
-      background-color: #3b82f6;
-    }
-
-    .color-fallback-green {
-      background-color: #10b981;
-    }
-
-    .color-fallback-pink {
-      background-color: #ec4899;
-    }
-
-    .color-fallback-orange {
-      background-color: #f97316;
-    }
-
-    .color-fallback-purple {
-      background-color: #a855f7;
-    }
-
-    .color-fallback-gray {
-      background-color: #9ca3af;
-    }
-
-    .color-fallback-violet {
-      background-color: #8a2be2;
-    }
-
-    #zoomContainer {
-      cursor: zoom-in;
-      touch-action: none;
-      position: relative;
-      overflow: hidden;
-    }
-
-    #zoomLens {
-      border: 1px solid rgba(255, 255, 255, 0.5);
-      background-color: rgba(255, 255, 255, 0.2);
-      box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
-      position: absolute;
-      pointer-events: none;
-    }
-
-    .offer-badge {
-      background: linear-gradient(135deg, #ff416c, #ff4b2b);
-      color: white;
-      padding: 2px 8px;
-      border-radius: 12px;
-      font-weight: bold;
-      font-size: 0.85rem;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      box-shadow: 0 2px 4px rgba(255, 65, 108, 0.3);
-    }
-
-    .scrollbar-hide::-webkit-scrollbar {
-      display: none;
-    }
-
-    .scrollbar-hide {
-      -ms-overflow-style: none;
-      scrollbar-width: none;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="icon" type="image/png" sizes="32x32" href="/logoTab.png">
+<title>
+<%= product.productName %> - Casen
+</title>
+<script src="https://cdn.tailwindcss.com "></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css " />
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11 "></script>
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.10/dist/cdn.min.js "></script>
+<style>
+.color-fallback-black {
+background-color: #000;
+}
+.color-fallback-white {
+background-color: #fff;
+border: 1px solid #ccc;
+}
+.color-fallback-wine-red {
+background-color: #722F37;
+}
+.color-fallback-red {
+background-color: #ef4444;
+}
+.color-fallback-blue {
+background-color: #3b82f6;
+}
+.color-fallback-green {
+background-color: #10b981;
+}
+.color-fallback-pink {
+background-color: #ec4899;
+}
+.color-fallback-orange {
+background-color: #f97316;
+}
+.color-fallback-purple {
+background-color: #a855f7;
+}
+.color-fallback-gray {
+background-color: #9ca3af;
+}
+.color-fallback-violet {
+background-color: #8a2be2;
+}
+#zoomContainer {
+cursor: zoom-in;
+touch-action: none;
+position: relative;
+overflow: hidden;
+}
+#zoomLens {
+border: 1px solid rgba(255, 255, 255, 0.5);
+background-color: rgba(255, 255, 255, 0.2);
+box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+position: absolute;
+pointer-events: none;
+}
+.offer-badge {
+background: linear-gradient(135deg, #ff416c, #ff4b2b);
+color: white;
+padding: 2px 8px;
+border-radius: 12px;
+font-weight: bold;
+font-size: 0.85rem;
+display: inline-flex;
+align-items: center;
+gap: 4px;
+box-shadow: 0 2px 4px rgba(255, 65, 108, 0.3);
+}
+.scrollbar-hide::-webkit-scrollbar {
+display: none;
+}
+.scrollbar-hide {
+-ms-overflow-style: none;
+scrollbar-width: none;
+}
+</style>
 </head>
-
 <body class="bg-white text-gray-800 font-sans" x-data="productApp({
-  productId: '<%= product._id %>',
-  productName: '<%= product.productName %>',
-  categoryName: '<%= product.category?.categoryName || '' %>',
-  description: `<%= product.description || 'No description available.' %>`,
-  isLoggedIn: <%= locals.user ? 'true' : 'false' %>,
-  variants: <%= JSON.stringify(product.variants.map(v => ({
-    _id: v._id.toString(),
-    color: (v.color || 'Unknown').trim(),
-    originalPrice: typeof v.originalPrice === 'number' ? v.originalPrice : (typeof v.price === 'number' ? v.price : 0),
-    price: typeof v.price === 'number' ? v.price : (parseFloat(v.price) || 0),
-    stock: typeof v.stock === 'number' ? v.stock : (parseInt(v.stock, 10) || 0),
-    images: Array.isArray(v.images) ? v.images : ['https://placehold.co/600x600?text=No+Image'],
-    hasOffer: v.hasOffer || false,
-    offerInfo: v.offerInfo || null
-  }))) %>,
-  offerInfo: <%= product.offerInfo ? JSON.stringify(product.offerInfo) : 'null' %>,
-  wishlistVariantIds: <%= JSON.stringify(locals.wishlistVariantIds || []) %>
+productId: '<%= product._id %>',
+productName: '<%= product.productName %>',
+categoryName: '<%= product.category?.categoryName || '' %>',
+description: `<%= product.description || 'No description available.' %>`,
+isLoggedIn: <%= locals.user ? 'true' : 'false' %>,
+variants: <%= JSON.stringify(product.variants.map(v => ({
+_id: v._id.toString(),
+color: (v.color || 'Unknown').trim(),
+originalPrice: typeof v.originalPrice === 'number' ? v.originalPrice : (typeof v.price === 'number' ? v.price : 0),
+price: typeof v.price === 'number' ? v.price : (parseFloat(v.price) || 0),
+stock: typeof v.stock === 'number' ? v.stock : (parseInt(v.stock, 10) || 0),
+images: Array.isArray(v.images) ? v.images : ['https://placehold.co/600x600?text=No+Image '],
+hasOffer: v.hasOffer || false,
+offerInfo: v.offerInfo || null
+}))) %>,
+offerInfo: <%= product.offerInfo ? JSON.stringify(product.offerInfo) : 'null' %>,
+wishlistVariantIds: <%= JSON.stringify(locals.wishlistVariantIds || []) %>
 })" x-init="init()">
-  <!-- Header -->
-  <header class="bg-white shadow-sm sticky top-0 z-50">
-    <div class="container mx-auto px-4 py-3 flex items-center justify-between">
-      <!-- Logo -->
-      <div class="flex items-center">
-        <a href="/">
-          <img src="/logo.png" alt="Logo" class="h-8 object-contain">
-        </a>
-      </div>
-
-      <!-- Desktop Navigation -->
-      <nav class="hidden md:flex space-x-5">
-        <a href="/" class="text-sm font-medium transition-opacity hover:opacity-80">Home</a>
-        <a href="#" class="text-sm font-medium transition-opacity hover:opacity-80">About</a>
-        <a href="/products" class="text-sm font-medium transition-opacity hover:opacity-80">Phone Cases</a>
-        <a href="#" class="text-sm font-medium transition-opacity hover:opacity-80">Tablet Cases</a>
-        <a href="#" class="text-sm font-medium transition-opacity hover:opacity-80">Sale</a>
-      </nav>
-
-      <!-- Icons & Auth -->
-      <div class="flex items-center space-x-4">
-        <!-- Wishlist -->
-        <button class="p-2 rounded-full hover:bg-gray-100 transition-colors">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" onclick="window.location.href='/profile/wishlist'">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-          </svg>
-        </button>
-
-        <!-- Cart -->
-        <button class="p-2 rounded-full hover:bg-gray-100 transition-colors relative" onclick="window.location.href='/cart'">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-          </svg>
-        </button>
-
-        <!-- User Menu -->
-        <% if (locals.user && user.profilePic) { %>
-        <div class="relative" x-data="{ open: false, imageError: false }" @click.away="open = false">
-          <button @click="open = !open" class="rounded-full overflow-hidden w-8 h-8 border border-transparent hover:border-gray-300 transition-colors focus:outline-none">
-            <template x-if="!imageError">
-              <img src="<%= user.profilePic %>" @error="imageError = true" alt="Profile" class="w-full h-full object-cover" />
-            </template>
-            <template x-if="imageError">
-              <div class="w-full h-full bg-gray-300 flex items-center justify-center text-gray-600 rounded-full">
-                <span class="font-medium text-sm"><%= user.name ? user.name.charAt(0).toUpperCase() : 'U' %></span>
-              </div>
-            </template>
-          </button>
-          <div x-show="open"
-               x-transition:enter="transition ease-out duration-150"
-               x-transition:enter-start="opacity-0 scale-95"
-               x-transition:enter-end="opacity-100 scale-100"
-               x-transition:leave="transition ease-in duration-100"
-               x-transition:leave-start="opacity-100 scale-100"
-               x-transition:leave-end="opacity-0 scale-95"
-               class="absolute right-0 mt-2 w-44 bg-white shadow-lg rounded-lg py-1 z-50">
-            <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">Profile</a>
-            <form action="/logout" method="post">
-              <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">Logout</button>
-            </form>
-          </div>
-        </div>
-        <% } else if (locals.user) { %>
-        <div class="relative" x-data="{ open: false }" @click.away="open = false">
-          <button @click="open = !open" class="w-8 h-8 flex items-center justify-center text-gray-600 hover:text-gray-900 transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-            </svg>
-          </button>
-          <div x-show="open"
-               x-transition:enter="transition ease-out duration-150"
-               x-transition:enter-start="opacity-0 scale-95"
-               x-transition:enter-end="opacity-100 scale-100"
-               x-transition:leave="transition ease-in duration-100"
-               x-transition:leave-start="opacity-100 scale-100"
-               x-transition:leave-end="opacity-0 scale-95"
-               class="absolute right-0 mt-2 w-44 bg-white shadow-lg rounded-lg py-1 z-50">
-            <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Profile</a>
-            <form action="/logout" method="post">
-              <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Logout</button>
-            </form>
-          </div>
-        </div>
-        <% } else { %>
-        <a href="/login" class="text-sm font-medium hover: transition-colors flex items-center">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-          </svg>
-          Sign In
-        </a>
-        <% } %>
-
-        <!-- Mobile Menu Button -->
-        <button class="md:hidden text-gray-600 hover:text-gray-900">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        </button>
-      </div>
-    </div>
-  </header>
-  
-  <nav aria-label="breadcrumb" class="container mx-auto px-4 mt-4">
-    <ol class="flex items-center space-x-2 text-sm text-gray-500">
-      <li><a href="/" class="hover:text-gray-700">Home</a></li>
-      <li><span class="mx-1">/</span></li>
-      <li><a href="/products" class="hover:text-gray-700">Products</a></li>
-      <li><span class="mx-1">/</span></li>
-      <li class="text-gray-900">
-        <%= product.productName %>
-      </li>
-    </ol>
-  </nav>
-  
-  <main class="container mx-auto px-4 py-8">
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-      <!-- Image Gallery -->
-      <div class="space-y-3">
-        <div class="relative w-full aspect-square bg-gray-100 rounded-lg overflow-hidden group" id="zoomContainer">
-          <img id="mainImage" :src="selectedVariant.images[0] || 'https://placehold.co/600x600?text=No+Image'"
-            :alt="productName" class="w-full h-full object-contain transition-transform duration-200 ease-out" />
-          <div id="zoomLens" class="hidden w-32 h-32 rounded-full absolute top-0 left-0"></div>
-          <% if (product.variants && product.variants.some(v=> v.hasOffer)) { %>
-            <div class="absolute top-2 left-2 z-10">
-              <span class="offer-badge">
-                <i class="fas fa-tag"></i> Save <%= Math.round(product.variants[0].offerInfo?.discountPercentage || 0) %>%
-              </span>
-            </div>
-          <% } %>
-        </div>
-        <div id="thumbnailGallery" class="flex space-x-2 overflow-x-auto pb-1">
-          <template x-for="img in selectedVariant.images.slice(0, 5)" :key="img">
-            <img :src="img"
-              class="w-16 h-16 object-cover border border-gray-300 rounded cursor-pointer flex-shrink-0 hover:border-blue-500 transition"
-              @click="updateMainImage(img)" />
-          </template>
-        </div>
-      </div>
-      <!-- Product Details -->
-      <div class="space-y-6">
-        <div>
-          <p class="text-sm text-gray-500" x-text="categoryName"></p>
-          <p class="text-sm text-gray-500" x-text="productName"></p>
-          <h1 class="text-2xl font-bold mt-1" x-text="selectedVariant.color || 'Color N/A'"></h1>
-        </div>
-        <div class="flex items-center space-x-2 text-sm text-orange-500">
-          <i class="fas fa-fire"></i>
-          <span>153+ bought in past month</span>
-        </div>
-        <div class="flex items-center space-x-4">
-          <!-- Updated price display logic to use selectedVariant's price -->
-          <div class="flex flex-col">
-            <div class="flex items-baseline">
-              <template x-if="selectedVariant.hasOffer">
-                <div>
-                  <span class="text-2xl font-bold text-red-500"
-                    x-text="`Rs. ${selectedVariant.price.toFixed(2)}`"></span>
-                  <span class="ml-3 text-gray-400 line-through text-lg"
-                    x-text="`Rs. ${selectedVariant.originalPrice.toFixed(2)}`"></span>
-                </div>
-              </template>
-              <template x-if="!selectedVariant.hasOffer">
-                <span class="text-2xl font-bold text-red-500" x-text="`Rs. ${selectedVariant.price.toFixed(2)}`"></span>
-              </template>
-            </div>
-            <template x-if="selectedVariant.hasOffer">
-              <div class="mt-1 text-sm text-red-600 font-medium">
-                <span x-text="`Offer: ${selectedVariant.offerInfo?.offerName || 'Special Offer'}`"></span>
-              </div>
-            </template>
-          </div>
-        </div>
-        <!-- Stock Status -->
-        <div class="inline-flex items-center px-3 py-1 rounded-full text-sm"
-          :class="selectedVariant.stock > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
-          <div x-show="selectedVariant.stock > 0" class="flex items-center">
-            <div class="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
-            In stock (<span x-text="selectedVariant.stock"></span> available)
-          </div>
-          <div x-show="selectedVariant.stock <= 0" class="flex items-center">
-            <div class="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
-            Out of stock
-          </div>
-        </div>
-        <!-- Color Selection -->
-        <div class="bg-gray-50 p-4 rounded-lg">
-          <h3 class="font-semibold mb-3">Color - <span x-text="selectedVariant.color || 'N/A'"></span></h3>
-          <div class="flex space-x-3">
-            <template x-for="(variant, index) in variants" :key="index">
-              <div class="w-10 h-10 rounded-full cursor-pointer border-2 flex-shrink-0" :class="{
-              'border-blue-500': selectedVariantIndex === index,
-              'border-transparent': selectedVariantIndex !== index,
-              [getColorClass(variant.color)]: true
-            }" @click="selectVariant(index)" :title="variant.color">
-                <template x-if="variant.hasOffer">
-                  <div
-                    class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                    <span x-text="Math.round(variant.offerInfo?.discountPercentage || 0)"></span>
-                  </div>
-                </template>
-              </div>
-            </template>
-          </div>
-        </div>
-        <!-- Description Accordion -->
-        <div class="border-t border-gray-200 pt-4" @click="toggleAccordion('description')">
-          <div class="flex justify-between items-center cursor-pointer">
-            <h3 class="font-semibold">Description</h3>
-            <i class="fas" :class="openSections.description ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
-          </div>
-          <div x-show="openSections.description" class="mt-3 text-sm text-gray-600">
-            <p x-text="description"></p>
-          </div>
-        </div>
-        <!-- Tech Spec Accordion -->
-        <div class="border-t border-gray-200 pt-4" @click="toggleAccordion('spec')">
-          <div class="flex justify-between items-center cursor-pointer">
-            <h3 class="font-semibold">Technical Specification</h3>
-            <i class="fas" :class="openSections.spec ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
-          </div>
-          <div x-show="openSections.spec" class="mt-3 text-sm text-gray-600">
-            <div class="mb-3">
-              <h4 class="font-medium mb-1">Material:</h4>
-              <p x-text="categoryName || 'N/A'"></p>
-            </div>
-          </div>
-        </div>
-        <!-- Actions -->
-        <div class="flex flex-col space-y-3">
-          <div class="flex items-center space-x-4">
-            <div class="flex items-center">
-              <button class="w-10 h-10 rounded-full bg-gray-100 text-gray-700 flex items-center justify-center
-              hover:bg-gray-200 hover:shadow-sm transition-all duration-200 active:scale-95" @click="updateQuantity(-1)"
-                :disabled="quantity <= 1">
-                <i class="fas fa-minus text-sm"></i>
-              </button>
-              <span class="mx-4 w-8 text-center text-lg font-medium text-gray-800" x-text="quantity"></span>
-              <button class="w-10 h-10 rounded-full bg-gray-100 text-gray-700 flex items-center justify-center
-              hover:bg-gray-200 hover:shadow-sm transition-all duration-200 active:scale-95" @click="updateQuantity(1)"
-                :disabled="selectedVariant.stock > 0 && quantity >= selectedVariant.stock">
-                <i class="fas fa-plus text-sm"></i>
-              </button>
-            </div>
-            <button class="flex-1 bg-black text-white py-3 rounded-full font-medium hover:bg-gray-800 transition"
-              @click="addToCart">
-              Add to cart
-            </button>
-          </div>
-          <button
-            class="flex items-center justify-center space-x-2 py-3 rounded-full font-medium transition" 
-            :class="{
-              'bg-red-500 text-white hover:bg-red-600': isCurrentVariantInWishlist, 
-              'border border-gray-300 text-gray-700 hover:bg-gray-50': !isCurrentVariantInWishlist
-            }"
-            @click="toggleWishlist">
-            <i class="fas" :class="isCurrentVariantInWishlist ? 'fa-heart' : 'far fa-heart'"></i>
-            <span x-text="isCurrentVariantInWishlist ? 'Added to Wishlist' : 'Add to Wishlist'"></span>
-          </button>
-        </div>
-        <div class="flex items-center space-x-4 text-sm">
-          <span class="font-medium">Share:</span>
-          <button class="text-gray-600 hover:text-blue-600"><i class="fab fa-facebook-f"></i></button>
-          <button class="text-gray-600 hover:text-blue-400"><i class="fab fa-twitter"></i></button>
-          <div class="ml-auto">
-            <button class="text-sm text-gray-500 flex items-center">
-              <i class="fas fa-question-circle mr-1"></i> Need help?
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!-- Recommendations -->
-    <section class="mt-16 bg-gradient-to-r from-yellow-50 to-orange-50 py-12 rounded-2xl relative">
-      <div class="container mx-auto px-4">
-        <h2 class="text-3xl font-bold mb-8">You May Also Like</h2>
-        <button id="scroll-left"
-          class="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-md hidden md:block opacity-70 hover:opacity-100 transition">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd"
-              d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
-              clip-rule="evenodd" />
-          </svg>
-        </button>
-        <button id="scroll-right"
-          class="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-md hidden md:block opacity-70 hover:opacity-100 transition">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd"
-              d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-              clip-rule="evenodd" />
-          </svg>
-        </button>
-        <div id="product-carousel" class="overflow-x-auto pb-4 space-x-4 scrollbar-hide flex">
-          <div class="flex space-x-4 min-w-max px-2">
-            <% for (let i = 0; i < allproducts.length; i++) { %>
-              <% const p = allproducts[i];
-                const variant = p.variants || {}; 
-                const priceNum = (typeof variant.price === 'number') ? variant.price : 0; 
-                const originalPrice = (variant.offerInfo && variant.offerInfo.originalPrice) ? variant.offerInfo.originalPrice : priceNum; 
-                const hasOffer = variant.hasOffer || false; 
-                const imageUrl = (variant.images && Array.isArray(variant.images) && variant.images[0]) ? variant.images[0] : 'https://via.placeholder.com/300'; %>
-                <div class="bg-white rounded-lg overflow-hidden shadow-sm w-48 flex-shrink-0">
-                  <a href="/product?product=<%= p.productId %>" class="block">
-                    <div class="relative">
-                      <img src="<%= imageUrl %>" class="w-full h-48 object-contain" />
-                      <% if (hasOffer) { %>
-                        <div class="absolute top-2 left-2 z-10">
-                          <span class="offer-badge">
-                            Save <%= Math.round(allproducts[i].offerInfo?.discountPercentage || 0) %>%
-                          </span>
-                        </div>
-                      <% } %>
-                    </div>
-                    <div class="p-4">
-                      <div class="text-xs text-gray-500 mb-1">Casen</div>
-                      <div class="text-sm mb-2 truncate">
-                        <%= p.productName %>
-                      </div>
-                      <div class="flex items-center justify-between">
-                        <% if (hasOffer) { %>
-                          <span class="text-sm font-bold text-red-500">Rs. <%= variant.price.toFixed(2) %></span>
-                          <span class="text-gray-400 line-through text-xs">Rs. <%= allproducts[i].offerInfo?.originalPrice %></span>
-                        <% } else { %>
-                          <span class="text-sm font-bold text-red-500">
-                            Rs. <%= priceNum.toFixed(2) %>
-                          </span>
-                        <% } %>
-                      </div>
-                    </div>
-                  </a>
-                </div>
-            <% } %>
-          </div>
-        </div>
-      </div>
-    </section>
-  </main>
-  
-  <footer class="bg-black text-white pt-12 pb-8 mt-16">
-    <div class="container mx-auto px-4 text-center">
-      <p>&copy; 2025 Casen. All rights reserved.</p>
-    </div>
-  </footer>
-  
-  <!-- Add to Cart Modal -->
-  <div x-show="showModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-    @click="showModal = false" x-transition>
-    <div class="bg-white rounded-2xl max-w-md w-full p-6 relative" @click.stop>
-      <button @click="showModal = false" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
-        <i class="fas fa-times"></i>
-      </button>
-      <div class="text-center py-4">
-        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <i class="fas fa-check text-green-600 text-2xl"></i>
-        </div>
-        <h3 class="text-xl font-bold mb-2">Added to Cart!</h3>
-        <p class="text-gray-600 mb-4">
-          <span x-text="productName"></span> (<span x-text="selectedVariant.color"></span>) x <span
-            x-text="quantity"></span>
-          <template x-if="selectedVariant.hasOffer">
-            <div class="text-sm text-green-700 mt-2">
-              You saved Rs. <span x-text="(selectedVariant.originalPrice - selectedVariant.price).toFixed(2)"></span>
-              with <span x-text="selectedVariant.offerInfo?.offerName || 'Special Offer'"></span>
-            </div>
-          </template>
-        </p>
-        <div class="flex justify-center space-x-4">
-          <button @click="showModal = false"
-            class="px-4 py-2 border border-gray-300 rounded-full text-gray-700 hover:bg-gray-50">
-            Continue Shopping
-          </button>
-          <a href="/cart" class="px-4 py-2 bg-black text-white rounded-full hover:bg-gray-800">
-            View Cart
-          </a>
-        </div>
-      </div>
-    </div>
-  </div>
-  
-  <!-- Alpine.js Logic -->
-  <script>
-    function productApp(initialData) {
-      return {
-        productId: initialData.productId,
-        productName: initialData.productName,
-        categoryName: initialData.categoryName,
-        description: initialData.description,
-        isLoggedIn: initialData.isLoggedIn,
-        variants: initialData.variants,
-        selectedVariantIndex: 0,
-        quantity: 1,
-        showModal: false,
-        openSections: { description: false, spec: false },
-        offerInfo: initialData.offerInfo,
-        wishlistVariantIds: initialData.wishlistVariantIds || [],
-        
-        get selectedVariant() {
-          return this.variants[this.selectedVariantIndex] || {};
-        },
-        
-        get isCurrentVariantInWishlist() {
-          return this.selectedVariant._id && this.wishlistVariantIds.includes(this.selectedVariant._id);
-        },
-        
-        init() {
-          this.initZoom();
-        },
-        
-        getColorClass(color) {
-          if (!color) return 'color-fallback-gray';
-          const c = color.toLowerCase().trim();
-          if (c.includes('wine') || c.includes('burgundy')) return 'color-fallback-wine-red';
-          if (c.includes('black')) return 'color-fallback-black';
-          if (c.includes('white')) return 'color-fallback-white';
-          if (c.includes('purple')) return 'color-fallback-purple';
-          if (c.includes('red')) return 'color-fallback-red';
-          if (c.includes('blue')) return 'color-fallback-blue';
-          if (c.includes('green')) return 'color-fallback-green';
-          if (c.includes('pink')) return 'color-fallback-pink';
-          if (c.includes('orange')) return 'color-fallback-orange';
-          if (c.includes('violet') || c.includes('grape')) return 'color-fallback-violet';
-          return 'color-fallback-gray';
-        },
-        
-        selectVariant(index) {
-          if (index >= 0 && index < this.variants.length) {
-            this.selectedVariantIndex = index;
-            this.quantity = 1;
-            this.updateMainImage(this.selectedVariant.images[0]);
-          }
-        },
-        
-        updateMainImage(src) {
-          const img = document.getElementById('mainImage');
-          if (img) img.src = src;
-          this.resetZoom();
-        },
-        
-        updateQuantity(change) {
-          // Enforce max 10 per variant, even if stock is higher
-          const maxAllowed = Math.min(this.selectedVariant.stock, 10);
-          if (maxAllowed <= 0) return;
-          let newQty = this.quantity + change;
-          if (newQty < 1) newQty = 1;
-          if (newQty > maxAllowed) newQty = maxAllowed;
-          this.quantity = newQty;
-        },
-        
-        addToCart() {
-          // 🔑 Check login first
-          if (!this.isLoggedIn) {
-            Swal.fire({
-              icon: 'info',
-              title: 'Please Sign In',
-              text: 'You need to be logged in to add items to your cart.',
-              confirmButtonText: 'Go to Login',
-              showCancelButton: true,
-              cancelButtonText: 'Cancel'
-            }).then((result) => {
-              if (result.isConfirmed) {
-                window.location.href = '/login';
-              }
-            });
-            return;
-          }
-          // Check stock
-          if (this.selectedVariant.stock <= 0) {
-            Swal.fire({
-              icon: 'warning',
-              title: 'Out of Stock',
-              text: 'This item is currently out of stock.',
-              confirmButtonText: 'OK'
-            });
-            return;
-          }
-          // Optional: client-side quantity validation (but rely on backend too)
-          if (this.quantity > 10) {
-            Swal.fire({
-              icon: 'warning',
-              title: 'Maximum Limit Reached',
-              text: 'You can add up to 10 items of this product per order.',
-              confirmButtonText: 'OK'
-            });
-            return;
-          }
-          // Send to backend
-          fetch('/cart/add', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              productId: this.productId,
-              variantId: this.selectedVariant._id,
-              quantity: this.quantity
-            })
-          })
-            .then(response => response.json())
-            .then(data => {
-              if (data.success) {
-                // Show success modal
-                this.showModal = true;
-              } else if (data.success === 'fail') {
-                // Backend blocked due to cart limit (e.g., total > 10 for variant)
-                Swal.fire({
-                  icon: 'warning',
-                  title: 'Maximum Limit Reached',
-                  text: 'You can add up to 10 items of this product per order.',
-                  confirmButtonText: 'OK'
-                });
-              } else {
-                throw new Error('Invalid response');
-              }
-            })
-            .catch(err => {
-              console.error('Add to cart failed:', err);
-              Swal.fire({
-                icon: 'error',
-                title: 'Oops...',
-                text: 'Failed to add item to cart. Please try again.',
-                confirmButtonText: 'OK'
-              });
-            });
-        },
-        
-        toggleWishlist() {
-          if (!this.isLoggedIn) {
-            Swal.fire({
-              icon: 'info',
-              title: 'Please Sign In',
-              text: 'You need to be logged in to add items to your wishlist.',
-              confirmButtonText: 'Go to Login',
-              showCancelButton: true,
-              cancelButtonText: 'Cancel'
-            }).then((result) => {
-              if (result.isConfirmed) {
-                window.location.href = '/login';
-              }
-            });
-            return;
-          }
-
-          const wasInWishlist = this.isCurrentVariantInWishlist;
-          const variantId = this.selectedVariant._id;
-          
-          // Toggle local state for immediate feedback
-          if (wasInWishlist) {
-            this.wishlistVariantIds = this.wishlistVariantIds.filter(id => id !== variantId);
-          } else {
-            this.wishlistVariantIds = [...this.wishlistVariantIds, variantId];
-          }
-          
-          fetch('/profile/wishlist/toggle', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              productId: this.productId,
-              variantId: this.selectedVariant._id
-            })
-          })
-          .then(response => response.json())
-          .then(data => {
-            if (data.success === 'success') {
-              if (!wasInWishlist) {
-                Swal.fire({
-                  icon: 'success',
-                  title: 'Added to Wishlist',
-                  text: 'You can check your wishlist anytime.',
-                  confirmButtonText: 'OK',
-                  showDenyButton: true, 
-                  denyButtonText: 'View Wishlist'
-                }).then(result => {
-                  if (result.isDenied) {
-                    window.location.href = '/profile/wishlist';
-                  }
-                });
-              }
-            } else if (data.success === 'removed') {
-              Swal.fire({
-                icon: 'success',
-                title: 'Removed from Wishlist',
-                text: 'The item has been removed from your wishlist.',
-                confirmButtonText: 'OK'
-              });
-            } else if (data.success === 'already in wishlist') {
-              // This shouldn't happen with proper local state management
-              this.wishlistVariantIds = [...this.wishlistVariantIds, variantId];
-              Swal.fire({
-                icon: 'info',
-                title: 'Already in Wishlist',
-                text: 'This item is already in your wishlist.',
-                confirmButtonText: 'OK'
-              });
-            } else if (data.success === 'not in wishlist') {
-              // This shouldn't happen with proper local state management
-              this.wishlistVariantIds = this.wishlistVariantIds.filter(id => id !== variantId);
-              Swal.fire({
-                icon: 'info',
-                title: 'Not in Wishlist',
-                text: 'This item was not in your wishlist.',
-                confirmButtonText: 'OK'
-              });
-            } else {
-              // Revert local state change if server operation failed
-              if (wasInWishlist) {
-                this.wishlistVariantIds = [...this.wishlistVariantIds, variantId];
-              } else {
-                this.wishlistVariantIds = this.wishlistVariantIds.filter(id => id !== variantId);
-              }
-              throw new Error('Invalid response');
-            }
-          })
-          .catch(err => {
-            console.error('Wishlist toggle failed:', err);
-            // Revert local state change if operation failed
-            if (wasInWishlist) {
-              this.wishlistVariantIds = [...this.wishlistVariantIds, variantId];
-            } else {
-              this.wishlistVariantIds = this.wishlistVariantIds.filter(id => id !== variantId);
-            }
-            Swal.fire({
-              icon: 'error',
-              title: 'Oops...',
-              text: 'Failed to update wishlist. Please try again.',
-              confirmButtonText: 'OK'
-            });
-          });
-        },
-        
-        toggleAccordion(section) {
-          this.openSections[section] = !this.openSections[section];
-        },
-        
-        initZoom() {
-          const container = document.getElementById('zoomContainer');
-          const img = document.getElementById('mainImage');
-          const lens = document.getElementById('zoomLens');
-          if (!container || !img || !lens) return;
-          const zoomLevel = 2;
-          container.addEventListener('mouseenter', () => {
-            if (window.innerWidth <= 768) return;
-            lens.classList.remove('hidden');
-            container.style.cursor = 'none';
-          });
-          container.addEventListener('mouseleave', () => this.resetZoom());
-          container.addEventListener('mousemove', (e) => {
-            if (window.innerWidth <= 768) return;
-            const rect = container.getBoundingClientRect();
-            let x = e.clientX - rect.left;
-            let y = e.clientY - rect.top;
-            const lensWidth = lens.offsetWidth;
-            const lensHeight = lens.offsetHeight;
-            let lensX = Math.max(0, Math.min(x - lensWidth / 2, rect.width - lensWidth));
-            let lensY = Math.max(0, Math.min(y - lensHeight / 2, rect.height - lensHeight));
-            lens.style.left = lensX + 'px';
-            lens.style.top = lensY + 'px';
-            img.style.transformOrigin = `${x}px ${y}px`;
-            img.style.transform = `scale(${zoomLevel})`;
-          });
-        },
-        
-        resetZoom() {
-          const img = document.getElementById('mainImage');
-          const lens = document.getElementById('zoomLens');
-          const container = document.getElementById('zoomContainer');
-          if (img) img.style.transform = 'scale(1)';
-          if (lens) lens.classList.add('hidden');
-          if (container) container.style.cursor = 'zoom-in';
-        }
-      };
-    }
-    
-    // Carousel logic
-    document.addEventListener('DOMContentLoaded', () => {
-      const carousel = document.getElementById('product-carousel');
-      const scrollLeftBtn = document.getElementById('scroll-left');
-      const scrollRightBtn = document.getElementById('scroll-right');
-      const scrollAmount = 300;
-      if (carousel && scrollLeftBtn && scrollRightBtn) {
-        const updateButtonVisibility = () => {
-          const maxScroll = carousel.scrollWidth - carousel.clientWidth;
-          scrollLeftBtn.classList.toggle('hidden', carousel.scrollLeft <= 0);
-          scrollRightBtn.classList.toggle('hidden', carousel.scrollLeft >= maxScroll - 1);
-        };
-        updateButtonVisibility();
-        scrollLeftBtn.addEventListener('click', () => carousel.scrollBy({ left: -scrollAmount, behavior: 'smooth' }));
-        scrollRightBtn.addEventListener('click', () => carousel.scrollBy({ left: scrollAmount, behavior: 'smooth' }));
-        carousel.addEventListener('scroll', updateButtonVisibility);
-      }
-    });
-  </script>
+<!-- Header -->
+<header class="bg-white shadow-sm sticky top-0 z-50">
+<div class="container mx-auto px-4 py-3 flex items-center justify-between">
+<!-- Logo -->
+<div class="flex items-center">
+<a href="/">
+<img src="/logo.png" alt="Logo" class="h-8 object-contain">
+</a>
+</div>
+<!-- Desktop Navigation -->
+<nav class="hidden md:flex space-x-5">
+<a href="/" class="text-sm font-medium transition-opacity hover:opacity-80">Home</a>
+<a href="#" class="text-sm font-medium transition-opacity hover:opacity-80">About</a>
+<a href="/products" class="text-sm font-medium transition-opacity hover:opacity-80">Phone Cases</a>
+<a href="#" class="text-sm font-medium transition-opacity hover:opacity-80">Tablet Cases</a>
+<a href="#" class="text-sm font-medium transition-opacity hover:opacity-80">Sale</a>
+</nav>
+<!-- Icons & Auth -->
+<div class="flex items-center space-x-4">
+<!-- Wishlist -->
+<button class="p-2 rounded-full hover:bg-gray-100 transition-colors">
+<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" onclick="window.location.href='/profile/wishlist'">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+</svg>
+</button>
+<!-- Cart -->
+<button class="p-2 rounded-full hover:bg-gray-100 transition-colors relative" onclick="window.location.href='/cart'">
+<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+</svg>
+</button>
+<!-- User Menu -->
+<% if (locals.user && user.profilePic) { %>
+<div class="relative" x-data="{ open: false, imageError: false }" @click.away="open = false">
+<button @click="open = !open" class="rounded-full overflow-hidden w-8 h-8 border border-transparent hover:border-gray-300 transition-colors focus:outline-none">
+<template x-if="!imageError">
+<img src="<%= user.profilePic %>" @error="imageError = true" alt="Profile" class="w-full h-full object-cover" />
+</template>
+<template x-if="imageError">
+<div class="w-full h-full bg-gray-300 flex items-center justify-center text-gray-600 rounded-full">
+<span class="font-medium text-sm"><%= user.name ? user.name.charAt(0).toUpperCase() : 'U' %></span>
+</div>
+</template>
+</button>
+<div x-show="open"
+x-transition:enter="transition ease-out duration-150"
+x-transition:enter-start="opacity-0 scale-95"
+x-transition:enter-end="opacity-100 scale-100"
+x-transition:leave="transition ease-in duration-100"
+x-transition:leave-start="opacity-100 scale-100"
+x-transition:leave-end="opacity-0 scale-95"
+class="absolute right-0 mt-2 w-44 bg-white shadow-lg rounded-lg py-1 z-50">
+<a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">Profile</a>
+<form action="/logout" method="post">
+<button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">Logout</button>
+</form>
+</div>
+</div>
+<% } else if (locals.user) { %>
+<div class="relative" x-data="{ open: false }" @click.away="open = false">
+<button @click="open = !open" class="w-8 h-8 flex items-center justify-center text-gray-600 hover:text-gray-900 transition-colors">
+<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+</svg>
+</button>
+<div x-show="open"
+x-transition:enter="transition ease-out duration-150"
+x-transition:enter-start="opacity-0 scale-95"
+x-transition:enter-end="opacity-100 scale-100"
+x-transition:leave="transition ease-in duration-100"
+x-transition:leave-start="opacity-100 scale-100"
+x-transition:leave-end="opacity-0 scale-95"
+class="absolute right-0 mt-2 w-44 bg-white shadow-lg rounded-lg py-1 z-50">
+<a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">Profile</a>
+<form action="/logout" method="post">
+<button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">Logout</button>
+</form>
+</div>
+</div>
+<% } else { %>
+<a href="/login" class="text-sm font-medium hover: transition-colors flex items-center">
+<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+</svg>
+Sign In
+</a>
+<% } %>
+<!-- Mobile Menu Button -->
+<button class="md:hidden text-gray-600 hover:text-gray-900">
+<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+</svg>
+</button>
+</div>
+</div>
+</header>
+<nav aria-label="breadcrumb" class="container mx-auto px-4 mt-4">
+<ol class="flex items-center space-x-2 text-sm text-gray-500">
+<li><a href="/" class="hover:text-gray-700">Home</a></li>
+<li><span class="mx-1">/</span></li>
+<li><a href="/products" class="hover:text-gray-700">Products</a></li>
+<li><span class="mx-1">/</span></li>
+<li class="text-gray-900">
+<%= product.productName %>
+</li>
+</ol>
+</nav>
+<main class="container mx-auto px-4 py-8">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+<!-- Image Gallery -->
+<div class="space-y-3">
+<div class="relative w-full aspect-square bg-gray-100 rounded-lg overflow-hidden group" id="zoomContainer">
+<img id="mainImage" :src="selectedVariant.images[0] || 'https://placehold.co/600x600?text=No+Image '"
+:alt="productName" class="w-full h-full object-contain transition-transform duration-200 ease-out" />
+<div id="zoomLens" class="hidden w-32 h-32 rounded-full absolute top-0 left-0"></div>
+<% if (product.variants && product.variants.some(v=> v.hasOffer)) { %>
+<div class="absolute top-2 left-2 z-10">
+<span class="offer-badge">
+<i class="fas fa-tag"></i> Save <%= Math.round(product.variants[0].offerInfo?.discountPercentage || 0) %>%
+</span>
+</div>
+<% } %>
+</div>
+<div id="thumbnailGallery" class="flex space-x-2 overflow-x-auto pb-1">
+<template x-for="img in selectedVariant.images.slice(0, 5)" :key="img">
+<img :src="img"
+class="w-16 h-16 object-cover border border-gray-300 rounded cursor-pointer flex-shrink-0 hover:border-blue-500 transition"
+@click="updateMainImage(img)" />
+</template>
+</div>
+</div>
+<!-- Product Details -->
+<div class="space-y-6">
+<div>
+<p class="text-sm text-gray-500" x-text="categoryName"></p>
+<p class="text-sm text-gray-500" x-text="productName"></p>
+<h1 class="text-2xl font-bold mt-1" x-text="selectedVariant.color || 'Color N/A'"></h1>
+</div>
+<div class="flex items-center space-x-2 text-sm text-orange-500">
+<i class="fas fa-fire"></i>
+<span>153+ bought in past month</span>
+</div>
+<div class="flex items-center space-x-4">
+<!-- Updated price display logic to use selectedVariant's price -->
+<div class="flex flex-col">
+<div class="flex items-baseline">
+<template x-if="selectedVariant.hasOffer">
+<div>
+<span class="text-2xl font-bold text-red-500"
+x-text="`Rs. ${selectedVariant.price.toFixed(2)}`"></span>
+<span class="ml-3 text-gray-400 line-through text-lg"
+x-text="`Rs. ${selectedVariant.originalPrice.toFixed(2)}`"></span>
+</div>
+</template>
+<template x-if="!selectedVariant.hasOffer">
+<span class="text-2xl font-bold text-red-500" x-text="`Rs. ${selectedVariant.price.toFixed(2)}`"></span>
+</template>
+</div>
+<template x-if="selectedVariant.hasOffer">
+<div class="mt-1 text-sm text-red-600 font-medium">
+<span x-text="`Offer: ${selectedVariant.offerInfo?.offerName || 'Special Offer'}`"></span>
+</div>
+</template>
+</div>
+</div>
+<!-- Stock Status -->
+<div class="inline-flex items-center px-3 py-1 rounded-full text-sm"
+:class="selectedVariant.stock > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
+<div x-show="selectedVariant.stock > 0" class="flex items-center">
+<div class="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+In stock (<span x-text="selectedVariant.stock"></span> available)
+</div>
+<div x-show="selectedVariant.stock <= 0" class="flex items-center">
+<div class="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
+Out of stock
+</div>
+</div>
+<!-- Color Selection -->
+<div class="bg-gray-50 p-4 rounded-lg">
+<h3 class="font-semibold mb-3">Color - <span x-text="selectedVariant.color || 'N/A'"></span></h3>
+<div class="flex space-x-3">
+<template x-for="(variant, index) in variants" :key="index">
+<div class="w-10 h-10 rounded-full cursor-pointer border-2 flex-shrink-0" :class="{
+'border-blue-500': selectedVariantIndex === index,
+'border-transparent': selectedVariantIndex !== index,
+[getColorClass(variant.color)]: true
+}" @click="selectVariant(index)" :title="variant.color">
+<template x-if="variant.hasOffer">
+<div
+class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+<span x-text="Math.round(variant.offerInfo?.discountPercentage || 0)"></span>
+</div>
+</template>
+</div>
+</template>
+</div>
+</div>
+<!-- Description Accordion -->
+<div class="border-t border-gray-200 pt-4" @click="toggleAccordion('description')">
+<div class="flex justify-between items-center cursor-pointer">
+<h3 class="font-semibold">Description</h3>
+<i class="fas" :class="openSections.description ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+</div>
+<div x-show="openSections.description" class="mt-3 text-sm text-gray-600">
+<p x-text="description"></p>
+</div>
+</div>
+<!-- Tech Spec Accordion -->
+<div class="border-t border-gray-200 pt-4" @click="toggleAccordion('spec')">
+<div class="flex justify-between items-center cursor-pointer">
+<h3 class="font-semibold">Technical Specification</h3>
+<i class="fas" :class="openSections.spec ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+</div>
+<div x-show="openSections.spec" class="mt-3 text-sm text-gray-600">
+<div class="mb-3">
+<h4 class="font-medium mb-1">Material:</h4>
+<p x-text="categoryName || 'N/A'"></p>
+</div>
+</div>
+</div>
+<!-- Actions -->
+<div class="flex flex-col space-y-3">
+<div class="flex items-center space-x-4">
+<div class="flex items-center">
+<button class="w-10 h-10 rounded-full bg-gray-100 text-gray-700 flex items-center justify-center
+hover:bg-gray-200 hover:shadow-sm transition-all duration-200 active:scale-95" @click="updateQuantity(-1)"
+:disabled="quantity <= 1">
+<i class="fas fa-minus text-sm"></i>
+</button>
+<span class="mx-4 w-8 text-center text-lg font-medium text-gray-800" x-text="quantity"></span>
+<button class="w-10 h-10 rounded-full bg-gray-100 text-gray-700 flex items-center justify-center
+hover:bg-gray-200 hover:shadow-sm transition-all duration-200 active:scale-95" @click="updateQuantity(1)"
+:disabled="selectedVariant.stock > 0 && quantity >= selectedVariant.stock">
+<i class="fas fa-plus text-sm"></i>
+</button>
+</div>
+<button class="flex-1 bg-black text-white py-3 rounded-full font-medium hover:bg-gray-800 transition"
+@click="addToCart">
+Add to cart
+</button>
+</div>
+<button
+class="flex items-center justify-center space-x-2 py-3 rounded-full font-medium transition"
+:class="{
+'bg-red-500 text-white hover:bg-red-600': isCurrentVariantInWishlist,
+'border border-gray-300 text-gray-700 hover:bg-gray-50': !isCurrentVariantInWishlist
+}"
+@click="toggleWishlist">
+<i class="fas" :class="isCurrentVariantInWishlist ? 'fa-heart' : 'far fa-heart'"></i>
+<span x-text="isCurrentVariantInWishlist ? 'Added to Wishlist' : 'Add to Wishlist'"></span>
+</button>
+</div>
+<div class="flex items-center space-x-4 text-sm">
+<span class="font-medium">Share:</span>
+<button class="text-gray-600 hover:text-blue-600"><i class="fab fa-facebook-f"></i></button>
+<button class="text-gray-600 hover:text-blue-400"><i class="fab fa-twitter"></i></button>
+<div class="ml-auto">
+<button class="text-sm text-gray-500 flex items-center">
+<i class="fas fa-question-circle mr-1"></i> Need help?
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Recommendations -->
+<section class="mt-16 bg-gradient-to-r from-yellow-50 to-orange-50 py-12 rounded-2xl relative">
+<div class="container mx-auto px-4">
+<h2 class="text-3xl font-bold mb-8">You May Also Like</h2>
+<button id="scroll-left"
+class="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-md hidden md:block opacity-70 hover:opacity-100 transition">
+<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+<path fill-rule="evenodd"
+d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+clip-rule="evenodd" />
+</svg>
+</button>
+<button id="scroll-right"
+class="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-md hidden md:block opacity-70 hover:opacity-100 transition">
+<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+<path fill-rule="evenodd"
+d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+clip-rule="evenodd" />
+</svg>
+</button>
+<div id="product-carousel" class="overflow-x-auto pb-4 space-x-4 scrollbar-hide flex">
+<div class="flex space-x-4 min-w-max px-2">
+<% for (let i = 0; i < allproducts.length; i++) { %>
+<% const p = allproducts[i];
+const variant = p.variants || {};
+const priceNum = (typeof variant.price === 'number') ? variant.price : 0;
+const originalPrice = (variant.offerInfo && variant.offerInfo.originalPrice) ? variant.offerInfo.originalPrice : priceNum;
+const hasOffer = variant.hasOffer || false;
+const imageUrl = (variant.images && Array.isArray(variant.images) && variant.images[0]) ? variant.images[0] : 'https://via.placeholder.com/300 '; %>
+<div class="bg-white rounded-lg overflow-hidden shadow-sm w-48 flex-shrink-0">
+<a href="/product?product=<%= p.productId %>" class="block">
+<div class="relative">
+<img src="<%= imageUrl %>" class="w-full h-48 object-contain" />
+<% if (hasOffer) { %>
+<div class="absolute top-2 left-2 z-10">
+<span class="offer-badge">
+Save <%= Math.round(allproducts[i].offerInfo?.discountPercentage || 0) %>%
+</span>
+</div>
+<% } %>
+</div>
+<div class="p-4">
+<div class="text-xs text-gray-500 mb-1">Casen</div>
+<div class="text-sm mb-2 truncate">
+<%= p.productName %>
+</div>
+<div class="flex items-center justify-between">
+<% if (hasOffer) { %>
+<span class="text-sm font-bold text-red-500">Rs. <%= variant.price.toFixed(2) %></span>
+<span class="text-gray-400 line-through text-xs">Rs. <%= allproducts[i].offerInfo?.originalPrice %></span>
+<% } else { %>
+<span class="text-sm font-bold text-red-500">
+Rs. <%= priceNum.toFixed(2) %>
+</span>
+<% } %>
+</div>
+</div>
+</a>
+</div>
+<% } %>
+</div>
+</div>
+</div>
+</section>
+</main>
+<footer class="bg-black text-white pt-12 pb-8 mt-16">
+<div class="container mx-auto px-4 text-center">
+<p>&copy; 2025 Casen. All rights reserved.</p>
+</div>
+</footer>
+<!-- Add to Cart Modal -->
+<div x-show="showModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+@click="showModal = false" x-transition>
+<div class="bg-white rounded-2xl max-w-md w-full p-6 relative" @click.stop>
+<button @click="showModal = false" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+<i class="fas fa-times"></i>
+</button>
+<div class="text-center py-4">
+<div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+<i class="fas fa-check text-green-600 text-2xl"></i>
+</div>
+<h3 class="text-xl font-bold mb-2">Added to Cart!</h3>
+<p class="text-gray-600 mb-4">
+<span x-text="productName"></span> (<span x-text="selectedVariant.color"></span>) x <span
+x-text="quantity"></span>
+<template x-if="selectedVariant.hasOffer">
+<div class="text-sm text-green-700 mt-2">
+You saved Rs. <span x-text="(selectedVariant.originalPrice - selectedVariant.price).toFixed(2)"></span>
+with <span x-text="selectedVariant.offerInfo?.offerName || 'Special Offer'"></span>
+</div>
+</template>
+</p>
+<div class="flex justify-center space-x-4">
+<button @click="showModal = false"
+class="px-4 py-2 border border-gray-300 rounded-full text-gray-700 hover:bg-gray-50">
+Continue Shopping
+</button>
+<a href="/cart" class="px-4 py-2 bg-black text-white rounded-full hover:bg-gray-800">
+View Cart
+</a>
+</div>
+</div>
+</div>
+</div>
+<!-- Alpine.js Logic -->
+<script>
+function productApp(initialData) {
+return {
+productId: initialData.productId,
+productName: initialData.productName,
+categoryName: initialData.categoryName,
+description: initialData.description,
+isLoggedIn: initialData.isLoggedIn,
+variants: initialData.variants,
+selectedVariantIndex: 0,
+quantity: 1,
+showModal: false,
+openSections: { description: false, spec: false },
+offerInfo: initialData.offerInfo,
+wishlistVariantIds: initialData.wishlistVariantIds || [],
+get selectedVariant() {
+return this.variants[this.selectedVariantIndex] || {};
+},
+get isCurrentVariantInWishlist() {
+return this.selectedVariant._id && this.wishlistVariantIds.includes(this.selectedVariant._id);
+},
+init() {
+this.initZoom();
+},
+getColorClass(color) {
+if (!color) return 'color-fallback-gray';
+const c = color.toLowerCase().trim();
+if (c.includes('wine') || c.includes('burgundy')) return 'color-fallback-wine-red';
+if (c.includes('black')) return 'color-fallback-black';
+if (c.includes('white')) return 'color-fallback-white';
+if (c.includes('purple')) return 'color-fallback-purple';
+if (c.includes('red')) return 'color-fallback-red';
+if (c.includes('blue')) return 'color-fallback-blue';
+if (c.includes('green')) return 'color-fallback-green';
+if (c.includes('pink')) return 'color-fallback-pink';
+if (c.includes('orange')) return 'color-fallback-orange';
+if (c.includes('violet') || c.includes('grape')) return 'color-fallback-violet';
+return 'color-fallback-gray';
+},
+selectVariant(index) {
+if (index >= 0 && index < this.variants.length) {
+this.selectedVariantIndex = index;
+this.quantity = 1;
+this.updateMainImage(this.selectedVariant.images[0]);
+}
+},
+updateMainImage(src) {
+const img = document.getElementById('mainImage');
+if (img) img.src = src;
+this.resetZoom();
+},
+updateQuantity(change) {
+// Enforce max 10 per variant, even if stock is higher
+const maxAllowed = Math.min(this.selectedVariant.stock, 10);
+if (maxAllowed <= 0) return;
+let newQty = this.quantity + change;
+if (newQty < 1) newQty = 1;
+if (newQty > maxAllowed) newQty = maxAllowed;
+this.quantity = newQty;
+},
+addToCart() {
+// 🔑 Check login first
+if (!this.isLoggedIn) {
+Swal.fire({
+icon: 'info',
+title: 'Please Sign In',
+text: 'You need to be logged in to add items to your cart.',
+confirmButtonText: 'Go to Login',
+showCancelButton: true,
+cancelButtonText: 'Cancel'
+}).then((result) => {
+if (result.isConfirmed) {
+window.location.href = '/login';
+}
+});
+return;
+}
+// Check stock
+if (this.selectedVariant.stock <= 0) {
+Swal.fire({
+icon: 'warning',
+title: 'Out of Stock',
+text: 'This item is currently out of stock.',
+confirmButtonText: 'OK'
+});
+return;
+}
+// Optional: client-side quantity validation (but rely on backend too)
+if (this.quantity > 10) {
+Swal.fire({
+icon: 'warning',
+title: 'Maximum Limit Reached',
+text: 'You can add up to 10 items of this product per order.',
+confirmButtonText: 'OK'
+});
+return;
+}
+// Send to backend
+fetch('/cart/add', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({
+productId: this.productId,
+variantId: this.selectedVariant._id,
+quantity: this.quantity
+})
+})
+.then(response => response.json())
+.then(data => {
+if (data.success) {
+// Show success modal
+this.showModal = true;
+} else if (data.success === 'fail') {
+// Backend blocked due to cart limit (e.g., total > 10 for variant)
+Swal.fire({
+icon: 'warning',
+title: 'Maximum Limit Reached',
+text: 'You can add up to 10 items of this product per order.',
+confirmButtonText: 'OK'
+});
+} else {
+throw new Error('Invalid response');
+}
+})
+.catch(err => {
+console.error('Add to cart failed:', err);
+Swal.fire({
+icon: 'error',
+title: 'Oops...',
+text: 'Failed to add item to cart. Please try again.',
+confirmButtonText: 'OK'
+});
+});
+},
+toggleWishlist() {
+if (!this.isLoggedIn) {
+Swal.fire({
+icon: 'info',
+title: 'Please Sign In',
+text: 'You need to be logged in to add items to your wishlist.',
+confirmButtonText: 'Go to Login',
+showCancelButton: true,
+cancelButtonText: 'Cancel'
+}).then((result) => {
+if (result.isConfirmed) {
+window.location.href = '/login';
+}
+});
+return;
+}
+const wasInWishlist = this.isCurrentVariantInWishlist;
+const variantId = this.selectedVariant._id;
+// Toggle local state for immediate feedback
+if (wasInWishlist) {
+this.wishlistVariantIds = this.wishlistVariantIds.filter(id => id !== variantId);
+} else {
+this.wishlistVariantIds = [...this.wishlistVariantIds, variantId];
+}
+// Handle add/remove based on current state
+if (wasInWishlist) {
+window.location.href='/profile/wishlist'
+} else {
+// Add to wishlist using add route
+fetch('/profile/wishlist/add', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({
+productId: this.productId,
+variantId: this.selectedVariant._id
+})
+})
+.then(response => response.json())
+.then(data => {
+if (data.success === 'success') {
+Swal.fire({
+icon: 'success',
+title: 'Added to Wishlist',
+text: 'You can check your wishlist anytime.',
+confirmButtonText: 'OK',
+showDenyButton: true,
+denyButtonText: 'View Wishlist'
+}).then(result => {
+if (result.isDenied) {
+window.location.href = '/profile/wishlist';
+}
+});
+} else if (data.success === 'already in cart') {
+// Item is already in cart
+this.wishlistVariantIds = this.wishlistVariantIds.filter(id => id !== variantId);
+Swal.fire({
+icon: 'info',
+title: 'Already in Cart',
+text: 'This item is already in your cart.',
+confirmButtonText: 'OK'
+});
+} else if (data.success === 'already in wishlist') {
+// Item is already in wishlist
+this.wishlistVariantIds = this.wishlistVariantIds.filter(id => id !== variantId);
+Swal.fire({
+icon: 'info',
+title: 'Already in Wishlist',
+text: 'This item is already in your wishlist.',
+confirmButtonText: 'OK'
+});
+} else {
+// Revert local state if server operation failed
+this.wishlistVariantIds = this.wishlistVariantIds.filter(id => id !== variantId);
+throw new Error('Failed to add to wishlist');
+}
+})
+.catch(err => {
+console.error('Wishlist add failed:', err);
+// Revert local state if operation failed
+this.wishlistVariantIds = this.wishlistVariantIds.filter(id => id !== variantId);
+Swal.fire({
+icon: 'error',
+title: 'Oops...',
+text: 'Failed to add to wishlist. Please try again.',
+confirmButtonText: 'OK'
+});
+});
+}
+},
+toggleAccordion(section) {
+this.openSections[section] = !this.openSections[section];
+},
+initZoom() {
+const container = document.getElementById('zoomContainer');
+const img = document.getElementById('mainImage');
+const lens = document.getElementById('zoomLens');
+if (!container || !img || !lens) return;
+const zoomLevel = 2;
+container.addEventListener('mouseenter', () => {
+if (window.innerWidth <= 768) return;
+lens.classList.remove('hidden');
+container.style.cursor = 'none';
+});
+container.addEventListener('mouseleave', () => this.resetZoom());
+container.addEventListener('mousemove', (e) => {
+if (window.innerWidth <= 768) return;
+const rect = container.getBoundingClientRect();
+let x = e.clientX - rect.left;
+let y = e.clientY - rect.top;
+const lensWidth = lens.offsetWidth;
+const lensHeight = lens.offsetHeight;
+let lensX = Math.max(0, Math.min(x - lensWidth / 2, rect.width - lensWidth));
+let lensY = Math.max(0, Math.min(y - lensHeight / 2, rect.height - lensHeight));
+lens.style.left = lensX + 'px';
+lens.style.top = lensY + 'px';
+img.style.transformOrigin = `${x}px ${y}px`;
+img.style.transform = `scale(${zoomLevel})`;
+});
+},
+resetZoom() {
+const img = document.getElementById('mainImage');
+const lens = document.getElementById('zoomLens');
+const container = document.getElementById('zoomContainer');
+if (img) img.style.transform = 'scale(1)';
+if (lens) lens.classList.add('hidden');
+if (container) container.style.cursor = 'zoom-in';
+}
+};
+}
+// Carousel logic
+document.addEventListener('DOMContentLoaded', () => {
+const carousel = document.getElementById('product-carousel');
+const scrollLeftBtn = document.getElementById('scroll-left');
+const scrollRightBtn = document.getElementById('scroll-right');
+const scrollAmount = 300;
+if (carousel && scrollLeftBtn && scrollRightBtn) {
+const updateButtonVisibility = () => {
+const maxScroll = carousel.scrollWidth - carousel.clientWidth;
+scrollLeftBtn.classList.toggle('hidden', carousel.scrollLeft <= 0);
+scrollRightBtn.classList.toggle('hidden', carousel.scrollLeft >= maxScroll - 1);
+};
+updateButtonVisibility();
+scrollLeftBtn.addEventListener('click', () => carousel.scrollBy({ left: -scrollAmount, behavior: 'smooth' }));
+scrollRightBtn.addEventListener('click', () => carousel.scrollBy({ left: scrollAmount, behavior: 'smooth' }));
+carousel.addEventListener('scroll', updateButtonVisibility);
+}
+});
+</script>
 </body>
-
 </html>

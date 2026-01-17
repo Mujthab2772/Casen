@@ -30,7 +30,7 @@ export const cancelItem = async (req, res) => {
   try {
     const user = req.session.userDetail;
     if (!user || !user._id) {
-      return res.status(401).json({ success: false, message: 'User not authenticated' });
+      return res.status(STATUS_CODE.UNAUTHORIZED).json({ success: false, message: 'User not authenticated' });
     }
 
     const { orderId, itemIndex } = req.params;
@@ -38,7 +38,7 @@ export const cancelItem = async (req, res) => {
     
     const index = parseInt(itemIndex, 10);
     if (isNaN(index)) {
-      return res.status(400).json({ success: false, message: 'Invalid item index' });
+      return res.status(STATUS_CODE.BAD_REQUEST).json({ success: false, message: 'Invalid item index' });
     }
 
    
@@ -52,7 +52,7 @@ export const cancelItem = async (req, res) => {
   } catch (error) {
     console.log(`error from cancelItem ${error}`);
     
-    return res.status(500).json({ success: false, message: 'Failed to cancel item' });
+    return res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).json({ success: false, message: 'Failed to cancel item' });
   }
 };
 
@@ -79,7 +79,7 @@ export const returnProduct = async (req, res) => {
     const userId = req.session.userDetail._id;
 
     if (!reason || reason.trim().length < 5) {
-      return res.status(400).json({
+      return res.status(STATUS_CODE.BAD_REQUEST).json({
         success: false,
         message: 'Return reason is required and must be at least 5 characters.'
       });
@@ -92,7 +92,7 @@ export const returnProduct = async (req, res) => {
   } catch (error) {
     console.log(`error from returnProduct ${error}`);
     
-    return res.status(500).json({
+    return res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: 'Failed to process return request. Please try again.'
     });
@@ -106,7 +106,7 @@ export const itemReturn = async (req, res) => {
     const userId = req.session.userDetail._id;
 
     if (!reason || reason.trim().length < 5) {
-      return res.status(400).json({
+      return res.status(STATUS_CODE.BAD_REQUEST).json({
         success: false,
         message: 'Return reason is required and must be at least 5 characters.'
       });

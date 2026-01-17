@@ -36,7 +36,7 @@ export const addCategoryUpdate = async (req, res) => {
             fileUrl = await uploadToCloudinary(req.file.path, "category-image")
         }
 
-        let category
+        let category = {}
         if (categoryName.trim() !== "" && description.trim() !== "") {
             category = await categoryAddToDb(categoryName, description, fileUrl)
         }

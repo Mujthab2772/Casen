@@ -41,10 +41,10 @@ export const addressFetch = (req, res) => {
 export const addressNew = async (req, res) => {
   try {
     const address = await addressAdd(req.body, req.query.userId);
-    return res.status(200).json({ ok: true });
+    return res.status(STATUS_CODE.OK).json({ ok: true });
   } catch (error) {
     console.error('Error saving address:', error);
-    return res.status(500).json({ ok: false, msg: 'An unexpected error occurred.' });
+    return res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).json({ ok: false, msg: 'An unexpected error occurred.' });
   }
 };
 
@@ -81,7 +81,7 @@ export const deleteAddress = async (req, res) => {
     if (result === 'success') {
       // If using fetch (AJAX), send JSON
       if (req.xhr || req.headers.accept?.includes('json')) {
-        return res.status(200).json({ success: true });
+        return res.status(STATUS_CODE.OK).json({ success: true });
       }
       // Fallback for non-JS users (unlikely in this case)
       return res.redirect('/profile/address');
@@ -91,7 +91,7 @@ export const deleteAddress = async (req, res) => {
   } catch (error) {
     console.log(`error from deleteAddress ${error}`);
     if (req.xhr || req.headers.accept?.includes('json')) {
-      return res.status(500).json({ success: false, error: 'Deletion failed' });
+      return res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).json({ success: false, error: 'Deletion failed' });
     }
     return res.redirect('/profile/address');
   }

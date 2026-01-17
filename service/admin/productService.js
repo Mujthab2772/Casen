@@ -35,7 +35,6 @@ export const addProductService = async (req) => {
             }
         });
 
-        // Extract variant fields (can be arrays or single values)
         const variantColors = Array.isArray(req.body.variantcolor)
             ? req.body.variantcolor
             : [req.body.variantcolor];
@@ -112,7 +111,6 @@ export const fetchProducts = async (search = null, page, limit = 5) => {
 
     const totalVariants = await Product.countDocuments({})
 
-    // FETCH PAGINATED VARIANTS
     const dataPipeline = [
       { $match: match },
 
@@ -195,7 +193,6 @@ export const updateProductService = async (req, productId) => {
         
         if(!product) throw new Error("Product not found")
 
-        // Parse uploaded files with correct regex pattern
         const variantImages = {}
         if (req.files && req.files.length > 0) {
             req.files.forEach((file) => {
@@ -213,8 +210,7 @@ export const updateProductService = async (req, productId) => {
             })
         }
 
-        // Parse existing images from request body
-        let existingImages = {} // Changed from const to let
+        let existingImages = {}
         if (req.body.existingImages) {
             try {
                 existingImages = JSON.parse(req.body.existingImages)
@@ -235,7 +231,6 @@ export const updateProductService = async (req, productId) => {
             ? req.body.variantstock
             : [req.body.variantstock]
 
-        // ======= FIX: Collect properly ordered variant IDs =======
         const variantIdsFromBody = {};
 
         Object.keys(req.body)
@@ -248,14 +243,12 @@ export const updateProductService = async (req, productId) => {
 
         const updateVariantIds = []
 
-        // Process each variant
         for (let i = 0; i < variantColors.length; i++) {
     const color = variantColors[i]
     const price = variantPrices[i]
     const stock = variantStocks[i]
     const variantIdFromBody = variantIdsFromBody[i] || null
 
-    // ====== FIX: Skip completely empty variant rows ======
     if (
         (!color || color.trim() === "") &&
         (!price || price.trim() === "") &&
@@ -267,7 +260,6 @@ export const updateProductService = async (req, productId) => {
     let variant;
 
     if (variantIdFromBody) {
-        // Update existing variant
         variant = await ProductVariant.findById(variantIdFromBody)
         if (!variant) continue
 
@@ -295,7 +287,6 @@ export const updateProductService = async (req, productId) => {
         updateVariantIds.push(variant._id)
 
     } else {
-        // Create new variant
         const newVariant = new ProductVariant({
             variantId: uuidv4(),
             color,

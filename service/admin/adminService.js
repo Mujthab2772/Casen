@@ -22,7 +22,7 @@ export const checkAdmin = async () => {
         return defaultAdmin;
     } catch (error) {
         console.error("Error in checkAdmin service:", error);
-        throw error; // rethrow so controller can handle it
+        throw error; 
     }
 };
 

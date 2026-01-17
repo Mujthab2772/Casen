@@ -1,7 +1,6 @@
 import { walletAdd, walletDetails } from "../../service/user/walletService.js";
 import { STATUS_CODE } from "../../util/statusCodes.js";
 
-// Controller
 export const wallet = async (req, res) => {
     try {
         const user = req.session.userDetail;

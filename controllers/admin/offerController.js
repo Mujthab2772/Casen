@@ -103,9 +103,9 @@ export const offerToggle = async (req, res) => {
     const { offerId } = req.params;
     await toggleOffer(offerId);
 
-    res.status(200).json({ message: "Successfully updated" });
+    res.status(STATUS_CODE.OK).json({ message: "Successfully updated" });
   } catch (error) {
     console.error(`Error in offerToggle:`, error.message);
-    res.status(500).json({ error: error.message || 'Failed to toggle offer' });
+    res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).json({ error: error.message || 'Failed to toggle offer' });
   }
 };

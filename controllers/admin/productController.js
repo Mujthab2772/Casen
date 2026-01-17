@@ -58,6 +58,8 @@ export const editProduct = async (req, res) => {
 
     let product = data[0];
 
+    if (!product) return res.redirect('/admin/products');
+
     // 🔧 Convert Decimal128 prices to strings for safe JSON
     if (Array.isArray(product.variantId)) {
       product.variantId = product.variantId.map(v => ({
@@ -111,7 +113,7 @@ export const productStatus = async (req, res) => {
     console.error(`Error in productStatus: ${error}`);
     
     if (req.headers.accept?.includes('application/json')) {
-      return res.status(500).json({ success: false, error: 'Update failed' });
+      return res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).json({ success: false, error: 'Update failed' });
     }
     
     res.redirect('/admin/products?error=1');

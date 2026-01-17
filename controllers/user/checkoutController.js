@@ -63,7 +63,7 @@ export const checkoutDatas = async (req, res) => {
     return res.status(STATUS_CODE.OK).json({ success: true });
   } catch (error) {
     console.log(`checkoutDatas error:`, error);
-    return res.status(500).json({
+    return res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: "Unable to process checkout. Please try again."
     });
@@ -77,7 +77,7 @@ export const previewCheckout = async (req, res) => {
     const { shippingAddressId, contact, couponCode } = req.body;
     
     if (!shippingAddressId || !contact?.email || !contact?.phone) {
-      return res.status(400).json({
+      return res.status(STATUS_CODE.BAD_REQUEST).json({
         success: false,
         error: "Missing required contact information or shipping address."
       });
@@ -90,7 +90,7 @@ export const previewCheckout = async (req, res) => {
     });
     
     if (!recalculated.productList?.length) {
-      return res.status(400).json({
+      return res.status(STATUS_CODE.BAD_REQUEST).json({
         success: false,
         error: "Cart is empty or contains invalid items."
       });
@@ -114,7 +114,7 @@ export const previewCheckout = async (req, res) => {
     });
   } catch (error) {
     console.log('Preview error:', error);
-    return res.status(500).json({
+    return res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).json({
       success: false,
       error: 'Failed to preview order. Please try again.'
     });
@@ -151,7 +151,7 @@ export const getAvailableCoupons = async (req, res) => {
     });
   } catch (error) {
     console.error('Get coupons error:', error);
-    return res.status(500).json({ 
+    return res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).json({ 
       success: false, 
       message: 'Failed to fetch available coupons' 
     });

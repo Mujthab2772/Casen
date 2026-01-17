@@ -4,6 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import { STATUS_CODE } from "../../util/statusCodes.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -115,7 +116,7 @@ export const salesReportController = {
 
       const formattedData = {
         summary: {
-          totalSales: summary.totalSales.toFixed(2),
+          totalSales: (summary.totalSales || 0).toFixed(2),
           totalOrders: summary.totalOrders,
           totalDiscount: summary.totalDiscount.toFixed(2),
           changes: {
@@ -188,7 +189,7 @@ export const salesReportController = {
       });
     } catch (error) {
       console.error('Error in getSalesReportPage:', error);
-      res.status(500).send('Error generating sales report');
+      res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).send('Error generating sales report');
     }
   },
 
@@ -250,7 +251,7 @@ export const salesReportController = {
 
       // Add content to PDF
       // Header with company name
-      doc.fontSize(14).text('E-Commerce Dashboard', { align: 'center' });
+      doc.fontSize(14).text('Casen Dashboard', { align: 'center' });
       doc.moveDown(0.5);
       doc.fontSize(22).text('Sales Report', { align: 'center', bold: true });
       doc.moveDown();
@@ -468,7 +469,7 @@ export const salesReportController = {
       doc.end();
     } catch (error) {
       console.error('Error in exportSalesReportPDF:', error);
-      res.status(500).json({ success: false, message: 'Error exporting report to PDF' });
+      res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).json({ success: false, message: 'Error exporting report to PDF' });
     }
   },
 
@@ -506,7 +507,7 @@ export const salesReportController = {
       });
     } catch (error) {
       console.error('Error in exportSalesReportExcel:', error);
-      res.status(500).json({ success: false, message: 'Error exporting report to Excel' });
+      res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).json({ success: false, message: 'Error exporting report to Excel' });
     }
   }
 };
