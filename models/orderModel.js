@@ -15,9 +15,12 @@ const orderItemSchema = new mongoose.Schema({
   },
   orderStatus: {
     type: String,
-    enum: ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled', 'returned'],
+    enum: ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'requestingReturn', 'cancelled', 'returned'],
     default: 'pending'
-  }
+  },
+  returnReason: { type: String, default: null },
+  returnRequestedAt: { type: Date },
+  returnApprovedAt: { type: Date },
 }, {
   timestamps: true
 });

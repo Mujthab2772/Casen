@@ -16,8 +16,6 @@
   <div class="dashboard-container">
     <!-- Sidebar -->
     <aside class="sidebar">
-      <!-- ... (unchanged sidebar) ... -->
-      <!-- Keep your existing sidebar code as-is -->
       <div class="sidebar-header">
         <div class="sidebar-logo">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -49,7 +47,6 @@
           <span>Orders</span>
         </a>
 
-        <!-- Other nav items unchanged -->
         <a href="/admin/products" class="nav-item">
           <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
             <path d="M3 1a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V1z"/>
@@ -150,7 +147,8 @@
             'shipped': 'text-emerald-700 bg-emerald-100',
             'delivered': 'text-green-700 bg-green-100',
             'cancelled': 'text-rose-700 bg-rose-100',
-            'returned': 'text-purple-700 bg-purple-100'
+            'returned': 'text-purple-700 bg-purple-100',
+            'requestingReturn': 'text-orange-700 bg-orange-100'
           };
 
           const statusDotColors = {
@@ -220,22 +218,46 @@
               <h3 class="text-lg font-semibold text-gray-900 mb-4">Order Items</h3>
               <div class="space-y-4">
                 <% (order.items || []).forEach(item => { %>
-                  <div class="flex items-start justify-between pb-4 border-b border-gray-100 last:border-0 last:pb-0">
-                    <div class="flex items-start space-x-4">
+                  <div class="flex flex-col sm:flex-row sm:items-start justify-between pb-4 border-b border-gray-100 last:border-0 last:pb-0">
+                    <div class="flex items-start space-x-4 w-full">
                       <img 
                         src="<%- (item.images?.[0] || '').trim() || 'https://via.placeholder.com/60' %>" 
                         alt="<%- item.productName %>" 
-                        class="w-14 h-14 rounded-lg object-cover" 
+                        class="w-14 h-14 rounded-lg object-cover shrink-0" 
                       />
-                      <div>
+                      <div class="flex-1 min-w-0">
                         <p class="font-medium text-gray-900"><%- item.productName %></p>
                         <p class="text-sm text-gray-500">Qty: <%- item.quantity %></p>
                         <span class="mt-1 inline-block px-2 py-0.5 text-xs font-medium rounded-full <%= itemStatusColors[item.orderStatus] || 'bg-gray-100 text-gray-800' %>">
                           <%- item.orderStatus.charAt(0).toUpperCase() + item.orderStatus.slice(1) %>
                         </span>
+                        
+                        <!-- Return request details and actions for items -->
+                        <% if (item.orderStatus === 'requestingReturn') { %>
+                          <div class="mt-2 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                            <p class="text-sm font-medium text-orange-800 mb-1">Return Reason:</p>
+                            <p class="text-sm text-orange-700">
+                              <%- item.returnReason || order.returnReason || 'No reason provided' %>
+                            </p>
+                            <div class="mt-2 flex flex-wrap gap-2">
+                              <form action="/admin/order/<%- order._id %>/item/<%- item.orderItemId %>/return-status?userId=<%= order.userId %>" method="POST" class="inline-block">
+                                <input type="hidden" name="status" value="approved">
+                                <button type="submit" class="px-3 py-1.5 text-xs font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg transition">
+                                  Approve Return
+                                </button>
+                              </form>
+                              <form action="/admin/order/<%- order._id %>/item/<%- item.orderItemId %>/return-status?userId=<%= order.userId %>" method="POST" class="inline-block">
+                                <input type="hidden" name="status" value="denied">
+                                <button type="submit" class="px-3 py-1.5 text-xs font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition">
+                                  Deny Return
+                                </button>
+                              </form>
+                            </div>
+                          </div>
+                        <% } %>
                       </div>
                     </div>
-                    <p class="font-medium text-gray-900">₹<%- (item.price * item.quantity).toFixed(2) %></p>
+                    <p class="font-medium text-gray-900 mt-2 sm:mt-0 shrink-0">₹<%- (item.price * item.quantity).toFixed(2) %></p>
                   </div>
                 <% }) %>
               </div>
@@ -469,63 +491,149 @@
         });
       });
 
+      // Handle status form submission with SweetAlert2
       if (statusForm) {
         statusForm.addEventListener('submit', async function (e) {
           e.preventDefault();
-
+          
           const selectedRadio = document.querySelector('input[name="status"]:checked');
           if (!selectedRadio || selectedRadio.value === originalStatus) {
             Swal.fire({
               icon: 'info',
               title: 'No Change',
               text: 'Please select a different order status.',
+              confirmButtonColor: '#6b7280',
               confirmButtonText: 'OK'
             });
             return;
           }
 
-          const url = this.action;
-          const formData = new URLSearchParams();
-          formData.append('status', selectedRadio.value);
+          Swal.fire({
+            title: 'Are you sure?',
+            text: `Do you want to change the order status to "${selectedRadio.value.charAt(0).toUpperCase() + selectedRadio.value.slice(1)}"?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3b82f6',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Yes, update it!',
+            cancelButtonText: 'Cancel'
+          }).then(async (result) => {
+            if (result.isConfirmed) {
+              const url = statusForm.action;
+              const formData = new URLSearchParams();
+              formData.append('status', selectedRadio.value);
 
-          try {
-            const response = await fetch(url, {
-              method: 'POST',
-              body: formData,
-              headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'Accept': 'application/json'
+              try {
+                const response = await fetch(url, {
+                  method: 'POST',
+                  body: formData,
+                  headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Accept': 'application/json'
+                  }
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                  Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: result.message || 'Order status updated successfully.',
+                    confirmButtonColor: '#10b981',
+                    confirmButtonText: 'OK'
+                  }).then(() => {
+                    window.location.reload();
+                  });
+                } else {
+                  Swal.fire({
+                    icon: 'error',
+                    title: 'Update Failed',
+                    text: result.message || 'Invalid status transition.',
+                    confirmButtonColor: '#ef4444',
+                    confirmButtonText: 'OK'
+                  });
+                }
+              } catch (error) {
+                console.error('Fetch error:', error);
+                Swal.fire({
+                  icon: 'error',
+                  title: 'Network Error',
+                  text: 'Something went wrong. Please try again.',
+                  confirmButtonColor: '#ef4444',
+                  confirmButtonText: 'OK'
+                });
               }
-            });
-
-            const result = await response.json();
-
-            if (response.ok && result.success) {
-              Swal.fire({
-                icon: 'success',
-                title: 'Success!',
-                text: result.message || 'Order status updated successfully.',
-                confirmButtonText: 'OK'
-              }).then(() => {
-                window.location.reload();
-              });
-            } else {
-              Swal.fire({
-                icon: 'error',
-                title: 'Update Failed',
-                text: result.message || 'Invalid status transition.',
-                confirmButtonText: 'OK'
-              });
             }
-          } catch (error) {
-            console.error('Fetch error:', error);
-            Swal.fire({
-              icon: 'error',
-              title: 'Network Error',
-              text: 'Something went wrong. Please try again.',
-              confirmButtonText: 'OK'
-            });
-          }
+          });
+        });
+      }
+      
+      // Add SweetAlert confirmation for return approval/denial forms
+      document.querySelectorAll('form[action*="/return-status"]').forEach(form => {
+        form.addEventListener('submit', function(e) {
+          e.preventDefault();
+          
+          const isApprove = this.querySelector('input[name="status"]').value === 'approved';
+          const actionText = isApprove ? 'approve' : 'deny';
+          const actionColor = isApprove ? '#22c55e' : '#ef4444';
+          const actionTitle = isApprove ? 'Approve Return' : 'Deny Return';
+          
+          Swal.fire({
+            title: `Are you sure you want to ${actionText} this return?`,
+            text: "This action cannot be undone.",
+            icon: isApprove ? 'success' : 'warning',
+            showCancelButton: true,
+            confirmButtonColor: actionColor,
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: `Yes, ${actionText} it!`,
+            cancelButtonText: 'Cancel'
+          }).then((result) => {
+            if (result.isConfirmed) {
+              // Show loading state
+              Swal.fire({
+                title: 'Processing...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                  Swal.showLoading();
+                }
+              });
+              
+              // Submit the form
+              this.submit();
+            }
+          });
+        });
+      });
+      
+      // Check for success/error messages in URL parameters
+      const urlParams = new URLSearchParams(window.location.search);
+      const successMessage = urlParams.get('success');
+      const errorMessage = urlParams.get('error');
+      
+      if (successMessage) {
+        Swal.fire({
+          icon: 'success',
+          title: 'Success!',
+          text: decodeURIComponent(successMessage),
+          confirmButtonColor: '#10b981',
+          confirmButtonText: 'OK'
+        }).then(() => {
+          // Remove the success parameter from URL
+          const newUrl = window.location.pathname + window.location.hash;
+          window.history.replaceState({}, document.title, newUrl);
+        });
+      } else if (errorMessage) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error!',
+          text: decodeURIComponent(errorMessage),
+          confirmButtonColor: '#ef4444',
+          confirmButtonText: 'OK'
+        }).then(() => {
+          // Remove the error parameter from URL
+          const newUrl = window.location.pathname + window.location.hash;
+          window.history.replaceState({}, document.title, newUrl);
         });
       }
     });

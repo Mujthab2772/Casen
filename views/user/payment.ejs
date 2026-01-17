@@ -677,29 +677,32 @@ body {
     });
     
     // Form submission handling for wallet payment
-    document.addEventListener('DOMContentLoaded', function() {
-      const walletForm = document.querySelector('form[action="/payment/process"][method="POST"]');
-      if (walletForm) {
-        walletForm.addEventListener('submit', function(e) {
-          const walletBalance = <%= user.walletBalance || 0 %>;
-          const orderTotal = <%= checkoutDetail.orderSummary.total %>;
-          
-          if (walletBalance < orderTotal) {
-            e.preventDefault();
-            Swal.fire({
-              icon: 'error',
-              title: 'Insufficient Balance',
-              text: `Your wallet balance of ₹${walletBalance} is insufficient for this order of ₹${orderTotal}.`,
-              confirmButtonText: 'Add Funds'
-            }).then((result) => {
-              if (result.isConfirmed) {
-                document.querySelector('[x-data="{ showTopupModal: false }"]')._x_dataStack[0].showTopupModal = true;
-              }
-            });
+        document.addEventListener('DOMContentLoaded', function() {
+  const walletForm = document.querySelector('form[action="/payment/process"][method="POST"]');
+  if (walletForm) {
+    walletForm.addEventListener('submit', function(e) {
+      // Safely decode URL-encoded values
+      const walletBalanceValue = parseFloat(decodeURIComponent("<%= encodeURIComponent(user && user.walletBalance ? user.walletBalance.toString() : '0') %>"));
+      const orderTotalValue = parseFloat(decodeURIComponent("<%= encodeURIComponent(checkoutDetail && checkoutDetail.orderSummary && checkoutDetail.orderSummary.total ? checkoutDetail.orderSummary.total.toString() : '0') %>"));
+      
+      if (walletBalanceValue < orderTotalValue) {
+        e.preventDefault();
+        Swal.fire({
+          icon: 'error',
+          title: 'Insufficient Balance',
+          text: `Your wallet balance of ₹${walletBalanceValue.toFixed(2)} is insufficient for this order of ₹${orderTotalValue.toFixed(2)}.`,
+          confirmButtonText: 'Add Funds'
+        }).then((result) => {
+          if (result.isConfirmed) {
+            // Show wallet top-up modal
+            const modalData = document.querySelector('[x-data="{ showTopupModal: false }"]').__x;
+            modalData.showTopupModal = true;
           }
         });
       }
     });
+  }
+});
   </script>
 </body>
 </html>

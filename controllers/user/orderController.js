@@ -1,4 +1,5 @@
-import { itemCancel, listOrder, orderCancelEntire, productReturn } from "../../service/user/orderService.js";
+import { itemCancel, listOrder, orderCancelEntire, productReturn, returnItem } from "../../service/user/orderService.js";
+import { STATUS_CODE } from "../../util/statusCodes.js";
 
 export const orderListing = async (req, res) => {
   try {
@@ -97,3 +98,28 @@ export const returnProduct = async (req, res) => {
     });
   }
 };
+
+export const itemReturn = async (req, res) => {
+  try {
+    const { reason } = req.body
+    const { orderId, itemIndex } = req.params
+    const userId = req.session.userDetail._id;
+
+    if (!reason || reason.trim().length < 5) {
+      return res.status(400).json({
+        success: false,
+        message: 'Return reason is required and must be at least 5 characters.'
+      });
+    }
+
+    await returnItem(orderId, userId, reason, itemIndex)
+
+    return res.json({ success: true, message: 'Return request submitted successfully.'})
+  } catch (error) {
+    console.log(`error from itemReturn ${error}`);
+    return res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).json({
+      success: false,
+      message: 'Failed to process return request. Please try again'
+    })
+  }
+}

@@ -1,4 +1,4 @@
-import { orderDetails, orderSingle, statusUpdate } from "../../service/admin/orderService.js";
+import { itemStatusUpdate, orderDetails, orderSingle, statusUpdate } from "../../service/admin/orderService.js";
 import { STATUS_CODE } from "../../util/statusCodes.js";
 
 export const orders = async (req, res) => {
@@ -54,10 +54,10 @@ export const orderStatus = async (req, res) => {
 
     const result = await statusUpdate(orderId, status, userId);
 
-    if (typeof result === 'string') {
+    if (result.unchanged) {
       return res.status(STATUS_CODE.OK).json({ 
         success: true, 
-        message: result, 
+        message: result.message, 
         unchanged: true 
       });
     }
@@ -76,5 +76,45 @@ export const orderStatus = async (req, res) => {
       success: false, 
       message: error.message || 'Failed to update order status' 
     });
+  }
+};
+
+export const itemReturnStatus = async (req, res) => {
+  try {
+    const { orderId, orderItemId } = req.params;
+    const { status } = req.body;
+    const { userId } = req.query;
+
+    if (!orderId || !orderItemId || !status || !userId) {
+      return res.status(STATUS_CODE.BAD_REQUEST).json({ 
+        success: false, 
+        message: 'Missing required fields' 
+      });
+    }
+
+    if (!['approved', 'denied'].includes(status)) {
+      return res.status(STATUS_CODE.BAD_REQUEST).json({ 
+        success: false, 
+        message: 'Invalid status. Only "approved" or "denied" allowed for item returns' 
+      });
+    }
+
+    const result = await itemStatusUpdate(orderId, orderItemId, status);
+
+    if (result.unchanged) {
+      // Redirect back to order details with success message
+      return res.redirect(`/admin/order/${orderId}?success=${encodeURIComponent(result.message)}`);
+    }
+
+    const message = status === 'approved'
+      ? 'Item return approved successfully with refund processed'
+      : 'Item return denied successfully';
+
+    // Redirect back to order details with success message
+    return res.redirect(`/admin/order/${orderId}?success=${encodeURIComponent(message)}`);
+  } catch (error) {
+    console.error(`Error in itemReturnStatus:`, error);
+    // Redirect back to order details with error message
+    return res.redirect(`/admin/order/${orderId}?error=${encodeURIComponent(error.message || 'Failed to update item return status')}`);
   }
 };

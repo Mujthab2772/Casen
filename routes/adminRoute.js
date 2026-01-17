@@ -6,7 +6,7 @@ import upload from "../middlewares/multer.js"
 import { addProductPage, addProducts, editProduct, productsPage, productStatus, updateProduct } from "../controllers/admin/productController.js"
 import { adminCheck, adminCheckLogin, validateAddCategory, validateEditCategory } from "../middlewares/adminMiddleware.js"
 import { validateAddProduct, validateEditProduct } from "../middlewares/validationProductMiddleware.js"
-import { orders, orderStatus, singleOrder } from "../controllers/admin/orderController.js"
+import { itemReturnStatus, orders, orderStatus, singleOrder } from "../controllers/admin/orderController.js"
 import { addNewCoupon, couponFetch, editActive, editCoupon, newCoupon, updateEditCoupon } from "../controllers/admin/couponController.js"
 import { handleValidationErrors, validateCoupon } from "../middlewares/couponValidate.js"
 import { newOffer, offerAdd, offerDetail, offerEdit, offerToggle, offerUpdate } from "../controllers/admin/offerController.js"
@@ -64,7 +64,9 @@ router.get('/order', adminCheck, orders)
 
 router.get('/order/:orderId', adminCheck, singleOrder)
 
-router.post('/order/:orderId/update-status', adminCheck, orderStatus)
+router.post('/order/:orderId/update-status', adminCheck, orderStatus);
+
+router.post('/order/:orderId/item/:orderItemId/return-status', adminCheck, itemReturnStatus);
 
 // coupon 
 

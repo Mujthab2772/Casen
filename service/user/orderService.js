@@ -290,3 +290,28 @@ export const productReturn = async (orderId, userId, reason) => {
     throw error;
   }
 };
+
+export const returnItem = async (orderId, userId, reason, itemIndex) => {
+  try {
+    const order = await orderModal.findOne({_id: orderId, userId})
+
+    if(!order) throw new Error("Order not found")
+
+    if(order.orderStatus !== 'delivered') {
+      throw new Error('Only delivered orders can be returned')
+    }
+
+    if(['requestingReturn', 'returned'].includes(order.items[itemIndex].orderStatus)) {
+      throw new Error('Return already requested or processed')
+    }
+
+    order.items[itemIndex].orderStatus = 'requestingReturn'
+    order.items[itemIndex].returnReason = reason
+    order.items[itemIndex].returnRequestedAt = new Date()
+    
+    await order.save()
+  } catch (error) {
+    console.log(`error form returnItem ${error}`)
+    throw error
+  }
+}

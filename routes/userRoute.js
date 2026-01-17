@@ -14,7 +14,7 @@ import { cart, checkInventoryRoute, newCart, removeCart, updateCart } from "../c
 import { checkout, checkoutDatas, getAvailableCoupons, previewCheckout } from "../controllers/user/checkoutController.js"
 import { payment, paymentFail, paymentProcess, paymentSuccess, verifyPayment } from "../controllers/user/paymentController.js"
 import { exitsCheckout } from "../middlewares/checkoutMiddleware.js"
-import { cancelItem, cancelOrder, orderListing, returnProduct } from "../controllers/user/orderController.js"
+import { cancelItem, cancelOrder, itemReturn, orderListing, returnProduct } from "../controllers/user/orderController.js"
 import { validateProfileUpdate } from "../middlewares/validateProfileUpdate.js"
 import { wishlist, wishlistadd, wishlistRemove } from "../controllers/user/wishlistController.js"
 import { wallet, walletAddNew, walletNewView } from "../controllers/user/walletController.js"
@@ -141,6 +141,8 @@ router.put('/profile/orders/:orderId/items/:itemIndex/cancel', userProfile, canc
 router.patch('/profile/orders/:orderId/cancel', userProfile, cancelOrder)
 
 router.patch('/profile/orders/:orderId/return', userProfile, returnProduct)
+
+router.patch('/profile/orders/:orderId/items/:itemIndex/return', userProfile, itemReturn)
 
 //wishlist
 

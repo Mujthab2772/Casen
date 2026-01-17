@@ -1,4 +1,6 @@
 import razorpay from "../../config/razorpay.js";
+import Cart from "../../models/cartModel.js";
+import orderModal from "../../models/orderModel.js";
 import { Wallet } from "../../models/walletModel.js";
 import {
   tempOrder,
@@ -267,6 +269,8 @@ export const paymentSuccess = async (req, res) => {
       req.flash('error', 'Order not found or you do not have permission to view this order.');
       return res.redirect('/profile/orders');
     }
+    
+    await Cart.deleteMany({})
     return res.render('paymentSuccess', {
       user,
       messages: req.flash(),
