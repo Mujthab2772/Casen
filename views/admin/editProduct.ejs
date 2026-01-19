@@ -2,146 +2,250 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="icon" type="image/png" sizes="32x32" href="/logoTab.png">
   <title>Edit Product</title>
 
-  <link href="https://cdn.jsdelivr.net/npm/cropperjs@1.5.13/dist/cropper.min.css  " rel="stylesheet"/>
-  <script src="https://cdn.jsdelivr.net/npm/cropperjs@1.5.13/dist/cropper.min.js  "></script>
-  <script src="https://cdn.tailwindcss.com  "></script>
+  <link href="https://cdn.jsdelivr.net/npm/cropperjs@1.5.13/dist/cropper.min.css" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/cropperjs@1.5.13/dist/cropper.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    .hidden { display: none; }
+    .hidden { 
+      display: none; 
+    }
+    .sidebar {
+      width: 227px;
+      position: fixed;
+      height: 100vh;
+      z-index: 10;
+      background-color: white;
+      border-right: 1px solid #e2e8f0;
+    }
+    .main-content {
+      margin-left: 227px;
+      padding: 1.5rem;
+      min-height: 100vh;
+      background-color: #f8fafc;
+    }
+    .variant-card {
+      transition: all 0.2s ease;
+    }
+    .variant-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+    .image-slot {
+      transition: all 0.2s ease;
+    }
+    .image-slot:hover {
+      border-color: #22c55e;
+      background-color: #f8fafc;
+    }
+    .image-slot:hover .image-actions {
+      opacity: 1;
+    }
+    .image-actions {
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
   </style>
 </head>
-<body class="bg-gray-100 p-6">
+<body class="bg-gray-50">
   <!-- Sidebar -->
+  <aside class="sidebar">
     <%- include('partial/aside', {
       selected: 'products'
-    })
-    %>
-  <!-- Main Content Area - Added ml-[227px] to account for sidebar width -->
-  <div class="ml-[227px] max-w-3xl mx-auto bg-white p-6 rounded shadow">
-    <a href="/admin/products" class="inline-flex items-center text-gray-600 hover:text-gray-900 mb-4">
-      ← Back
-    </a>
+    }) %>
+  </aside>
 
-    <h1 class="text-2xl font-bold mb-4">Edit Product</h1>
+  <!-- Main Content Area -->
+  <main class="main-content">
+    <div class="max-w-4xl mx-auto bg-white rounded-xl shadow-sm p-6">
+      <!-- Header -->
+      <div class="flex items-center mb-6">
+        <a href="/admin/products" class="inline-flex items-center text-gray-600 hover:text-gray-900">
+          <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+          </svg>
+          Back
+        </a>
+        <h1 class="text-2xl font-bold text-gray-900 ml-4">Edit Product</h1>
+      </div>
 
-    <form id="productForm" enctype="multipart/form-data" method="post" action="/admin/editProduct/<%= product.data.productId %>?_method=PUT">
-      <!-- Basic fields -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <% if (error) { %>
-          <div class="text-red-500 mb-4">
-            <%= error %>
+      <!-- Error Message -->
+      <% if (error) { %>
+        <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <p class="text-red-700"><%= error %></p>
+        </div>
+      <% } %>
+
+      <!-- Product Form -->
+      <form id="productForm" enctype="multipart/form-data" method="post" 
+            action="/admin/editProduct/<%= product.data.productId %>?_method=PUT">
+        
+        <!-- Basic Fields -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium text-gray-700 mb-1" for="productname">
+              Product Name
+            </label>
+            <input type="text" id="productname" name="productname" 
+                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                   value="<%= product.data.productName %>">
           </div>
-          <% } %>
-        <div class="md:col-span-2">
-          <label class="block text-sm font-medium">Product Name</label>
-          <input type="text" name="productname" class="mt-1 block w-full border rounded p-2" value="<%= product.data.productName %>">
+
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium text-gray-700 mb-1" for="productdescription">
+              Description
+            </label>
+            <textarea id="productdescription" name="productdescription" rows="4" 
+                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"><%= product.data.description %></textarea>
+          </div>
+
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium text-gray-700 mb-1" for="categoryId">
+              Category
+            </label>
+            <select id="categoryId" name="categoryId" 
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              <% 
+                const currentCat = product.data.categoryId || {};
+                const currentId = (currentCat._id || '').toString();
+                categories.forEach(cat => {
+                  const isSelected = cat._id.toString() === currentId;
+              %>
+                <option value="<%= cat._id %>" <%= isSelected ? 'selected' : '' %>>
+                  <%= cat.categoryName %>
+                </option>
+              <% }); %>
+            </select>
+          </div>
         </div>
 
-        <div class="md:col-span-2">
-          <label class="block text-sm font-medium">Description</label>
-          <textarea name="productdescription" rows="4" class="mt-1 block w-full border rounded p-2"><%= product.data.description %></textarea>
+        <!-- Variants Section -->
+        <div class="mb-8">
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-semibold text-gray-900">Variations</h2>
+            <button id="addVariantBtn" type="button" 
+                    class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+              <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+              </svg>
+              Add Variant
+            </button>
+          </div>
+
+          <div id="variantsContainer" class="space-y-6"></div>
         </div>
 
-        <div class="md:col-span-2">
-  <label class="block text-sm font-medium">Category</label>
-  <select name="categoryId" class="mt-1 block w-full border rounded p-2">
-    <% 
-      const currentCat = product.data.categoryId || {};
-      const currentId = (currentCat._id || '').toString();
-      categories.forEach(cat => {
-        const isSelected = cat._id.toString() === currentId;
-    %>
-      <option value="<%= cat._id %>" <%= isSelected ? 'selected' : '' %>>
-        <%= cat.categoryName %>
-      </option>
-    <% }); %>
-  </select>
-</div>
-      </div>
+        <!-- Hidden File Inputs -->
+        <div id="hiddenFileInputs" class="hidden"></div>
 
-      <!-- Variants area -->
-      <div class="mb-6">
-        <div class="flex justify-between items-center mb-3">
-          <h2 class="text-xl font-semibold">Variations</h2>
-          <button id="addVariantBtn" type="button" class="px-3 py-1 bg-green-600 text-white rounded">+ Add Variant</button>
+        <!-- Form Actions -->
+        <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+          <button type="button" onclick="window.location.href='/admin/products'" 
+                  class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+            Cancel
+          </button>
+          <button type="submit" 
+                  class="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors">
+            Save Product
+          </button>
         </div>
+      </form>
+    </div>
 
-        <div id="variantsContainer" class="space-y-4"></div>
-      </div>
-
-      <div id="hiddenFileInputs" class="hidden"></div>
-
-      <div class="flex justify-end space-x-2">
-        <button type="button" onclick="window.location.href='/admin/products'" class="px-4 py-2 border rounded">Cancel</button>
-        <button type="submit" class="px-4 py-2 bg-black text-white rounded">Save Product</button>
-      </div>
-    </form>
-  </div>
-
-  <!-- Crop Modal -->
-  <div id="cropModal" class="fixed inset-0 hidden items-center justify-center bg-black bg-opacity-50 z-50">
-    <div class="bg-white p-4 rounded max-w-lg w-full">
-      <h3 class="font-semibold mb-2">Crop Image</h3>
-      <div style="max-height:60vh; overflow:auto;">
-        <img id="cropImage" style="max-width:100%; display:block; margin:0 auto;" />
-      </div>
-      <div class="mt-3 text-right space-x-2">
-        <button id="cancelCrop" class="px-3 py-1 border rounded">Cancel</button>
-        <button id="applyCrop" class="px-3 py-1 bg-green-600 text-white rounded">Apply</button>
+    <!-- Crop Modal -->
+    <div id="cropModal" class="fixed inset-0 hidden items-center justify-center bg-black bg-opacity-50 z-50">
+      <div class="bg-white p-5 rounded-xl max-w-lg w-full">
+        <h3 class="font-semibold text-lg mb-3">Crop Image</h3>
+        <div class="max-h-[60vh] overflow-auto">
+          <img id="cropImage" class="max-w-full mx-auto block" />
+        </div>
+        <div class="mt-5 flex justify-end space-x-3">
+          <button id="cancelCrop" 
+                  class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+            Cancel
+          </button>
+          <button id="applyCrop" 
+                  class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+            Apply
+          </button>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- LOADING POPUP -->
-  <div id="loaderOverlay"
-       class="fixed inset-0 bg-black bg-opacity-40 hidden items-center justify-center z-[9999]">
-    <div class="flex flex-col items-center">
-      <svg class="animate-spin h-12 w-12 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-        <path class="opacity-75" fill="currentColor"
-              d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4l-3 3 3 3H4z">
-        </path>
-      </svg>
-      <p class="text-white mt-3 text-lg">Updating Product...</p>
+    <!-- Loading Overlay -->
+    <div id="loaderOverlay" class="fixed inset-0 bg-black bg-opacity-40 hidden items-center justify-center z-[9999]">
+      <div class="flex flex-col items-center">
+        <svg class="animate-spin h-12 w-12 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4l-3 3 3 3H4z"></path>
+        </svg>
+        <p class="text-white mt-3 text-lg">Updating Product...</p>
+      </div>
     </div>
-  </div>
+  </main>
 
+  <!-- Safely serialized product data with XSS protection -->
   <script id="product-data" type="application/json">
-<%- JSON.stringify(product.data) %>
-</script>
+    <%- JSON.stringify(product.data).replace(/<\//g, '<\\/').replace(/<\/script>/g, '<\\/script>').replace(/<!--/g, '<\\!--') %>
+  </script>
 
   <script>
-    (function () {
-      // ✅ Safely parse product data
-       const initialProduct = JSON.parse(
-      document.getElementById('product-data').textContent
-    );
-
-    // ✅ Now process variants
-    const initialVariants = (initialProduct.variantId || []).map(v => {
-      let price = '0';
-      if (v.price) {
-        if (typeof v.price === 'object' && v.price.$numberDecimal) {
-          price = v.price.$numberDecimal;
-        } else {
-          price = String(v.price);
+    (function() {
+      // Safely parse product data with additional sanitization
+      const parseProductData = () => {
+        const dataElement = document.getElementById('product-data');
+        if (!dataElement) return null;
+        
+        try {
+          return JSON.parse(dataElement.textContent);
+        } catch (e) {
+          console.error('Failed to parse product data:', e);
+          return null;
         }
-      }
-      return {
-        _id: v._id || '',
-        color: v.color || '',
-        price: price,
-        stock: v.stock != null ? String(v.stock) : '',
-        images: Array.isArray(v.images) ? v.images.slice(0, 3) : [null, null, null]
       };
-    });
 
-      let variants = initialVariants.length ? initialVariants : [{ color: '', price: '', stock: '', images: [null, null, null] }];
+      const initialProduct = parseProductData();
+      if (!initialProduct) {
+        console.error('Invalid product data. Using empty product.');
+      }
 
-      // DOM refs
+      // Process variants with proper data handling
+      const processVariants = () => {
+        if (!initialProduct || !initialProduct.variantId) {
+          return [{
+            color: '',
+            price: '',
+            stock: '',
+            images: [null, null, null]
+          }];
+        }
+
+        return initialProduct.variantId.map(v => {
+          let price = '0';
+          if (v.price) {
+            if (typeof v.price === 'object' && v.price.$numberDecimal) {
+              price = v.price.$numberDecimal;
+            } else {
+              price = String(v.price);
+            }
+          }
+          
+          return {
+            _id: v._id || '',
+            color: v.color || '',
+            price: price,
+            stock: v.stock != null ? String(v.stock) : '',
+            images: Array.isArray(v.images) ? v.images.slice(0, 3) : [null, null, null]
+          };
+        });
+      };
+
+      let variants = processVariants();
+
+      // DOM references
       const variantsContainer = document.getElementById('variantsContainer');
       const fileInputsContainer = document.getElementById('hiddenFileInputs');
       const addVariantBtn = document.getElementById('addVariantBtn');
@@ -155,16 +259,22 @@
       let cropTargetVariant = null;
       let cropTargetImageIndex = null;
 
-      // Escape HTML for input values
-      function escapeHtml(str) {
+      // Sanitize HTML content for DOM insertion
+      const escapeHtml = (str) => {
         if (str == null) return '';
-        return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'<','>':'>','"':'&quot;',"'":"&#39;"}[m]));
-      }
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      };
 
       // Create hidden file inputs for variant
-      function createHiddenFileInputsForVariant(variantIndex) {
+      const createHiddenFileInputsForVariant = (variantIndex) => {
         for (let i = 0; i < 3; i++) {
           if (document.querySelector(`input[name="variantImages_${variantIndex}_${i}"]`)) continue;
+          
           const input = document.createElement('input');
           input.type = 'file';
           input.name = `variantImages_${variantIndex}_${i}`;
@@ -175,96 +285,223 @@
           input.addEventListener('change', (e) => handleFileSelectFromInput(variantIndex, i, e));
           fileInputsContainer.appendChild(input);
         }
-      }
+      };
 
-      function renderVariants() {
+      // Render variants using DOM methods instead of innerHTML
+      const renderVariants = () => {
         variantsContainer.innerHTML = '';
+        
         variants.forEach((variant, variantIndex) => {
+          // Create variant card
           const wrapper = document.createElement('div');
-          wrapper.className = 'border rounded-lg p-4 bg-gray-50 space-y-4 shadow-sm';
+          wrapper.className = 'variant-card border rounded-xl p-5 bg-white space-y-5';
+          wrapper.dataset.variantIndex = variantIndex;
 
-          const imageSlotsHtml = [0,1,2].map(i => {
-  const hasImage = variant.images[i] !== null && variant.images[i] !== undefined;
-
-  const imgHtml = hasImage
-    ? `
-      <div class="relative w-full h-36 flex items-center justify-center group">
-        <img src="${escapeHtml(variant.images[i])}" class="object-cover w-full h-full rounded-lg" />
-        <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-opacity rounded-lg"></div>
-        <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity space-x-2">
-          <button data-action="remove-image" data-variant="${variantIndex}" data-image="${i}" class="remove-image bg-red-500 text-white w-8 h-8 rounded-full" type="button">×</button>
-          <button data-action="crop-image" data-variant="${variantIndex}" data-image="${i}" class="crop-image bg-blue-500 text-white w-8 h-8 rounded-full" type="button">✂</button>
-        </div>
-      </div>`
-    : `
-      <div class="flex flex-col items-center justify-center text-gray-400">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0l-4 4m4-4l4 4M21 12v8a2 2 0 01-2 2H5a2 2 0 01-2-2v-8" />
-        </svg>
-        <span class="text-sm font-medium">Upload</span>
-      </div>`;
-
-  // ✅ WRAP in .image-slot with data attributes!
-  return `
-    <div class="image-slot relative group border-2 border-dashed border-gray-300 rounded-xl bg-gray-50 flex flex-col items-center justify-center p-4 hover:border-green-500 hover:bg-gray-100 cursor-pointer"
-         data-variant="${variantIndex}" data-image="${i}">
-      ${imgHtml}
-    </div>
-  `;
-}).join('');
-
-          wrapper.innerHTML = `
-            <div class="flex justify-between items-center">
-              <h3 class="text-lg font-semibold text-gray-800">Variant ${variantIndex + 1}</h3>
-              <button type="button" data-action="remove-variant" data-variant="${variantIndex}" class="text-red-600">Remove</button>
-            </div>
-            <input type="hidden" name="variantId_${variantIndex}" value="${escapeHtml(variant._id)}">
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div>
-                <label class="block text-sm font-medium">Color</label>
-                <input type="text" name="variantcolor" class="variant-color mt-1 block w-full border rounded p-2" value="${escapeHtml(variant.color)}">
-              </div>
-              <div>
-                <label class="block text-sm font-medium">Price</label>
-                <input type="number" name="variantprice" class="variant-price mt-1 block w-full border rounded p-2" value="${escapeHtml(variant.price)}">
-              </div>
-              <div>
-                <label class="block text-sm font-medium">Stock</label>
-                <input type="number" name="variantstock" class="variant-stock mt-1 block w-full border rounded p-2" value="${escapeHtml(variant.stock)}">
-              </div>
-            </div>
-            <div class="mt-3">
-              <h4 class="text-md font-semibold mb-3 text-gray-900">Product Images <span class="text-sm text-gray-500">(3)</span></h4>
-              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                ${imageSlotsHtml}
-              </div>
-            </div>
-          `;
+          // Create header
+          const header = document.createElement('div');
+          header.className = 'flex justify-between items-center';
+          
+          const title = document.createElement('h3');
+          title.className = 'text-lg font-semibold text-gray-800';
+          title.textContent = `Variant ${variantIndex + 1}`;
+          
+          const removeBtn = document.createElement('button');
+          removeBtn.type = 'button';
+          removeBtn.className = 'text-red-600 hover:text-red-800 font-medium';
+          removeBtn.textContent = 'Remove';
+          removeBtn.dataset.action = 'remove-variant';
+          removeBtn.dataset.variant = variantIndex;
+          
+          header.appendChild(title);
+          header.appendChild(removeBtn);
+          
+          // Create hidden ID input
+          const idInput = document.createElement('input');
+          idInput.type = 'hidden';
+          idInput.name = `variantId_${variantIndex}`;
+          idInput.value = escapeHtml(variant._id);
+          
+          // Create form grid
+          const formGrid = document.createElement('div');
+          formGrid.className = 'grid grid-cols-1 sm:grid-cols-3 gap-4';
+          
+          // Color input
+          const colorGroup = document.createElement('div');
+          const colorLabel = document.createElement('label');
+          colorLabel.className = 'block text-sm font-medium text-gray-700 mb-1';
+          colorLabel.textContent = 'Color';
+          
+          const colorInput = document.createElement('input');
+          colorInput.type = 'text';
+          colorInput.name = 'variantcolor';
+          colorInput.className = 'variant-color w-full px-3 py-2 border border-gray-300 rounded-lg';
+          colorInput.value = escapeHtml(variant.color);
+          
+          colorGroup.appendChild(colorLabel);
+          colorGroup.appendChild(colorInput);
+          
+          // Price input
+          const priceGroup = document.createElement('div');
+          const priceLabel = document.createElement('label');
+          priceLabel.className = 'block text-sm font-medium text-gray-700 mb-1';
+          priceLabel.textContent = 'Price';
+          
+          const priceInput = document.createElement('input');
+          priceInput.type = 'number';
+          priceInput.name = 'variantprice';
+          priceInput.className = 'variant-price w-full px-3 py-2 border border-gray-300 rounded-lg';
+          priceInput.value = escapeHtml(variant.price);
+          priceInput.min = '0';
+          priceInput.step = '0.01';
+          
+          priceGroup.appendChild(priceLabel);
+          priceGroup.appendChild(priceInput);
+          
+          // Stock input
+          const stockGroup = document.createElement('div');
+          const stockLabel = document.createElement('label');
+          stockLabel.className = 'block text-sm font-medium text-gray-700 mb-1';
+          stockLabel.textContent = 'Stock';
+          
+          const stockInput = document.createElement('input');
+          stockInput.type = 'number';
+          stockInput.name = 'variantstock';
+          stockInput.className = 'variant-stock w-full px-3 py-2 border border-gray-300 rounded-lg';
+          stockInput.value = escapeHtml(variant.stock);
+          stockInput.min = '0';
+          
+          stockGroup.appendChild(stockLabel);
+          stockGroup.appendChild(stockInput);
+          
+          // Append to form grid
+          formGrid.appendChild(colorGroup);
+          formGrid.appendChild(priceGroup);
+          formGrid.appendChild(stockGroup);
+          
+          // Image section
+          const imageSection = document.createElement('div');
+          imageSection.className = 'mt-4';
+          
+          const imageHeader = document.createElement('h4');
+          imageHeader.className = 'font-semibold text-gray-900 mb-3';
+          imageHeader.textContent = `Product Images (3)`;
+          
+          const imageGrid = document.createElement('div');
+          imageGrid.className = 'grid grid-cols-1 sm:grid-cols-3 gap-4';
+          
+          // Create image slots
+          for (let i = 0; i < 3; i++) {
+            const imageSlot = document.createElement('div');
+            imageSlot.className = 'image-slot relative border-2 border-dashed border-gray-300 rounded-xl bg-gray-50 flex flex-col items-center justify-center p-4 cursor-pointer';
+            imageSlot.dataset.variant = variantIndex;
+            imageSlot.dataset.image = i;
+            
+            // Image content
+            const imageContent = document.createElement('div');
+            imageContent.className = 'w-full h-36 flex items-center justify-center';
+            
+            if (variant.images[i]) {
+              // Image with actions
+              const imgContainer = document.createElement('div');
+              imgContainer.className = 'relative w-full h-full';
+              
+              const img = document.createElement('img');
+              img.src = escapeHtml(variant.images[i]);
+              img.className = 'object-cover w-full h-full rounded-lg';
+              
+              const actions = document.createElement('div');
+              actions.className = 'image-actions absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 flex items-center justify-center space-x-2 opacity-0';
+              
+              const removeBtn = document.createElement('button');
+              removeBtn.className = 'remove-image bg-red-500 text-white w-8 h-8 rounded-full flex items-center justify-center';
+              removeBtn.dataset.action = 'remove-image';
+              removeBtn.dataset.variant = variantIndex;
+              removeBtn.dataset.image = i;
+              removeBtn.innerHTML = '&times;';
+              
+              const cropBtn = document.createElement('button');
+              cropBtn.className = 'crop-image bg-blue-500 text-white w-8 h-8 rounded-full flex items-center justify-center';
+              cropBtn.dataset.action = 'crop-image';
+              cropBtn.dataset.variant = variantIndex;
+              cropBtn.dataset.image = i;
+              cropBtn.textContent = '✂';
+              
+              actions.appendChild(removeBtn);
+              actions.appendChild(cropBtn);
+              imgContainer.appendChild(img);
+              imgContainer.appendChild(actions);
+              imageContent.appendChild(imgContainer);
+            } else {
+              // Empty slot
+              const emptyContent = document.createElement('div');
+              emptyContent.className = 'flex flex-col items-center justify-center text-gray-400';
+              
+              const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+              svg.setAttribute('class', 'w-10 h-10 mb-1');
+              svg.setAttribute('fill', 'none');
+              svg.setAttribute('viewBox', '0 0 24 24');
+              svg.setAttribute('stroke', 'currentColor');
+              
+              const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+              path.setAttribute('stroke-linecap', 'round');
+              path.setAttribute('stroke-linejoin', 'round');
+              path.setAttribute('stroke-width', '2');
+              path.setAttribute('d', 'M7 16V4m0 0l-4 4m4-4l4 4M21 12v8a2 2 0 01-2 2H5a2 2 0 01-2-2v-8');
+              
+              svg.appendChild(path);
+              
+              const text = document.createElement('span');
+              text.className = 'text-sm font-medium';
+              text.textContent = 'Upload';
+              
+              emptyContent.appendChild(svg);
+              emptyContent.appendChild(text);
+              imageContent.appendChild(emptyContent);
+            }
+            
+            imageSlot.appendChild(imageContent);
+            imageGrid.appendChild(imageSlot);
+          }
+          
+          imageSection.appendChild(imageHeader);
+          imageSection.appendChild(imageGrid);
+          
+          // Assemble the variant card
+          wrapper.appendChild(header);
+          wrapper.appendChild(idInput);
+          wrapper.appendChild(formGrid);
+          wrapper.appendChild(imageSection);
+          
           variantsContainer.appendChild(wrapper);
         });
-      }
+      };
 
-      function triggerHiddenInput(variantIndex, imageIndex) {
+      // Trigger file input
+      const triggerHiddenInput = (variantIndex, imageIndex) => {
         const input = document.querySelector(`input[name="variantImages_${variantIndex}_${imageIndex}"]`);
         if (input) input.click();
-      }
+      };
 
-      function handleFileSelectFromInput(variantIndex, imageIndex, e) {
+      // Handle file selection
+      const handleFileSelectFromInput = (variantIndex, imageIndex, e) => {
         const file = e.target.files?.[0];
         if (!file) return;
+        
         const reader = new FileReader();
         reader.onload = (ev) => {
           variants[variantIndex].images[imageIndex] = ev.target.result;
           renderVariants();
         };
         reader.readAsDataURL(file);
-      }
+      };
 
-      function openCropperFor(variantIndex, imageIndex) {
+      // Open cropper
+      const openCropperFor = (variantIndex, imageIndex) => {
         cropTargetVariant = variantIndex;
         cropTargetImageIndex = imageIndex;
         cropImage.src = variants[variantIndex].images[imageIndex] || '';
         cropModal.classList.remove('hidden');
+        
         setTimeout(() => {
           if (cropper) cropper.destroy();
           cropper = new Cropper(cropImage, {
@@ -276,40 +513,48 @@
             rotatable: true
           });
         }, 50);
-      }
+      };
 
-      function applyCrop() {
+      // Apply crop
+      const applyCrop = () => {
         if (!cropper) return;
+        
         const canvas = cropper.getCroppedCanvas({ width: 800, height: 800 });
         canvas.toBlob((blob) => {
           const file = new File([blob], 'cropped.png', { type: 'image/png' });
           const input = document.querySelector(`input[name="variantImages_${cropTargetVariant}_${cropTargetImageIndex}"]`);
+          
           if (!input) return;
+          
           const dt = new DataTransfer();
           dt.items.add(file);
           input.files = dt.files;
+          
           variants[cropTargetVariant].images[cropTargetImageIndex] = URL.createObjectURL(file);
           renderVariants();
           closeCropModal();
         }, 'image/png');
-      }
+      };
 
-      function closeCropModal() {
+      // Close crop modal
+      const closeCropModal = () => {
         if (cropper) cropper.destroy();
         cropper = null;
         cropModal.classList.add('hidden');
         cropImage.src = '';
-      }
+      };
 
-      function removeImage(variantIndex, imageIndex) {
+      // Remove image
+      const removeImage = (variantIndex, imageIndex) => {
         variants[variantIndex].images[imageIndex] = null;
         const input = document.querySelector(`input[name="variantImages_${variantIndex}_${imageIndex}"]`);
         if (input) input.value = '';
         renderVariants();
-      }
+      };
 
-      // Event delegation
+      // Event delegation for variant actions
       variantsContainer.addEventListener('click', (e) => {
+        // Crop button
         const cropBtn = e.target.closest('[data-action="crop-image"]');
         if (cropBtn) {
           const v = Number(cropBtn.dataset.variant);
@@ -322,6 +567,7 @@
           return;
         }
 
+        // Remove image button
         const removeImgBtn = e.target.closest('[data-action="remove-image"]');
         if (removeImgBtn) {
           const v = Number(removeImgBtn.dataset.variant);
@@ -330,6 +576,7 @@
           return;
         }
 
+        // Image slot
         const slot = e.target.closest('.image-slot');
         if (slot) {
           const v = Number(slot.dataset.variant);
@@ -338,6 +585,7 @@
           return;
         }
 
+        // Remove variant button
         const remVariant = e.target.closest('[data-action="remove-variant"]');
         if (remVariant) {
           const v = Number(remVariant.dataset.variant);
@@ -349,12 +597,19 @@
         }
       });
 
+      // Add variant button
       addVariantBtn.addEventListener('click', () => {
-        variants.push({ color: '', price: '', stock: '', images: [null, null, null] });
+        variants.push({ 
+          color: '', 
+          price: '', 
+          stock: '', 
+          images: [null, null, null] 
+        });
         createHiddenFileInputsForVariant(variants.length - 1);
         renderVariants();
       });
 
+      // Modal buttons
       applyCropBtn.addEventListener('click', applyCrop);
       cancelCropBtn.addEventListener('click', closeCropModal);
 
@@ -366,7 +621,11 @@
       fileInputsContainer.addEventListener('change', (e) => {
         const input = e.target;
         if (input.matches('input.file-input-persistent')) {
-          handleFileSelectFromInput(Number(input.dataset.variant), Number(input.dataset.image), e);
+          handleFileSelectFromInput(
+            Number(input.dataset.variant), 
+            Number(input.dataset.image), 
+            e
+          );
         }
       });
 
@@ -376,11 +635,12 @@
 
         // Refresh variantId hidden inputs
         document.querySelectorAll('input[name^="variantId_"]').forEach(n => n.remove());
+        
         variants.forEach((variant, idx) => {
           const hidden = document.createElement('input');
           hidden.type = 'hidden';
           hidden.name = `variantId_${idx}`;
-          hidden.value = variant._id || '';
+          hidden.value = escapeHtml(variant._id || '');
           document.getElementById('productForm').appendChild(hidden);
         });
 
@@ -394,6 +654,7 @@
             return null;
           });
         });
+        
         const existingInput = document.createElement('input');
         existingInput.type = 'hidden';
         existingInput.name = 'existingImages';
