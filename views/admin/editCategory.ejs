@@ -6,7 +6,7 @@
     <link rel="icon" type="image/png" sizes="32x32" href="/logoTab.png">
     <title>Add New Category</title>
     <!-- Load Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com  "></script>
     <style>
         /* Custom styles for the toggle switch */
         /* This styles the hidden checkbox's sibling (the div) */
@@ -32,9 +32,12 @@
     </style>
 </head>
 <body class="bg-gray-100 font-sans antialiased">
-
-    <!-- Main Content Area -->
-    <div class="container mx-auto max-w-4xl p-4 md:p-8">
+<%- include('partial/aside', {
+      selected: 'category'
+    })
+    %>
+    <!-- Main Content Area - Added ml-[227px] to account for sidebar width -->
+    <div class="ml-[227px] container mx-auto max-w-4xl p-4 md:p-8">
         
         <!-- Back Link -->
         <a href="/admin/category" class="inline-flex items-center text-gray-600 hover:text-gray-900 mb-4 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">

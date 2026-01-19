@@ -6,15 +6,21 @@
   <link rel="icon" type="image/png" sizes="32x32" href="/logoTab.png">
   <title>Edit Product</title>
 
-  <link href="https://cdn.jsdelivr.net/npm/cropperjs@1.5.13/dist/cropper.min.css" rel="stylesheet"/>
-  <script src="https://cdn.jsdelivr.net/npm/cropperjs@1.5.13/dist/cropper.min.js"></script>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/cropperjs@1.5.13/dist/cropper.min.css  " rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/cropperjs@1.5.13/dist/cropper.min.js  "></script>
+  <script src="https://cdn.tailwindcss.com  "></script>
   <style>
     .hidden { display: none; }
   </style>
 </head>
 <body class="bg-gray-100 p-6">
-  <div class="max-w-3xl mx-auto bg-white p-6 rounded shadow">
+  <!-- Sidebar -->
+    <%- include('partial/aside', {
+      selected: 'products'
+    })
+    %>
+  <!-- Main Content Area - Added ml-[227px] to account for sidebar width -->
+  <div class="ml-[227px] max-w-3xl mx-auto bg-white p-6 rounded shadow">
     <a href="/admin/products" class="inline-flex items-center text-gray-600 hover:text-gray-900 mb-4">
       ← Back
     </a>
@@ -398,4 +404,3 @@
   </script>
 </body>
 </html>
-
