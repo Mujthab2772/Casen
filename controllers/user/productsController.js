@@ -3,6 +3,7 @@ import Wishlist from "../../models/wishlist.js";
 import { productDetailsFilter } from "../../service/user/landingpageService.js";
 import { productDetails, singleProductFetch } from "../../service/user/productService.js";
 import { STATUS_CODE } from "../../util/statusCodes.js";
+import logger from '../../util/logger.js'; // ✅ Add logger import
 
 export const fetchProducts = async (req, res) => {
     try {
@@ -33,7 +34,7 @@ export const fetchProducts = async (req, res) => {
             limit: parsedLimit
         });
         
-        res.render('products', {
+        return res.render('products', {
             products: result.data || [],
             pagination: result.pagination || { currentPage: 1, totalPages: 1, total: 0, hasNext: false, hasPrev: false },
             query: req.query || {},
@@ -42,8 +43,8 @@ export const fetchProducts = async (req, res) => {
             filterProducts: result.allproducts.filter(Boolean)
         });
     } catch (error) {
-        console.log(`error from fetchproducts ${error}`);
-        res.redirect('/');
+        logger.error(`Error from fetchProducts: ${error.message}`);
+        return res.redirect('/');
     }
 };
 
@@ -56,7 +57,6 @@ export const singleProduct = async (req, res) => {
         const result = await singleProductFetch(productId);
         const products = await productDetailsFilter();
         
-        // Get wishlist variant IDs instead of just a boolean
         let wishlistVariantIds = [];
         if (user) {
             const userId = new mongoose.Types.ObjectId(user._id);
@@ -70,14 +70,14 @@ export const singleProduct = async (req, res) => {
         if (!result) return res.status(STATUS_CODE.NOT_FOUND).redirect('/products');
         if (!result.variants || result.variants.length === 0) return res.status(STATUS_CODE.NOT_FOUND).redirect('/products');
 
-        res.render('singleProduct', { 
+        return res.render('singleProduct', { 
             product: result, 
             user,
-            wishlistVariantIds, // Pass the array of variant IDs in wishlist
+            wishlistVariantIds,
             allproducts: products
         });
     } catch (error) {
-        console.log(`error from singleProduct ${error}`);
-        res.redirect('/products');
+        logger.error(`Error from singleProduct: ${error.message}`);
+        return res.redirect('/products');
     }
 };

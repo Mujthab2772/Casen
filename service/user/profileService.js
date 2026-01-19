@@ -4,24 +4,25 @@ import { generateOtp } from "../../util/generateOtp.js";
 import otpCollection from "../../models/otpModel.js";
 import { sendOtpEmail } from "../../util/sendOtp.js";
 import { comparePassword, hashPassword } from "../../util/hashPassword.js";
+import logger from '../../util/logger.js'; // ✅ Add logger import
 
 export const profileUpdate = async (profileDetails, image, user, req) => {
     try {
-        const { firstName, lastName, email, phoneNumber } = profileDetails
-        const userDetail = await userCollection.findById({_id: user._id})
+        const { firstName, lastName, email, phoneNumber } = profileDetails;
+        const userDetail = await userCollection.findById({ _id: user._id });
 
-        let imageUrl = null
-        if(image) {
-            imageUrl = await uploadToCloudinary(image.path, "profile-photo")
-        }else {
-            imageUrl = userDetail.profilePic
+        let imageUrl = null;
+        if (image) {
+            imageUrl = await uploadToCloudinary(image.path, "profile-photo");
+        } else {
+            imageUrl = userDetail.profilePic;
         }
 
         if (userDetail.email !== email) {
-            const otp = generateOtp()
-            const otpExpiresAt = Date.now() + 2 * 60 * 1000
+            const otp = generateOtp();
+            const otpExpiresAt = Date.now() + 2 * 60 * 1000;
 
-            await otpCollection.deleteMany({email})
+            await otpCollection.deleteMany({ email });
 
             const newData = new otpCollection({
                 email,
@@ -32,38 +33,36 @@ export const profileUpdate = async (profileDetails, image, user, req) => {
                 profilePic: imageUrl,
                 otp,
                 otpExpiresAt
-            })
+            });
 
-            await newData.save()
+            await newData.save();
 
-            await sendOtpEmail(email, otp)
+            await sendOtpEmail(email, otp);
 
             req.session.pendingEmailChange = {
                 oldEmail: userDetail.email,
                 newEmail: email
             };
 
-            return 'email changing'
+            return 'email changing';
         }
 
-        
+        if (!userDetail) return 'User not found';
 
-        if(!userDetail) return 'User not found'
+        userDetail.firstName = firstName || userDetail.firstName;
+        userDetail.lastName = lastName || userDetail.lastName;
+        userDetail.email = email || userDetail.email;
+        userDetail.profilePic = imageUrl || userDetail.profilePic;
+        userDetail.phoneNumber = phoneNumber || userDetail.phoneNumber;
 
-        userDetail.firstName = firstName || userDetail.firstName
-        userDetail.lastName = lastName || userDetail.lastName
-        userDetail.email = email || userDetail.email
-        userDetail.profilePic = (imageUrl) ? imageUrl : userDetail.profilePic
-        userDetail.phoneNumber = phoneNumber || userDetail.phoneNumber
-
-        await userDetail.save()
-        return userDetail
+        await userDetail.save();
+        return userDetail;
         
     } catch (error) {
-        console.log(`error from profileUpdate ${error}`);
-        throw error
+        logger.error(`Error from profileUpdate: ${error.message}`);
+        throw error;
     }
-}
+};
 
 // New function for email change verification only
 export const verifyEmailChangeOTP = async (email, otp) => {
@@ -77,9 +76,8 @@ export const verifyEmailChangeOTP = async (email, otp) => {
       return { success: false, message: 'OTP expired' };
     }
     
-    // Update only the user's email and related fields
     const updatedUser = await userCollection.findOneAndUpdate(
-      {email: email.oldEmail}, // Store userId in OTP record during profileUpdate
+      { email: email.oldEmail },
       { 
         email: otpRecord.email,
         firstName: otpRecord.firstName,
@@ -94,7 +92,7 @@ export const verifyEmailChangeOTP = async (email, otp) => {
     await otpCollection.deleteOne({ email: email.newEmail });
     return { success: true };
   } catch (error) {
-    console.error('Email change OTP verification error:', error);
+    logger.error(`Email change OTP verification error: ${error.message}`);
     throw error;
   }
 };
@@ -124,7 +122,7 @@ export const setPassword = async (currentPassword, newPassword, userId) => {
 
     return { success: true };
   } catch (error) {
-    console.error('Error in setPassword:', error);
+    logger.error(`Error in setPassword: ${error.message}`);
     throw error;
   }
 };

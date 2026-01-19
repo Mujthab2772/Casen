@@ -6,6 +6,7 @@ import couponModel from "../../models/couponModel.js";
 import orderModel from "../../models/orderModel.js";
 import Offer from "../../models/offerModel.js";
 import { applyOffersToProducts } from "../../util/offerUtils.js";
+import logger from '../../util/logger.js'; // ✅ Add logger import
 
 export const tempOrder = async (userId, datas) => {
   try {
@@ -121,7 +122,7 @@ export const tempOrder = async (userId, datas) => {
       offersApplied: itemsWithOffers.some(item => item.products.variant.hasOffer)
     };
   } catch (error) {
-    console.error(`tempOrder error:`, error);
+    logger.error(`tempOrder error: ${error.message}`);
     throw error;
   }
 };

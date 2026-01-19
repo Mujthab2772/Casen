@@ -1,9 +1,10 @@
 import { v4 as uuidv4 } from "uuid";
 import Cart from "../../models/cartModel.js";
-import {ProductVariant} from "../../models/productVariantModel.js";
+import { ProductVariant } from "../../models/productVariantModel.js";
 import mongoose from 'mongoose';
 import Offer from "../../models/offerModel.js";
 import { applyOffersToProducts } from "../../util/offerUtils.js";
+import logger from '../../util/logger.js'; // ✅ Add logger import
 
 /**
  * Check inventory availability for a variant
@@ -68,7 +69,7 @@ export const checkInventory = async (variantId, requestedQuantity) => {
         };
         
     } catch (error) {
-        console.error(`Error in inventory check: ${error}`);
+        logger.error(`Error in inventory check: ${error.message}`);
         throw error;
     }
 };
@@ -77,7 +78,6 @@ export const cartNew = async (cartItems, userId) => {
     try {
         const { productId, variantId, quantity } = cartItems;
         
-        // First check inventory availability
         const inventoryCheck = await checkInventory(variantId, quantity);
         
         if (!inventoryCheck.success) {
@@ -95,7 +95,6 @@ export const cartNew = async (cartItems, userId) => {
         const existingCart = await Cart.findOne({ userId });
         
         if (!existingCart) {
-            // Create new cart
             const newCart = new Cart({
                 cartId: uuidv4(),
                 userId,
@@ -111,25 +110,21 @@ export const cartNew = async (cartItems, userId) => {
             return newCart;
         }
         
-        // Check for existing item in cart
         const existingItem = existingCart.products.find(
             p => p.variantId.toString() === variantId.toString()
         );
         
         if (existingItem) {
-            // Check if adding would exceed max limit
             if (existingItem.quantity + quantity > 10) {
                 return "Maximum limit reached in cart";
             }
             
-            // Update existing item quantity
             await Cart.findOneAndUpdate(
                 { userId, 'products.variantId': variantId },
                 { $inc: { 'products.$.quantity': quantity } },
                 { new: true }
             );
         } else {
-            // Add new item to existing cart
             await Cart.findOneAndUpdate(
                 { userId },
                 {
@@ -147,7 +142,7 @@ export const cartNew = async (cartItems, userId) => {
         
         return await Cart.findOne({ userId });
     } catch (error) {
-        console.error(`Error in cartNew service: ${error}`);
+        logger.error(`Error in cartNew service: ${error.message}`);
         throw error;
     }
 };
@@ -157,14 +152,12 @@ export const cartDetails = async (userId) => {
         const userObjectId = new mongoose.Types.ObjectId(userId);
         const today = new Date();
         
-        // Get active offers
         const activeOffers = await Offer.find({
             status: 'active',
             startDate: { $lte: today },
             endDate: { $gte: today }
         }).lean();
         
-        // Aggregate cart data with product and variant details
         const cartItems = await Cart.aggregate([
             { $match: { userId: userObjectId } },
             { $unwind: "$products" },
@@ -216,11 +209,10 @@ export const cartDetails = async (userId) => {
             }
         ]);
         
-        // Apply offers and calculate totals
         const itemsWithOffers = await applyOffersToProducts(cartItems, activeOffers);
         return itemsWithOffers;
     } catch (error) {
-        console.error(`Error in cartDetails service: ${error}`);
+        logger.error(`Error in cartDetails service: ${error.message}`);
         throw error;
     }
 };
@@ -229,7 +221,6 @@ export const cartUpdate = async (userId, cartItems) => {
     try {
         const { cartProductId, quantity } = cartItems;
         
-        // First, get the cart item to find the variantId
         const cart = await Cart.findOne(
             { userId, 'products.cartProductId': cartProductId },
             { 'products.$': 1 }
@@ -245,7 +236,6 @@ export const cartUpdate = async (userId, cartItems) => {
         const cartItem = cart.products[0];
         const variantId = cartItem.variantId;
         
-        // Check inventory before updating
         const inventoryCheck = await checkInventory(variantId, quantity);
         
         if (!inventoryCheck.success) {
@@ -281,7 +271,6 @@ export const cartUpdate = async (userId, cartItems) => {
             };
         }
         
-        // Update the cart item
         const updatedCart = await Cart.findOneAndUpdate(
             { userId, 'products.cartProductId': cartProductId },
             { $set: { 'products.$.quantity': quantity } },
@@ -300,7 +289,7 @@ export const cartUpdate = async (userId, cartItems) => {
             availableStock: inventoryCheck.availableStock
         };
     } catch (error) {
-        console.error(`Error in cartUpdate service: ${error}`);
+        logger.error(`Error in cartUpdate service: ${error.message}`);
         throw error;
     }
 };
@@ -321,7 +310,7 @@ export const cartRemove = async (cartProducts, userId) => {
         
         return { success: true };
     } catch (error) {
-        console.error(`Error in cartRemove service: ${error}`);
+        logger.error(`Error in cartRemove service: ${error.message}`);
         throw error;
     }
 };

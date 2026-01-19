@@ -5,6 +5,7 @@ import { ProductVariant } from "../../models/productVariantModel.js";
 import couponModal from '../../models/couponModel.js';
 import offerModal from '../../models/offerModel.js';
 import mongoose from 'mongoose';
+import logger from '../../util/logger.js'; // ✅ Add logger import
 
 export const dashboardDetails = async (page = 1, period = 'daily', limit = 5) => {
   try {
@@ -268,7 +269,7 @@ export const dashboardDetails = async (page = 1, period = 'daily', limit = 5) =>
       bestSellingCategories
     };
   } catch (error) {
-    console.log(`error from dashboardDetails ${error}`);
+    logger.error(`Error from dashboardDetails: ${error.message}`);
     throw error;
   }
 };
@@ -310,7 +311,7 @@ export const salesReportService = {
         }
       };
     } catch (error) {
-      console.error('Error in getSummaryMetrics:', error);
+      logger.error(`Error in getSummaryMetrics: ${error.message}`);
       throw new Error(`Error fetching summary metrics: ${error.message}`);
     }
   },
@@ -411,7 +412,7 @@ export const salesReportService = {
         reportData: this.formatReportData(reportData, period),
       };
     } catch (error) {
-      console.error('Error in getSalesReportDetails:', error);
+      logger.error(`Error in getSalesReportDetails: ${error.message}`);
       throw new Error(`Error fetching sales report details: ${error.message}`);
     }
   },
@@ -465,7 +466,7 @@ export const salesReportService = {
         };
       });
     } catch (error) {
-      console.error('Error in getCouponAnalysis:', error);
+      logger.error(`Error in getCouponAnalysis: ${error.message}`);
       return [];
     }
   },
@@ -485,7 +486,7 @@ export const salesReportService = {
           }
         },
         { $sort: { totalQuantity: -1 } },
-        { $limit: 6 } // Limit to top 6 products for the chart
+        { $limit: 6 }
       ];
 
       const productSales = await orderModal.aggregate(pipeline);
@@ -493,21 +494,15 @@ export const salesReportService = {
       const labels = productSales.map(item => item.productName || 'Unknown Product');
       const data = productSales.map(item => item.totalQuantity || 0);
       
-      // Generate colors dynamically based on the number of products
       const backgroundColors = [];
       const borderColors = [];
       const baseColors = [
-        '#0ea5e9', // blue-500
-        '#38bdf8', // blue-400
-        '#7dd3fc', // blue-300
-        '#bae6fd', // blue-200
-        '#e0f2fe', // blue-100
-        '#f0f9ff'  // blue-50
+        '#0ea5e9', '#38bdf8', '#7dd3fc', '#bae6fd', '#e0f2fe', '#f0f9ff'
       ];
       
       for (let i = 0; i < labels.length; i++) {
         backgroundColors.push(baseColors[i % baseColors.length]);
-        borderColors.push('#0284c7'); // blue-700
+        borderColors.push('#0284c7');
       }
       
       return {
@@ -517,12 +512,12 @@ export const salesReportService = {
         borderColors
       };
     } catch (error) {
-      console.error('Error fetching product sales data:', error);
+      logger.error(`Error fetching product sales data: ${error.message}`);
       return {
         labels: ['No Data'],
         data: [0],
-        backgroundColors: ['#e5e7eb'], // gray-300
-        borderColors: ['#9ca3af']     // gray-400
+        backgroundColors: ['#e5e7eb'],
+        borderColors: ['#9ca3af']
       };
     }
   },
@@ -642,7 +637,7 @@ export const salesReportService = {
         grossSales: (summary[0]?.subTotal || 0) + (summary[0]?.taxAmount || 0)
       };
     } catch (error) {
-      console.error('Error getting previous period summary:', error);
+      logger.error(`Error getting previous period summary: ${error.message}`);
       return { totalSales: 0, totalOrders: 0, totalDiscount: 0, grossSales: 0 };
     }
   },

@@ -1,4 +1,5 @@
 import passport from "passport";
+import logger from '../../util/logger.js'; // ✅ Add logger import
 
 export const googleAuth = passport.authenticate("google", {
   scope: ["profile", "email", "openid"],
@@ -41,7 +42,7 @@ export const googleAuthCallback = [
         res.redirect("/");
       });
     } catch (error) {
-      console.log(`error from googleAuthCallback ${error}`);
+      logger.error(`Error from googleAuthCallback: ${error.message}`);
       res.redirect("/signUpPage");
     }
   },

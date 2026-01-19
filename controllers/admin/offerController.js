@@ -1,11 +1,11 @@
 import offerModel from "../../models/offerModel.js";
 import { availableItems, newOfferData, getFilteredOffers, updateOffer, toggleOffer } from "../../service/admin/offerService.js";
 import { STATUS_CODE } from "../../util/statusCodes.js";
+import logger from '../../util/logger.js'; // ✅ Adjust path as per your project structure
 
 export const offerDetail = async (req, res) => {
   try {
     const { page = 1, search = '', status = 'all', offerType = 'all' } = req.query;
-
     const currentPage = parseInt(page) || 1;
     const limit = 5;
 
@@ -19,7 +19,7 @@ export const offerDetail = async (req, res) => {
 
     const { products, category } = await availableItems();
 
-    res.render('offerManagement', {
+    return res.render('offerManagement', {
       offers,
       totalOffers,
       currentPage,
@@ -31,45 +31,52 @@ export const offerDetail = async (req, res) => {
       category,
     });
   } catch (error) {
-    console.log(`Error in offerDetail: ${error}`);
-    res.redirect('/admin/products');
+    logger.error(`Error in GET /admin/offers (offerDetail): ${error.message}`);
+    return res.redirect('/admin/products');
   }
 };
 
 export const newOffer = async (req, res) => {
   try {
-    const items = await availableItems()
-    res.render('offerAdd', { items })
+    const items = await availableItems();
+    return res.render('offerAdd', { items });
   } catch (error) {
-    console.log(`error from ${error}`);
-    res.redirect('/admin/products')
+    logger.error(`Error loading new offer form: ${error.message}`);
+    return res.redirect('/admin/products');
   }
-}
+};
 
 export const offerAdd = async (req, res) => {
   try {
-    await newOfferData(req.body)
-    return res.status(STATUS_CODE.OK).json({ message: "Offer created successfully!" })
+    await newOfferData(req.body);
+    logger.info(`New offer created with data: ${JSON.stringify(req.body)}`);
+    return res.status(STATUS_CODE.OK).json({ message: "Offer created successfully!" });
   } catch (error) {
-    console.log(`error from offerAdd ${error}`);
-    return res.status(STATUS_CODE.BAD_REQUEST).json({ message: 'failed to create offer', error: error.message })
+    logger.error(`Error creating new offer: ${error.message}`);
+    return res.status(STATUS_CODE.BAD_REQUEST).json({ 
+      message: 'Failed to create offer',
+      error: error.message 
+    });
   }
-}
+};
 
 export const offerEdit = async (req, res) => {
   try {
     const offer = await offerModel.findById(req.params.id).lean();
-    if (!offer) return res.status(404).send('Offer not found');
+    if (!offer) {
+      logger.warn(`Offer edit requested for non-existent ID: ${req.params.id}`);
+      return res.status(STATUS_CODE.NOT_FOUND).send('Offer not found');
+    }
 
-    const result = await availableItems()
+    const result = await availableItems();
 
-    res.render('offerEdit', {
+    return res.render('offerEdit', {
       offer,
       items: { products: result.products, category: result.category }
     });
   } catch (error) {
-    console.error(error);
-    res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).send('Server error');
+    logger.error(`Error loading offer edit page (ID: ${req.params.id}): ${error.message}`);
+    return res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).send('Server error');
   }
 };
 
@@ -77,21 +84,21 @@ export const offerUpdate = async (req, res) => {
   try {
     const offerId = req.params.offerId;
     await updateOffer(offerId, req.body);
-
+    logger.info(`Offer ${offerId} updated successfully`);
     return res.status(STATUS_CODE.OK).json({
       message: 'Offer updated successfully!'
     });
   } catch (error) {
-    console.error('Error in offerUpdate:', error.message);
-
     if (error.name === 'ValidationError') {
       const errors = Object.values(error.errors).map(err => ({
         path: err.path,
         msg: err.message
       }));
+      logger.warn(`Validation failed while updating offer ${req.params.offerId}: ${JSON.stringify(errors)}`);
       return res.status(STATUS_CODE.BAD_REQUEST).json({ errors });
     }
 
+    logger.error(`Error updating offer ${req.params.offerId}: ${error.message}`);
     return res.status(STATUS_CODE.BAD_REQUEST).json({
       message: error.message || 'Failed to update offer'
     });
@@ -102,10 +109,12 @@ export const offerToggle = async (req, res) => {
   try {
     const { offerId } = req.params;
     await toggleOffer(offerId);
-
-    res.status(STATUS_CODE.OK).json({ message: "Successfully updated" });
+    logger.info(`Offer ${offerId} toggled successfully`);
+    return res.status(STATUS_CODE.OK).json({ message: "Successfully updated" });
   } catch (error) {
-    console.error(`Error in offerToggle:`, error.message);
-    res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).json({ error: error.message || 'Failed to toggle offer' });
+    logger.error(`Error toggling offer ${req.params.offerId}: ${error.message}`);
+    return res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).json({ 
+      error: error.message || 'Failed to toggle offer' 
+    });
   }
 };

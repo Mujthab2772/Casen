@@ -1,5 +1,6 @@
 import admincollection from "../../models/adminModel.js";
 import { v4 as uuidv4 } from "uuid";
+import logger from '../../util/logger.js'; // ✅ Add logger import
 
 export const checkAdmin = async () => {
     try {
@@ -21,27 +22,26 @@ export const checkAdmin = async () => {
 
         return defaultAdmin;
     } catch (error) {
-        console.error("Error in checkAdmin service:", error);
+        logger.error(`Error in checkAdmin service: ${error.message}`);
         throw error; 
     }
 };
 
-
 export const validateAdminLogin = async (adminName, adminPassword) => {
     try {
-        let admin = await admincollection.findOne({adminName: adminName})
+        let admin = await admincollection.findOne({ adminName });
 
-        if(!admin) {
-            return {status: "Not Found"}
+        if (!admin) {
+            return { status: "Not Found" };
         }
 
-        if(admin.adminPassword === adminPassword) {
-            return {status: "Success", admin}
-        }else{
-            return {status: "Password Incorrect"}
+        if (admin.adminPassword === adminPassword) {
+            return { status: "Success", admin };
+        } else {
+            return { status: "Password Incorrect" };
         }
     } catch (error) {
-        console.log(`Error from validateAdminLogin service ${error}`);
-        throw error        
+        logger.error(`Error from validateAdminLogin service: ${error.message}`);
+        throw error;
     }
-}
+};

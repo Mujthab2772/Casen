@@ -1,6 +1,6 @@
 import couponModel from "../../models/couponModel.js";
 import { v4 as uuidv4 } from "uuid";
-
+import logger from '../../util/logger.js'; // ✅ Add logger import
 
 export const fetchCouponsWithFilters = async ({
   page,
@@ -81,10 +81,10 @@ export const couponAddNew = async (newCouponDetails) => {
     await coupon.save();
     return coupon;
   } catch (error) {
-    console.log(`error from couponAddNew ${error}`);
-    throw error
+    logger.error(`Error from couponAddNew: ${error.message}`);
+    throw error;
   }
-}
+};
 
 export const activeEdit = async (couponCode) => {
   const coupon = await couponModel.findOne({ couponCode });
@@ -122,7 +122,7 @@ export const couponUpdate = async (couponDetails) => {
     startDate: new Date(startDate),
     endDate: new Date(endDate),
     perUserLimit: parseInt(perUserLimit, 10)
-    };
+  };
 
   if (minAmount != null && minAmount > 0) {
     update.minAmount = parseFloat(minAmount);

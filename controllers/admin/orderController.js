@@ -6,6 +6,7 @@ import {
   orderReturnUpdate
 } from "../../service/admin/orderService.js";
 import { STATUS_CODE } from "../../util/statusCodes.js";
+import logger from '../../util/logger.js'; // ✅ Adjust path as per your project structure
 
 export const orders = async (req, res) => {
   try {
@@ -18,7 +19,7 @@ export const orders = async (req, res) => {
     const { orders, totalOrders } = await orderDetails({ skip, limit, search, status });
     const totalPages = Math.ceil(totalOrders / limit);
     
-    res.render("orderManagement", {
+    return res.render("orderManagement", {
       orders,
       currentPage: page,
       totalPages,
@@ -27,8 +28,8 @@ export const orders = async (req, res) => {
       status,
     });
   } catch (error) {
-    console.error(`Error in orders controller: ${error}`);
-    res.redirect("/admin/products");
+    logger.error(`Error fetching admin orders list: ${error.message}`);
+    return res.redirect("/admin/products");
   }
 };
 
@@ -36,11 +37,14 @@ export const singleOrder = async (req, res) => {
   try {
     const { orderId } = req.params;
     const order = await orderSingle(orderId);
-    if (!order) return res.status(404).send("Order not found");
-    res.render("orderEdit", { order: order[0] });
+    if (!order || order.length === 0) {
+      logger.warn(`Single order view requested for non-existent ID: ${orderId}`);
+      return res.status(STATUS_CODE.NOT_FOUND).send("Order not found");
+    }
+    return res.render("orderEdit", { order: order[0] });
   } catch (error) {
-    console.error(`Error from singleOrder: ${error}`);
-    res.redirect("/admin/orders");
+    logger.error(`Error loading single order (ID: ${req.params.orderId}): ${error.message}`);
+    return res.redirect("/admin/orders");
   }
 };
 
@@ -51,6 +55,7 @@ export const orderStatus = async (req, res) => {
     const { userId } = req.query;
     
     if (!orderId || !status || !userId) {
+      logger.warn(`Order status update missing required fields: orderId=${orderId}, status=${status}, userId=${userId}`);
       return res.status(STATUS_CODE.BAD_REQUEST).json({
         success: false,
         message: 'Missing required fields'
@@ -58,7 +63,9 @@ export const orderStatus = async (req, res) => {
     }
     
     const result = await statusUpdate(orderId, status, userId);
+    
     if (result.unchanged) {
+      logger.info(`Order ${orderId} status unchanged: ${status}`);
       return res.status(STATUS_CODE.OK).json({
         success: true,
         message: result.message,
@@ -66,7 +73,7 @@ export const orderStatus = async (req, res) => {
       });
     }
     
-    // When order is delivered, ensure all items are also delivered
+    // Auto-update item statuses when order is delivered
     if (status === 'delivered') {
       const order = result.order;
       for (const item of order.items) {
@@ -75,18 +82,18 @@ export const orderStatus = async (req, res) => {
         }
       }
       await order.save();
+      logger.info(`Auto-updated all items in order ${orderId} to 'delivered'`);
     }
     
     const message = status === 'returned'
       ? 'Order returned successfully with refund processed'
       : 'Order status updated successfully';
       
-    return res.status(STATUS_CODE.OK).json({
-      success: true,
-      message
-    });
+    logger.info(`Order ${orderId} status updated to "${status}" by admin (user: ${userId})`);
+    return res.status(STATUS_CODE.OK).json({ success: true, message });
+    
   } catch (error) {
-    console.error(`Error in orderStatus:`, error);
+    logger.error(`Error updating order status for ${req.params.orderId}: ${error.message}`);
     return res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: error.message || 'Failed to update order status'
@@ -94,7 +101,6 @@ export const orderStatus = async (req, res) => {
   }
 };
 
-// Controller for item status update
 export const itemStatus = async (req, res) => {
   try {
     const { orderId, orderItemId } = req.params;
@@ -102,14 +108,15 @@ export const itemStatus = async (req, res) => {
     const { userId } = req.query;
     
     if (!orderId || !orderItemId || !status || !userId) {
+      logger.warn(`Item status update missing fields: orderId=${orderId}, itemId=${orderItemId}, status=${status}, userId=${userId}`);
       return res.status(STATUS_CODE.BAD_REQUEST).json({
         success: false,
         message: 'Missing required fields'
       });
     }
     
-    // Admin cannot request returns - only approve/deny them
     if (status === 'requestingReturn') {
+      logger.warn(`Admin attempted to set item status to 'requestingReturn' (not allowed)`);
       return res.status(STATUS_CODE.BAD_REQUEST).json({
         success: false,
         message: 'Admin cannot request returns. Only customers can initiate returns.'
@@ -119,6 +126,7 @@ export const itemStatus = async (req, res) => {
     const result = await itemStatusUpdate(orderId, orderItemId, status, userId);
     
     if (result.unchanged) {
+      logger.info(`Item ${orderItemId} in order ${orderId} status unchanged: ${status}`);
       return res.status(STATUS_CODE.OK).json({
         success: true,
         message: result.message,
@@ -132,12 +140,11 @@ export const itemStatus = async (req, res) => {
         ? 'Item returned successfully with refund processed'
         : 'Item status updated successfully';
         
-    return res.status(STATUS_CODE.OK).json({
-      success: true,
-      message
-    });
+    logger.info(`Item ${orderItemId} in order ${orderId} updated to "${status}" by admin (user: ${userId})`);
+    return res.status(STATUS_CODE.OK).json({ success: true, message });
+    
   } catch (error) {
-    console.error(`Error in itemStatus:`, error);
+    logger.error(`Error updating item status (order: ${req.params.orderId}, item: ${req.params.orderItemId}): ${error.message}`);
     return res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: error.message || 'Failed to update item status'
@@ -152,6 +159,7 @@ export const itemReturnStatus = async (req, res) => {
     const { userId } = req.query;
     
     if (!orderId || !orderItemId || !status || !userId) {
+      logger.warn(`Item return approval missing fields: orderId=${orderId}, itemId=${orderItemId}, status=${status}`);
       return res.status(STATUS_CODE.BAD_REQUEST).json({
         success: false,
         message: 'Missing required fields'
@@ -159,29 +167,29 @@ export const itemReturnStatus = async (req, res) => {
     }
     
     if (!['approved', 'denied'].includes(status)) {
+      logger.warn(`Invalid return status "${status}" for item ${orderItemId}`);
       return res.status(STATUS_CODE.BAD_REQUEST).json({
         success: false,
         message: 'Invalid status. Only "approved" or "denied" allowed for item returns'
       });
     }
     
-    // Convert approved/denied to proper status values
     const newStatus = status === 'approved' ? 'returned' : 'delivered';
-    
-    const result = await itemStatusUpdate(orderId, orderItemId, newStatus, userId);
+    await itemStatusUpdate(orderId, orderItemId, newStatus, userId);
     
     const message = status === 'approved'
       ? 'Item return approved successfully with refund processed'
       : 'Item return denied successfully';
       
+    logger.info(`Item return ${status} for item ${orderItemId} in order ${orderId} by admin (user: ${userId})`);
     return res.redirect(`/admin/order/${orderId}?success=${encodeURIComponent(message)}`);
+    
   } catch (error) {
-    console.error(`Error in itemReturnStatus:`, error);
+    logger.error(`Error in item return approval (order: ${req.params.orderId}, item: ${req.params.orderItemId}): ${error.message}`);
     return res.redirect(`/admin/order/${orderId}?error=${encodeURIComponent(error.message || 'Failed to update item return status')}`);
   }
 };
 
-// Controller for entire order return approval/denial
 export const orderReturnStatus = async (req, res) => {
   try {
     const { orderId } = req.params;
@@ -189,6 +197,7 @@ export const orderReturnStatus = async (req, res) => {
     const { userId } = req.query;
     
     if (!orderId || !status || !userId) {
+      logger.warn(`Order return approval missing fields: orderId=${orderId}, status=${status}`);
       return res.status(STATUS_CODE.BAD_REQUEST).json({
         success: false,
         message: 'Missing required fields'
@@ -196,24 +205,25 @@ export const orderReturnStatus = async (req, res) => {
     }
     
     if (!['approved', 'denied'].includes(status)) {
+      logger.warn(`Invalid order return status "${status}" for order ${orderId}`);
       return res.status(STATUS_CODE.BAD_REQUEST).json({
         success: false,
         message: 'Invalid status. Only "approved" or "denied" allowed for order returns'
       });
     }
     
-    // Convert approved/denied to proper status values
     const newStatus = status === 'approved' ? 'returned' : 'delivered';
-    
-    const result = await orderReturnUpdate(orderId, newStatus, userId);
+    await orderReturnUpdate(orderId, newStatus, userId);
     
     const message = status === 'approved'
       ? 'Full order return approved successfully with refund processed'
       : 'Full order return denied successfully';
       
+    logger.info(`Full order return ${status} for order ${orderId} by admin (user: ${userId})`);
     return res.redirect(`/admin/order/${orderId}?success=${encodeURIComponent(message)}`);
+    
   } catch (error) {
-    console.error(`Error in orderReturnStatus:`, error);
+    logger.error(`Error in full order return approval (order: ${req.params.orderId}): ${error.message}`);
     return res.redirect(`/admin/order/${orderId}?error=${encodeURIComponent(error.message || 'Failed to update order return status')}`);
   }
 };

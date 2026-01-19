@@ -2,6 +2,7 @@ import categoryModel from "../../models/categoryModel.js";
 import { Product } from "../../models/productModel.js";
 import Offer from "../../models/offerModel.js";
 import userCollection from "../../models/userModel.js";
+import logger from '../../util/logger.js'; // ✅ Add logger import
 
 export const productDetailsFilter = async () => {
   try {
@@ -38,54 +39,46 @@ export const productDetailsFilter = async () => {
       { $sort: { createdAt: -1 } }
     ]);
 
-    
     return details.map(product => {
       return applyBestOfferToProduct(product, activeOffers);
     });
   } catch (error) {
-    console.log(`error from landingpage Service product details ${error}`);
+    logger.error(`Error from landingpage Service product details: ${error.message}`);
     throw error;
   }
 };
-
 
 const applyBestOfferToProduct = (product, activeOffers) => {
   if (!product || !product.variants || !product.variants.price) {
     return product;
   }
 
-  
   const productIdStr = product._id.toString();
-  
-  
+
   const productOffers = activeOffers.filter(offer => 
     offer.targetingType === 'products' && 
     offer.targeting.productIds.some(id => id.toString() === productIdStr)
   );
-  
-  
+
   const categoryIdStr = product.category._id.toString();
   const categoryOffers = activeOffers.filter(offer => 
     offer.targetingType === 'categories' && 
     offer.targeting.categoryIds.some(id => id.toString() === categoryIdStr)
   );
-  
+
   const globalOffers = activeOffers.filter(offer => 
     offer.targetingType === 'all'
   );
 
   let bestOffer = null;
 
-  
   if (productOffers.length > 0 || categoryOffers.length > 0) {
-    
     const specificOffers = [...productOffers, ...categoryOffers].filter(Boolean);
     
     if (specificOffers.length > 0) {
       bestOffer = specificOffers.reduce((best, current) => {
         if (!best) return current;
-        
-        
+
         const bestValue = best.offerType === 'percentage' 
           ? best.discountValue 
           : (best.discountValue / (product.variants.price || 1)) * 100;
@@ -97,13 +90,10 @@ const applyBestOfferToProduct = (product, activeOffers) => {
         return currentValue > bestValue ? current : best;
       }, null);
     }
-  } 
-  
-  else if (globalOffers.length > 0) {
-    bestOffer = globalOffers[0]; 
+  } else if (globalOffers.length > 0) {
+    bestOffer = globalOffers[0];
   }
 
-  
   if (bestOffer) {
     const originalPrice = parseFloat(product.variants.price.toString());
     let discountAmount = 0;
@@ -112,13 +102,11 @@ const applyBestOfferToProduct = (product, activeOffers) => {
     if (bestOffer.offerType === 'percentage') {
       discountAmount = (originalPrice * bestOffer.discountValue) / 100;
       finalPrice = originalPrice - discountAmount;
-    } 
-    else if (bestOffer.offerType === 'fixed') {
+    } else if (bestOffer.offerType === 'fixed') {
       discountAmount = Math.min(bestOffer.discountValue, originalPrice);
       finalPrice = originalPrice - discountAmount;
     }
-    
-    
+
     product.offerInfo = {
       offerId: bestOffer._id.toString(),
       offerName: bestOffer.offerName,
@@ -131,8 +119,7 @@ const applyBestOfferToProduct = (product, activeOffers) => {
       discountAmount: discountAmount,
       finalPrice: finalPrice
     };
-    
-    
+
     if (Array.isArray(product.variants)) {
       product.variants = product.variants.map(variant => {
         if (variant._id.toString() === product.variants._id.toString()) {
@@ -151,13 +138,13 @@ const applyBestOfferToProduct = (product, activeOffers) => {
       product.variants.hasOffer = true;
     }
   }
-  
+
   return product;
 };
 
 export const userDetail = async (useremail) => {
   try {
-    let user = await userCollection.findOne({email: useremail}, {
+    let user = await userCollection.findOne({ email: useremail }, {
       _id: 1,
       userId: 1,
       firstName: 1,
@@ -171,12 +158,12 @@ export const userDetail = async (useremail) => {
       updatedAt: 1
     });
     
-    if(!user) {
-      return {status: "user is not found"};
+    if (!user) {
+      return { status: "user is not found" };
     }
     return user;
   } catch (error) {
-    console.log(`error from userDetail ${error}`);
+    logger.error(`Error from userDetail: ${error.message}`);
     throw error;
   }
 };

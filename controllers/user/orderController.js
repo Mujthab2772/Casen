@@ -1,5 +1,6 @@
 import { itemCancel, listOrder, orderCancelEntire, productReturn, returnItem } from "../../service/user/orderService.js";
 import { STATUS_CODE } from "../../util/statusCodes.js";
+import logger from '../../util/logger.js'; // ✅ Add logger import
 
 export const orderListing = async (req, res) => {
   try {
@@ -21,8 +22,8 @@ export const orderListing = async (req, res) => {
       currentSearch: search
     });
   } catch (error) {
-    console.log(`error from orderListing ${error}`);
-    res.redirect('/profile');
+    logger.error(`Error from orderListing: ${error.message}`);
+    return res.redirect('/profile');
   }
 };
 
@@ -34,14 +35,11 @@ export const cancelItem = async (req, res) => {
     }
 
     const { orderId, itemIndex } = req.params;
-
-    
     const index = parseInt(itemIndex, 10);
     if (isNaN(index)) {
       return res.status(STATUS_CODE.BAD_REQUEST).json({ success: false, message: 'Invalid item index' });
     }
 
-   
     const result = await itemCancel(
       { orderId, itemIndex: index }, 
       user._id
@@ -50,27 +48,24 @@ export const cancelItem = async (req, res) => {
     return res.json({ success: true });
 
   } catch (error) {
-    console.log(`error from cancelItem ${error}`);
-    
+    logger.error(`Error from cancelItem: ${error.message}`);
     return res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).json({ success: false, message: 'Failed to cancel item' });
   }
 };
 
 export const cancelOrder = async (req, res) => {
   try {
-    // console.log(req.params.orderId)
+    const userId = req.session.userDetail._id;
+    const orderId = req.params.orderId;
 
-    const userId = req.session.userDetail._id
-    const orderId = req.params.orderId
+    const result = await orderCancelEntire(orderId, userId);
 
-    const result = await orderCancelEntire(orderId, userId)
-
-    res.json({ success: true, message: result.message });
+    return res.json({ success: true, message: result.message });
   } catch (error) {
-    console.log(`error from cancelOrder ${error}`);
-    res.redirect('/profile/orders')
+    logger.error(`Error from cancelOrder: ${error.message}`);
+    return res.redirect('/profile/orders');
   }
-}
+};
 
 export const returnProduct = async (req, res) => {
   try {
@@ -90,8 +85,7 @@ export const returnProduct = async (req, res) => {
     return res.json({ success: true, message: 'Return request submitted successfully.' });
 
   } catch (error) {
-    console.log(`error from returnProduct ${error}`);
-    
+    logger.error(`Error from returnProduct: ${error.message}`);
     return res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: 'Failed to process return request. Please try again.'
@@ -101,8 +95,8 @@ export const returnProduct = async (req, res) => {
 
 export const itemReturn = async (req, res) => {
   try {
-    const { reason } = req.body
-    const { orderId, itemIndex } = req.params
+    const { reason } = req.body;
+    const { orderId, itemIndex } = req.params;
     const userId = req.session.userDetail._id;
 
     if (!reason || reason.trim().length < 5) {
@@ -112,14 +106,14 @@ export const itemReturn = async (req, res) => {
       });
     }
 
-    await returnItem(orderId, userId, reason, itemIndex)
+    await returnItem(orderId, userId, reason, itemIndex);
 
-    return res.json({ success: true, message: 'Return request submitted successfully.'})
+    return res.json({ success: true, message: 'Return request submitted successfully.' });
   } catch (error) {
-    console.log(`error from itemReturn ${error}`);
+    logger.error(`Error from itemReturn: ${error.message}`);
     return res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: 'Failed to process return request. Please try again'
-    })
+    });
   }
-}
+};

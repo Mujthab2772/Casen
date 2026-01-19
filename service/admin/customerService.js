@@ -1,10 +1,11 @@
 import userCollection from "../../models/userModel.js";
+import logger from '../../util/logger.js'; // ✅ Add logger import
 
 export const customerDetails = async (searchedUser = null, page, limit = 5) => {
     try {
-        const skip = (page - 1) * limit
+        const skip = (page - 1) * limit;
         
-        let filter = {}
+        let filter = {};
         
         if (searchedUser) {
             filter = {
@@ -15,53 +16,52 @@ export const customerDetails = async (searchedUser = null, page, limit = 5) => {
             };
         }
         
-        let countCustomers = await userCollection.countDocuments(filter)
+        const countCustomers = await userCollection.countDocuments(filter);
 
+        const userDetails = await userCollection.find(filter)
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
 
-        let userDetails = await userCollection.find(filter)
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit)
-
-        return {userDetails, countCustomers, skip, end: Math.min(skip + limit, countCustomers)}
+        return { userDetails, countCustomers, skip, end: Math.min(skip + limit, countCustomers) };
 
     } catch (error) {
-        console.log(`Error from customerDetails ${error}`);
-        throw error
+        logger.error(`Error from customerDetails: ${error.message}`);
+        throw error;
     }
-}
+};
 
 export const toggleBlockAndUnblock = async (userId) => {
     try {
-        let userDetail = await userCollection.findById({_id: userId})
+        const userDetail = await userCollection.findById({ _id: userId });
 
-        if(!userDetail) throw new Error("User Not Found")
+        if (!userDetail) throw new Error("User Not Found");
 
-        if(userDetail.isActive) {            
-            await userCollection.updateOne({_id: userId}, {$set: {isActive: false}})
-        }else {
-            await userCollection.updateOne({_id: userId}, {$set: {isActive: true}})
+        if (userDetail.isActive) {            
+            await userCollection.updateOne({ _id: userId }, { $set: { isActive: false } });
+        } else {
+            await userCollection.updateOne({ _id: userId }, { $set: { isActive: true } });
         }
     } catch (error) {
-        console.log(`Error from toggleBlockAndUnblock ${error}`);
-        throw error
+        logger.error(`Error from toggleBlockAndUnblock: ${error.message}`);
+        throw error;
     }
-}
+};
 
 export const searchedUser = async (searchBar) => {
     try {
-        let searchUsers = await userCollection.find({
+        const searchUsers = await userCollection.find({
             $or: [
                 { firstName: { $regex: searchBar, $options: "i" } },
                 { lastName: { $regex: searchBar, $options: "i" } },
                 { email: { $regex: `${searchBar}.*@`, $options: "i" } },
                 { phoneNumber: { $regex: searchBar, $options: "i" } }
             ]
-        }).sort({createdAt: -1})
+        }).sort({ createdAt: -1 });
 
-        return searchUsers
+        return searchUsers;
     } catch (error) {
-        console.log(`Error from searchedUser ${error}`);
-        throw error
+        logger.error(`Error from searchedUser: ${error.message}`);
+        throw error;
     }
-}
+};

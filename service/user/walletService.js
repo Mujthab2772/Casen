@@ -1,11 +1,12 @@
-import { Transaction } from "../../models/transactionsModel.js"
-import { Wallet } from "../../models/walletModel.js"
+import { Transaction } from "../../models/transactionsModel.js";
+import { Wallet } from "../../models/walletModel.js";
+import logger from '../../util/logger.js'; // ✅ Add logger import
 
 // Service
-export const walletDetails = async(userId, page = 1, limit = 5) => {
+export const walletDetails = async (userId, page = 1, limit = 5) => {
     try {
-        let wallet = await Wallet.findOne({userId});
-        if(!wallet) {
+        let wallet = await Wallet.findOne({ userId });
+        if (!wallet) {
             wallet = new Wallet({
                 userId,
                 'balance.amount': 0,
@@ -32,18 +33,18 @@ export const walletDetails = async(userId, page = 1, limit = 5) => {
 
         return { wallet, transaction: transactions, pagination };
     } catch (error) {
-        console.log(`error from walletDetails ${error}`);
+        logger.error(`Error from walletDetails: ${error.message}`);
         throw error;
     }
-}
+};
 
 export const walletAdd = async (userId, details) => {
     try {
-        const {amount, description} = details
-        const wallet = await Wallet.findOne({userId})
+        const { amount, description } = details;
+        const wallet = await Wallet.findOne({ userId });
 
-        if(!wallet){
-            throw new Error('wallet not found')
+        if (!wallet) {
+            throw new Error('wallet not found');
         }
 
         const transaction = new Transaction({
@@ -53,15 +54,15 @@ export const walletAdd = async (userId, details) => {
             type: 'topup',
             status: 'completed',
             description
-        })
-        wallet.balance.amount = Number(wallet.balance.amount) + amount
+        });
+        wallet.balance.amount = Number(wallet.balance.amount) + amount;
         
-        await wallet.save()
-        await transaction.save()
+        await wallet.save();
+        await transaction.save();
 
-        return true
+        return true;
     } catch (error) {
-        console.log(`error from walletAdd ${error}`);
-        throw error
+        logger.error(`Error from walletAdd: ${error.message}`);
+        throw error;
     }
-}
+};

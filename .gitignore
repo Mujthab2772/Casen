@@ -6,3 +6,6 @@ uploads/
 
 # Environment variables
 .env
+
+# logs
+logs/

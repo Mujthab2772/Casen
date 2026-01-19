@@ -14,7 +14,7 @@ import {
   walletPayment
 } from "../../service/user/paymentService.js";
 import crypto from 'crypto';
-
+import logger from '../../util/logger.js'; // ✅ Add logger import
 
 export const payment = async (req, res) => {
   try {
@@ -33,7 +33,6 @@ export const payment = async (req, res) => {
     const { shippingAddressId, contact, appliedCouponCode } = req.session.checkout;
     
     try {
-      // Fetch wallet balance for the user
       const wallet = await Wallet.findOne({ userId });
       user.walletBalance = wallet ? parseFloat(wallet.balance.amount.toString()) : 0;
       
@@ -79,13 +78,13 @@ export const payment = async (req, res) => {
         razorpayKeyId: process.env.RAZORPAY_KEY_ID
       });
     } catch (error) {
-      console.log(`Temp order error:`, error);
+      logger.error(`Temp order error: ${error.message}`);
       delete req.session.checkout;
       req.flash('error', 'Unable to calculate order details. Please try again.');
       return res.redirect('/checkout');
     }
   } catch (error) {
-    console.log(`Payment controller error:`, error);
+    logger.error(`Payment controller error: ${error.message}`);
     delete req.session.checkout;
     req.flash('error', 'Payment session expired. Please checkout again.');
     return res.redirect('/checkout');
@@ -109,7 +108,7 @@ export const paymentProcess = async (req, res) => {
         result = await cashOnDelivery(req);
         req.flash('success', 'Your order has been placed successfully! Payment to be made on delivery.');
       } catch (error) {
-        console.log(`COD Error:`, error);
+        logger.error(`COD Error: ${error.message}`);
         throw error;
       }
       delete req.session.checkout;
@@ -134,7 +133,7 @@ export const paymentProcess = async (req, res) => {
           email: req.session.userDetail.email
         });
       } catch (error) {
-        console.error('Razorpay order creation error:', error);
+        logger.error(`Razorpay order creation error: ${error.message}`);
         return res.json({
           success: false,
           message: 'Failed to initiate payment. Please try again.'
@@ -142,31 +141,31 @@ export const paymentProcess = async (req, res) => {
       }
     }
     if (req.body.paymentMethod === 'wallet') {
-  try {
-    const result = await walletPayment(req);
-    req.flash('success', 'Payment successful! Your order has been placed using wallet balance.');
-    delete req.session.checkout;
-    return res.redirect(`/payment/success?orderId=${result.orderId}`);
-  } catch (error) {
-    console.log(`Wallet payment error:`, error);
-    let flashMessage = 'Wallet payment failed. Please try again.';
-    if (error.message.includes('Insufficient wallet balance')) {
-      flashMessage = error.message;
-    } else if (error.message.includes('Wallet not found')) {
-      flashMessage = 'Please create a wallet and add funds first.';
-    } else if (error.message.includes('out of stock')) {
-      flashMessage = error.message;
-    } else if (error.message.includes('not authenticated')) {
-      return res.redirect('/login');
+      try {
+        const result = await walletPayment(req);
+        req.flash('success', 'Payment successful! Your order has been placed using wallet balance.');
+        delete req.session.checkout;
+        return res.redirect(`/payment/success?orderId=${result.orderId}`);
+      } catch (error) {
+        logger.error(`Wallet payment error: ${error.message}`);
+        let flashMessage = 'Wallet payment failed. Please try again.';
+        if (error.message.includes('Insufficient wallet balance')) {
+          flashMessage = error.message;
+        } else if (error.message.includes('Wallet not found')) {
+          flashMessage = 'Please create a wallet and add funds first.';
+        } else if (error.message.includes('out of stock')) {
+          flashMessage = error.message;
+        } else if (error.message.includes('not authenticated')) {
+          return res.redirect('/login');
+        }
+        req.flash('error', flashMessage);
+        return res.redirect('/payment');
+      }
     }
-    req.flash('error', flashMessage);
-    return res.redirect('/payment');
-  }
-}
     req.flash('error', 'Please select a valid payment method.');
     return res.redirect('/payment');
   } catch (error) {
-    console.log(`Payment process error:`, error.toString());
+    logger.error(`Payment process error: ${error.toString()}`);
     delete req.session.checkout;
     const errorMessage = error?.message || error?.error?.description || 'Payment failed. Please try again.';
     let flashMessage = 'Payment failed. Please try again.';
@@ -190,6 +189,7 @@ export const paymentProcess = async (req, res) => {
     });
   }
 };
+
 export const verifyPayment = async (req, res) => {
   try {
     const verificationData = req.query;
@@ -232,7 +232,7 @@ export const verifyPayment = async (req, res) => {
     req.flash('success', 'Payment successful! Your order has been confirmed.');
     return res.redirect(`/payment/success?orderId=${order.orderId}`);
   } catch (error) {
-    console.error('Verification error:', error);
+    logger.error(`Verification error: ${error.message}`);
     const failDetails = {
       reason: error.message || 'An unexpected error occurred during payment verification.',
       timestamp: new Date().toISOString()
@@ -252,6 +252,7 @@ export const verifyPayment = async (req, res) => {
     return res.redirect('/payment/fail');
   }
 };
+
 export const paymentSuccess = async (req, res) => {
   try {
     const user = req.session.userDetail;
@@ -270,14 +271,14 @@ export const paymentSuccess = async (req, res) => {
       return res.redirect('/profile/orders');
     }
     
-    await Cart.deleteMany({})
+    await Cart.deleteMany({});
     return res.render('paymentSuccess', {
       user,
       messages: req.flash(),
       order
     });
   } catch (error) {
-    console.log(`Payment success error:`, error);
+    logger.error(`Payment success error: ${error.message}`);
     req.flash('error', 'Order details not found.');
     return res.redirect('/profile/orders');
   }
@@ -291,7 +292,6 @@ export const paymentFail = async (req, res) => {
       return res.redirect('/login');
     }
 
-
     const errorDetails = {
       code: req.query.code ? decodeURIComponent(req.query.code) : null,
       description: req.query.description ? decodeURIComponent(req.query.description) : null,
@@ -299,17 +299,14 @@ export const paymentFail = async (req, res) => {
       reason: req.query.reason ? decodeURIComponent(req.query.reason) : null
     };
 
-
     const sessionErrorDetails = req.session.paymentFailDetails || {
       reason: req.flash('error')[0] || 'Payment failed',
       timestamp: new Date().toISOString()
     };
 
-
     if (errorDetails.code && errorDetails.description) {
       sessionErrorDetails.razorpayError = errorDetails;
     }
-
 
     delete req.session.paymentFailDetails;
 
@@ -320,7 +317,7 @@ export const paymentFail = async (req, res) => {
       orderId: req.query.orderId || null
     });
   } catch (error) {
-    console.log(`Payment fail page error:`, error);
+    logger.error(`Payment fail page error: ${error.message}`);
     req.flash('error', 'Unable to load payment failure page.');
     return res.redirect('/profile/orders');
   }

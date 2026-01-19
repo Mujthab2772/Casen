@@ -4,6 +4,7 @@ import { ProductVariant } from "../../models/productVariantModel.js";
 import mongoose from "mongoose";
 import { Wallet } from "../../models/walletModel.js";
 import { Transaction } from "../../models/transactionsModel.js";
+import logger from '../../util/logger.js'; // ✅ Add logger import
 
 async function refundToWallet(userId, amount, orderId, description) {
   try {
@@ -39,7 +40,7 @@ async function refundToWallet(userId, amount, orderId, description) {
 
     return { success: true, wallet, transaction };
   } catch (error) {
-    console.error('Wallet refund failed:', error);
+    logger.error(`Wallet refund failed: ${error.message}`);
     throw new Error('Failed to process wallet refund');
   }
 }
@@ -83,7 +84,7 @@ export const listOrder = async (userId, page = 1, limit = 4, status = 'all', sea
       }
     };
   } catch (error) {
-    console.log(`error from listOrder ${error}`);
+    logger.error(`Error from listOrder: ${error.message}`);
     throw error;
   }
 };
@@ -94,7 +95,6 @@ export const itemCancel = async (details, userId) => {
     const order = await orderModal.findOne({ _id: orderId, userId });
     if (!order) throw new Error('Order not found');
 
-    // Prevent cancellation on non-cancellable orders
     if (['delivered', 'returned', 'cancelled'].includes(order.orderStatus)) {
       throw new Error(`Cannot cancel items in a ${order.orderStatus} order`);
     }
@@ -133,13 +133,11 @@ export const itemCancel = async (details, userId) => {
     const newTax = 0;
     const newTotal = Math.max(0, newSubtotal - newDiscount + newTax);
 
-    // Determine new order status
     let newOrderStatus = order.orderStatus;
     if (!hasActiveItems) {
       newOrderStatus = 'cancelled';
     }
 
-    // Update payment status only if order becomes fully cancelled
     let updatedPaymentStatus = order.paymentStatus;
     if (!hasActiveItems && order.paymentStatus === 'paid') {
       updatedPaymentStatus = 'refunded';
@@ -163,14 +161,12 @@ export const itemCancel = async (details, userId) => {
 
     if (!updatedOrder) throw new Error('Failed to update order');
 
-    // Restore stock regardless of payment status
     await ProductVariant.findOneAndUpdate(
       { variantId: itemToCancel.variantId },
       { $inc: { stock: itemToCancel.quantity } },
       { new: true }
     );
 
-    // Process refund ONLY for paid orders with valid refund amount
     const isPaidOrder = order.paymentStatus === 'paid';
     if (isPaidOrder && refundAmount > 0 && hasActiveItems) {
       const refundAmountDecimal = new mongoose.Types.Decimal128(refundAmount.toFixed(2));
@@ -182,7 +178,6 @@ export const itemCancel = async (details, userId) => {
       );
     }
 
-    // Full refund if entire order is cancelled
     if (isPaidOrder && !hasActiveItems && newTotal > 0) {
       const fullRefundAmount = new mongoose.Types.Decimal128(newTotal.toFixed(2));
       await refundToWallet(
@@ -195,7 +190,7 @@ export const itemCancel = async (details, userId) => {
 
     return updatedOrder;
   } catch (error) {
-    console.log(`error from itemCancel ${error}`);
+    logger.error(`Error from itemCancel: ${error.message}`);
     throw error;
   }
 };
@@ -207,17 +202,14 @@ export const orderCancelEntire = async (orderId, userId) => {
       throw new Error('Order not found');
     }
 
-    // Handle already cancelled orders
     if (order.orderStatus === 'cancelled') {
       return { success: true, message: 'Order already cancelled' };
     }
 
-    // Prevent cancellation on non-cancellable orders
     if (['delivered', 'returned'].includes(order.orderStatus)) {
       throw new Error('Cannot cancel a delivered, returned, or return-requested order');
     }
 
-    // Cancel all non-cancelled items and restore stock
     for (const item of order.items) {
       if (item.orderStatus !== 'cancelled') {
         const variant = await ProductVariant.findOne({ variantId: item.variantId });
@@ -229,10 +221,8 @@ export const orderCancelEntire = async (orderId, userId) => {
       }
     }
 
-    // Update order status
     order.orderStatus = 'cancelled';
     
-    // Handle payment status based on original payment state
     if (order.paymentStatus === 'paid') {
       order.paymentStatus = 'refunded';
     } else {
@@ -241,7 +231,6 @@ export const orderCancelEntire = async (orderId, userId) => {
     
     await order.save();
 
-    // Process refund ONLY for paid orders with amount > 0
     if (order.paymentStatus === 'refunded' && order.totalAmount > 0) {
       const refundAmount = new mongoose.Types.Decimal128(order.totalAmount.toFixed(2));
       await refundToWallet(
@@ -259,7 +248,7 @@ export const orderCancelEntire = async (orderId, userId) => {
         : 'Order cancelled successfully' 
     };
   } catch (error) {
-    console.log(`error from orderCancelEntire ${error}`);
+    logger.error(`Error from orderCancelEntire: ${error.message}`);
     throw error;
   }
 };
@@ -286,32 +275,32 @@ export const productReturn = async (orderId, userId, reason) => {
 
     await order.save();
   } catch (error) {
-    console.log(`error from productReturn ${error}`);
+    logger.error(`Error from productReturn: ${error.message}`);
     throw error;
   }
 };
 
 export const returnItem = async (orderId, userId, reason, itemIndex) => {
   try {
-    const order = await orderModal.findOne({_id: orderId, userId})
+    const order = await orderModal.findOne({ _id: orderId, userId });
 
-    if(!order) throw new Error("Order not found")
+    if (!order) throw new Error("Order not found");
 
-    if(order.orderStatus !== 'delivered') {
-      throw new Error('Only delivered orders can be returned')
+    if (order.orderStatus !== 'delivered') {
+      throw new Error('Only delivered orders can be returned');
     }
 
-    if(['requestingReturn', 'returned'].includes(order.items[itemIndex].orderStatus)) {
-      throw new Error('Return already requested or processed')
+    if (['requestingReturn', 'returned'].includes(order.items[itemIndex].orderStatus)) {
+      throw new Error('Return already requested or processed');
     }
 
-    order.items[itemIndex].orderStatus = 'requestingReturn'
-    order.items[itemIndex].returnReason = reason
-    order.items[itemIndex].returnRequestedAt = new Date()
+    order.items[itemIndex].orderStatus = 'requestingReturn';
+    order.items[itemIndex].returnReason = reason;
+    order.items[itemIndex].returnRequestedAt = new Date();
     
-    await order.save()
+    await order.save();
   } catch (error) {
-    console.log(`error form returnItem ${error}`)
-    throw error
+    logger.error(`Error from returnItem: ${error.message}`);
+    throw error;
   }
-}
+};

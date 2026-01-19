@@ -1,12 +1,13 @@
 import { referralCode } from "../../service/user/referralService.js";
+import logger from '../../util/logger.js'; // ✅ Add logger import
 
-export const referral = async(req, res) => {
+export const referral = async (req, res) => {
     try {
-        const user = req.session.userDetail
-        const result = await referralCode(user._id, user.firstName)
-        res.render('referral', {user, referral: result})
+        const user = req.session.userDetail;
+        const result = await referralCode(user._id, user.firstName);
+        return res.render('referral', { user, referral: result });
     } catch (error) {
-        console.log(`error from  referral ${error}`);
-        res.redirect('/profile')
+        logger.error(`Error from referral: ${error.message}`);
+        return res.redirect('/profile');
     }
-}
+};

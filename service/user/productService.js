@@ -1,6 +1,7 @@
 import categoryModel from "../../models/categoryModel.js";
 import { Product } from "../../models/productModel.js";
-import Offer from "../../models/offerModel.js"; 
+import Offer from "../../models/offerModel.js";
+import logger from '../../util/logger.js'; // ✅ Add logger import
 
 export const productDetails = async ({
     search = '',
@@ -144,7 +145,7 @@ export const productDetails = async ({
             allproducts
         };
     } catch (error) {
-        console.error(`[productDetails] Error:`, error);
+        logger.error(`[productDetails] Error: ${error.message}`, error);
         throw error;
     }
 };
@@ -323,7 +324,7 @@ export const singleProductFetch = async (productId) => {
         
         return applyBestOfferToProduct(product, activeOffers);
     } catch (error) {
-        console.log(`error from singleProductFetch ${error}`);
+        logger.error(`Error from singleProductFetch: ${error.message}`);
         throw error;
     }
 };
@@ -367,7 +368,7 @@ export const productDetailsFilter = async () => {
         
         return products.map(item => applyBestOfferToProduct(item, activeOffers));
     } catch (error) {
-        console.log(`error from productDetailsFilter ${error}`);
+        logger.error(`Error from productDetailsFilter: ${error.message}`);
         return [];
     }
 };

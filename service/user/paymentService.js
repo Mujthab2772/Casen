@@ -8,6 +8,7 @@ import mongoose from 'mongoose';
 import crypto from 'crypto';
 import { Wallet } from "../../models/walletModel.js";
 import { Transaction } from "../../models/transactionsModel.js";
+import logger from '../../util/logger.js'; // ✅ Add logger import
 
 function convertDecimal128ToNumber(value) {
   if (!value) return value;
@@ -32,7 +33,6 @@ function convertDecimal128ToNumber(value) {
 
 function sanitizeOrderItemsForSchema(items) {
   return items.map(item => {
-    // Handle images array with max 3 items
     let images = [];
     if (Array.isArray(item.images)) {
       images = item.images.slice(0, 3);
@@ -86,13 +86,11 @@ export const cashOnDelivery = async (req) => {
     userId
   );
   
-  // Sanitize address to include email (required by schema)
   const sanitizedAddress = {
     ...recalculated.addressDetails,
     email: req.session.userDetail.email || recalculated.addressDetails.email
   };
   
-  // Prepare coupon data with strict schema compliance
   let appliedCouponData = null;
   if (priceCalculation.appliedCoupon) {
     appliedCouponData = {
@@ -102,7 +100,6 @@ export const cashOnDelivery = async (req) => {
     };
   }
   
-  // Sanitize items for schema compliance
   const sanitizedItems = sanitizeOrderItemsForSchema(recalculated.productList);
   
   const orderData = {
@@ -170,13 +167,11 @@ export const createRazorpayOrderSession = async (req) => {
   
   const paymentSessionId = uuidv4();
   
-  // Sanitize address to include email
   const sanitizedAddress = {
     ...recalculated.addressDetails,
     email: req.session.userDetail.email || recalculated.addressDetails.email
   };
   
-  // Prepare coupon data for session storage
   let appliedCouponData = null;
   if (priceCalculation.appliedCoupon) {
     appliedCouponData = {
@@ -244,26 +239,22 @@ export const verifyRazorpayPayment = async ({
     
     const paymentDetails = await razorpay.payments.fetch(razorpay_payment_id);
     
-    // Check for existing order
     let existingOrder = await orderCollection.findOne({
       'paymentSession.paymentSessionId': paymentSession.paymentSessionId
     });
     if (existingOrder) {
-      console.log('Order already exists for this payment session');
+      logger.info('Order already exists for this payment session');
       return existingOrder;
     }
     
-    // 1. SANITIZE ADDRESS WITH EMAIL
     const addressDetails = paymentSession.orderDetails.address;
     const sanitizedAddress = {
       ...addressDetails,
       email: paymentSession.orderDetails.contactEmail || addressDetails.email
     };
     
-    // 2. SANITIZE ITEMS FOR SCHEMA COMPLIANCE
     const sanitizedItems = sanitizeOrderItemsForSchema(paymentSession.orderDetails.items);
     
-    // 3. VALIDATE STOCK
     for (const item of sanitizedItems) {
       const variant = await ProductVariant.findOne(
         { variantId: item.variantId, isActive: true },
@@ -277,7 +268,6 @@ export const verifyRazorpayPayment = async ({
       }
     }
     
-    // 4. PREPARE COUPON DATA
     let appliedCouponData = null;
     if (paymentSession.orderDetails.appliedCoupon) {
       appliedCouponData = {
@@ -289,7 +279,6 @@ export const verifyRazorpayPayment = async ({
       };
     }
     
-    // 5. CREATE ORDER DATA (STRICT SCHEMA COMPLIANCE)
     const orderData = {
       orderId: uuidv4(),
       userId,
@@ -316,12 +305,10 @@ export const verifyRazorpayPayment = async ({
       session.startTransaction();
       
       try {
-        // Save order with schema-compliant data
         order = new orderCollection(orderData);
         await order.save({ session });
-        console.log('Order created successfully:', order.orderId);
+        logger.info(`Order created successfully: ${order.orderId}`);
         
-        // Update stock
         for (const item of order.items) {
           const updateResult = await ProductVariant.updateOne(
             { variantId: item.variantId },
@@ -333,7 +320,6 @@ export const verifyRazorpayPayment = async ({
           }
         }
         
-        // Create payment record (separate from order schema)
         paymentRecord = new Payment({
           paymentId: order.paymentId,
           orderId: order._id,
@@ -369,32 +355,29 @@ export const verifyRazorpayPayment = async ({
         throw transactionError;
       }
     } catch (orderError) {
-      console.error('Detailed order creation error:', orderError);
+      logger.error(`Detailed order creation error: ${orderError.message}`, orderError);
       
-      // Attempt refund if payment was captured
       if (paymentDetails.status === 'captured') {
         try {
-          console.log('Attempting to refund payment:', razorpay_payment_id);
+          logger.info(`Attempting to refund payment: ${razorpay_payment_id}`);
           const refund = await razorpay.payments.refund(razorpay_payment_id, {
             amount: Math.round(orderData.totalAmount * 100)
           });
-          console.log('Refund successful:', refund);
+          logger.info(`Refund successful: ${refund.id}`);
         } catch (refundError) {
-          console.error('Refund failed:', refundError);
+          logger.error(`Refund failed: ${refundError.message}`, refundError);
         }
       }
       
-      // Clean up partial order if created
       if (order && order._id) {
         try {
           await orderCollection.findByIdAndDelete(order._id);
-          console.log('Partial order cleaned up:', order.orderId);
+          logger.info(`Partial order cleaned up: ${order.orderId}`);
         } catch (cleanupError) {
-          console.error('Order cleanup failed:', cleanupError);
+          logger.error(`Order cleanup failed: ${cleanupError.message}`, cleanupError);
         }
       }
       
-      // User-friendly error messages
       let errorMessage = 'Order creation failed after payment. Payment has been refunded.';
       if (orderError.message.includes('out of stock')) {
         errorMessage = orderError.message;
@@ -406,7 +389,7 @@ export const verifyRazorpayPayment = async ({
       throw new Error(errorMessage);
     }
   } catch (error) {
-    console.error('Payment verification failed:', error);
+    logger.error(`Payment verification failed: ${error.message}`, error);
     throw error;
   }
 };
@@ -423,13 +406,11 @@ export const walletPayment = async (req) => {
     
     const { shippingAddressId, contact, appliedCouponCode } = req.session.checkout;
     
-    // Get wallet for user
     const wallet = await Wallet.findOne({ userId }).session(session);
     if (!wallet) {
       throw new Error('Wallet not found. Please add funds to your wallet first.');
     }
     
-    // Recalculate order to get current total
     const recalculated = await tempOrder(userId, {
       shippingAddressId,
       contact
@@ -439,7 +420,6 @@ export const walletPayment = async (req) => {
       throw new Error('Cart is empty or contains invalid items');
     }
     
-    // Check stock availability
     for (const item of recalculated.productList) {
       const variant = await ProductVariant.findOne(
         { variantId: item.variantId, isActive: true },
@@ -451,7 +431,6 @@ export const walletPayment = async (req) => {
       }
     }
     
-    // Calculate final price
     const priceCalculation = await calculateFinalPrice(
       recalculated.subtotal, 
       appliedCouponCode, 
@@ -460,19 +439,16 @@ export const walletPayment = async (req) => {
     
     const orderTotal = priceCalculation.total;
     
-    // Check wallet balance
     const walletBalance = parseFloat(wallet.balance.amount.toString());
     if (walletBalance < orderTotal) {
       throw new Error(`Insufficient wallet balance. Your balance is ₹${walletBalance.toFixed(2)} but order total is ₹${orderTotal.toFixed(2)}.`);
     }
     
-    // Sanitize address to include email
     const sanitizedAddress = {
       ...recalculated.addressDetails,
       email: req.session.userDetail.email || recalculated.addressDetails.email
     };
     
-    // Prepare coupon data
     let appliedCouponData = null;
     if (priceCalculation.appliedCoupon) {
       appliedCouponData = {
@@ -482,10 +458,8 @@ export const walletPayment = async (req) => {
       };
     }
     
-    // Sanitize items for schema compliance
     const sanitizedItems = sanitizeOrderItemsForSchema(recalculated.productList);
     
-    // Create order data
     const orderData = {
       orderId: uuidv4(),
       userId,
@@ -504,14 +478,11 @@ export const walletPayment = async (req) => {
       orderData.appliedCoupon = appliedCouponData;
     }
     
-    // Create order
     const order = new orderCollection(orderData);
     await order.save({ session });
     
-    // CORRECTED: Proper Decimal128 handling for negative values
     const deductionAmount = new mongoose.Types.Decimal128((-orderTotal).toFixed(2));
     
-    // Deduct amount from wallet
     const updatedWallet = await Wallet.findByIdAndUpdate(
       wallet._id,
       { 
@@ -526,7 +497,6 @@ export const walletPayment = async (req) => {
       throw new Error('Failed to update wallet balance. Please try again.');
     }
     
-    // Create transaction record
     const transaction = new Transaction({
       wallet: wallet._id,
       amount: new mongoose.Types.Decimal128(orderTotal.toFixed(2)),
@@ -541,7 +511,6 @@ export const walletPayment = async (req) => {
     
     await transaction.save({ session });
     
-    // Update stock after successful payment
     for (const item of sanitizedItems) {
       const updateResult = await ProductVariant.updateOne(
         { variantId: item.variantId },
@@ -562,10 +531,11 @@ export const walletPayment = async (req) => {
   } catch (error) {
     await session.abortTransaction();
     session.endSession();
-    console.error('Wallet payment error:', error);
+    logger.error(`Wallet payment error: ${error.message}`, error);
     throw error;
   }
 };
+
 export const orderDetails = async (userId, orderId) => {
   return await orderCollection.findOne({ userId, orderId });
 };

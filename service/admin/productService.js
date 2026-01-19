@@ -3,35 +3,35 @@ import { Product } from "../../models/productModel.js";
 import { ProductVariant } from "../../models/productVariantModel.js";
 import { uploadToCloudinary } from "../../util/cloudinaryUpload.js";
 import { v4 as uuidv4 } from "uuid";
+import logger from '../../util/logger.js'; // ✅ Add logger import
 
 export const categoryDetails = async () => {
     try {
-        const options = await categoryCollection.find({isValid: true})
+        const options = await categoryCollection.find({ isValid: true });
 
-        if(!options) {
-            return {status: "No Category Available"}
+        if (!options) {
+            return { status: "No Category Available" };
         }
 
-        return {options}
+        return { options };
     } catch (error) {
-        console.log(`error from categoryDetails ${error}`);
-        throw error
+        logger.error(`Error from categoryDetails: ${error.message}`);
+        throw error;
     }
-}
-
+};
 
 export const addProductService = async (req) => {
     try {
-        const { productname, productdescription, categoryId} = req.body
-        const files = req.files
+        const { productname, productdescription, categoryId } = req.body;
+        const files = req.files;
 
         const variantImages = {};
         files.forEach((file) => {
             const match = file.fieldname.match(/variantImages_(\d+)(\[\])?/);
-            if(match) {
-                const index = match[1]
-                if(!variantImages[index]) variantImages[index] = []
-                variantImages[index].push(file.path)
+            if (match) {
+                const index = match[1];
+                if (!variantImages[index]) variantImages[index] = [];
+                variantImages[index].push(file.path);
             }
         });
 
@@ -47,32 +47,32 @@ export const addProductService = async (req) => {
             ? req.body.variantstock
             : [req.body.variantstock];
 
-        const createdVariants = []
+        const createdVariants = [];
         for (let i = 0; i < variantColors.length; i++) {
-            const color = variantColors[i]
-            const price = variantPrices[i]
-            const stock = variantStocks[i]
-            const images = variantImages[i] || []
+            const color = variantColors[i];
+            const price = variantPrices[i];
+            const stock = variantStocks[i];
+            const images = variantImages[i] || [];
 
-            const uploadedImageUrls = []
-            for(const localPath of images) {
-                const uploaded = await uploadToCloudinary(localPath, "products_variants")
-                if(uploaded) uploadedImageUrls.push(uploaded)
+            const uploadedImageUrls = [];
+            for (const localPath of images) {
+                const uploaded = await uploadToCloudinary(localPath, "products_variants");
+                if (uploaded) uploadedImageUrls.push(uploaded);
             }
 
-            const variant = await ProductVariant({
+            const variant = new ProductVariant({
                 variantId: uuidv4(),
                 color,
                 stock,
                 price,
                 images: uploadedImageUrls
-            })
+            });
 
-            const savedVariant = await variant.save()
-            createdVariants.push(savedVariant)
+            const savedVariant = await variant.save();
+            createdVariants.push(savedVariant);
         }
 
-        const variantIds = createdVariants.map((v) => v._id)
+        const variantIds = createdVariants.map((v) => v._id);
 
         const product = new Product({
             productId: uuidv4(),
@@ -81,294 +81,277 @@ export const addProductService = async (req) => {
             productName: productname,
             description: productdescription,
             isActive: true
-        })
+        });
 
-        const savedProduct = await product.save()
+        const savedProduct = await product.save();
 
         return {
             message: "Product and variants saved successfully",
             product: savedProduct,
             variants: createdVariants
-        }
+        };
     } catch (error) {
-        console.log(`error from addproductservice ${error}`);
-        throw error
+        logger.error(`Error from addProductService: ${error.message}`);
+        throw error;
     }
-}
-
-
-export const fetchProducts = async (search = null, page, limit = 5) => {
-  try {
-    const skip = (page - 1) * limit;
-
-    let match = {};
-
-    if (search) {
-      match.productName = { $regex: search, $options: "i" };
-    }
-
-    
-
-    const totalVariants = await Product.countDocuments({})
-
-    const dataPipeline = [
-      { $match: match },
-
-      {
-        $lookup: {
-          from: "productvariants",
-          localField: "variantId",
-          foreignField: "_id",
-          as: "variant"
-        }
-      },
-
-      {
-        $lookup: {
-          from: "categories",
-          localField: "categoryId",
-          foreignField: "_id",
-          as: "category"
-        }
-      },
-      { $unwind: "$category" },
-
-      {$sort: {createdAt: -1}},
-      { $skip: skip },
-      { $limit: limit },
-
-      {
-        $project: {
-          productId: 1,
-          productName: 1,
-          category: 1,
-          variant: 1,
-          isActive: 1,
-          description: 1
-        }
-      }
-
-    ];
-
-    const result = await Product.aggregate(dataPipeline);
-
-    return {
-      result,
-      countProduct: totalVariants,
-      productSkip: skip,
-      end: Math.min(skip + limit, totalVariants)
-    };
-
-  } catch (error) {
-    console.log("fetchProducts error:", error);
-    throw error;
-  }
 };
 
+export const fetchProducts = async (search = null, page, limit = 5) => {
+    try {
+        const skip = (page - 1) * limit;
 
+        let match = {};
+
+        if (search) {
+            match.productName = { $regex: search, $options: "i" };
+        }
+
+        const totalVariants = await Product.countDocuments({});
+
+        const dataPipeline = [
+            { $match: match },
+            {
+                $lookup: {
+                    from: "productvariants",
+                    localField: "variantId",
+                    foreignField: "_id",
+                    as: "variant"
+                }
+            },
+            {
+                $lookup: {
+                    from: "categories",
+                    localField: "categoryId",
+                    foreignField: "_id",
+                    as: "category"
+                }
+            },
+            { $unwind: "$category" },
+            { $sort: { createdAt: -1 } },
+            { $skip: skip },
+            { $limit: limit },
+            {
+                $project: {
+                    productId: 1,
+                    productName: 1,
+                    category: 1,
+                    variant: 1,
+                    isActive: 1,
+                    description: 1
+                }
+            }
+        ];
+
+        const result = await Product.aggregate(dataPipeline);
+
+        return {
+            result,
+            countProduct: totalVariants,
+            productSkip: skip,
+            end: Math.min(skip + limit, totalVariants)
+        };
+    } catch (error) {
+        logger.error(`fetchProducts error: ${error.message}`);
+        throw error;
+    }
+};
 
 export const editProductDetails = async (productid) => {
     try {
-        const data = await Product.find({productId: productid})
-        .populate('categoryId')
-        .populate('variantId')
-        .lean()
-        
-        if(!data) {
-            return {status: "Not Found"}
+        const data = await Product.find({ productId: productid })
+            .populate('categoryId')
+            .populate('variantId')
+            .lean();
+
+        if (!data) {
+            return { status: "Not Found" };
         }
-        
-        return data
+
+        return data;
     } catch (error) {
-        console.log(`error from editProductDetails ${error}`);
-        throw error
+        logger.error(`Error from editProductDetails: ${error.message}`);
+        throw error;
     }
-}
+};
 
 export const updateProductService = async (req, productId) => {
     try {
-        const { productname, productdescription, categoryId } = req.body
+        const { productname, productdescription, categoryId } = req.body;
 
-        const product = await Product.findOne({productId}).populate('variantId')
-        
-        if(!product) throw new Error("Product not found")
+        const product = await Product.findOne({ productId }).populate('variantId');
 
-        const variantImages = {}
+        if (!product) throw new Error("Product not found");
+
+        const variantImages = {};
         if (req.files && req.files.length > 0) {
             req.files.forEach((file) => {
-                const match = file.fieldname.match(/variantImages_(\d+)_(\d+)/)
-                
-                if(match) {
-                    const variantIndex = parseInt(match[1]) // Convert to number
-                    const imageIndex = parseInt(match[2])   // Convert to number
-                    
-                    if(!variantImages[variantIndex]) {
-                        variantImages[variantIndex] = {}
+                const match = file.fieldname.match(/variantImages_(\d+)_(\d+)/);
+
+                if (match) {
+                    const variantIndex = parseInt(match[1]);
+                    const imageIndex = parseInt(match[2]);
+
+                    if (!variantImages[variantIndex]) {
+                        variantImages[variantIndex] = {};
                     }
-                    variantImages[variantIndex][imageIndex] = file.path
+                    variantImages[variantIndex][imageIndex] = file.path;
                 }
-            })
+            });
         }
 
-        let existingImages = {}
+        let existingImages = {};
         if (req.body.existingImages) {
             try {
-                existingImages = JSON.parse(req.body.existingImages)
+                existingImages = JSON.parse(req.body.existingImages);
             } catch (e) {
-                console.log('Failed to parse existingImages:', e)
+                logger.error(`Failed to parse existingImages: ${e.message}`);
             }
         }
 
         const variantColors = Array.isArray(req.body.variantcolor)
             ? req.body.variantcolor
-            : [req.body.variantcolor]
+            : [req.body.variantcolor];
 
         const variantPrices = Array.isArray(req.body.variantprice)
             ? req.body.variantprice
-            : [req.body.variantprice]
+            : [req.body.variantprice];
 
         const variantStocks = Array.isArray(req.body.variantstock)
             ? req.body.variantstock
-            : [req.body.variantstock]
+            : [req.body.variantstock];
 
         const variantIdsFromBody = {};
 
         Object.keys(req.body)
-        .filter(k => k.startsWith("variantId_"))
-        .forEach(k => {
-            const index = Number(k.split("_")[1]);
-            variantIdsFromBody[index] = req.body[k];
-        });
+            .filter(k => k.startsWith("variantId_"))
+            .forEach(k => {
+                const index = Number(k.split("_")[1]);
+                variantIdsFromBody[index] = req.body[k];
+            });
 
-
-        const updateVariantIds = []
+        const updateVariantIds = [];
 
         for (let i = 0; i < variantColors.length; i++) {
-    const color = variantColors[i]
-    const price = variantPrices[i]
-    const stock = variantStocks[i]
-    const variantIdFromBody = variantIdsFromBody[i] || null
+            const color = variantColors[i];
+            const price = variantPrices[i];
+            const stock = variantStocks[i];
+            const variantIdFromBody = variantIdsFromBody[i] || null;
 
-    if (
-        (!color || color.trim() === "") &&
-        (!price || price.trim() === "") &&
-        (!stock || stock.trim() === "")
-    ) {
-        continue; 
-    }
-
-    let variant;
-
-    if (variantIdFromBody) {
-        variant = await ProductVariant.findById(variantIdFromBody)
-        if (!variant) continue
-
-        variant.color = color
-        variant.price = price
-        variant.stock = stock
-
-        const finalImages = []
-        const existingVariantImages = existingImages[i] || []
-
-        for (let imgIdx = 0; imgIdx < 3; imgIdx++) {
-            if (variantImages[i] && variantImages[i][imgIdx]) {
-                const uploaded = await uploadToCloudinary(
-                    variantImages[i][imgIdx],
-                    "product_variants"
-                )
-                if (uploaded) finalImages.push(uploaded)
-            } else if (existingVariantImages[imgIdx]) {
-                finalImages.push(existingVariantImages[imgIdx])
+            if (
+                (!color || color.trim() === "") &&
+                (!price || price.trim() === "") &&
+                (!stock || stock.trim() === "")
+            ) {
+                continue;
             }
-        }
 
-        variant.images = finalImages
-        await variant.save()
-        updateVariantIds.push(variant._id)
+            let variant;
 
-    } else {
-        const newVariant = new ProductVariant({
-            variantId: uuidv4(),
-            color,
-            price,
-            stock,
-            images: []
-        })
+            if (variantIdFromBody) {
+                variant = await ProductVariant.findById(variantIdFromBody);
+                if (!variant) continue;
 
-        if (variantImages[i]) {
-            for (let imgIdx = 0; imgIdx < 3; imgIdx++) {
-                if (variantImages[i][imgIdx]) {
-                    const uploaded = await uploadToCloudinary(
-                        variantImages[i][imgIdx],
-                        'product_variants'
-                    )
-                    if (uploaded) {
-                        newVariant.images.push(uploaded)
+                variant.color = color;
+                variant.price = price;
+                variant.stock = stock;
+
+                const finalImages = [];
+                const existingVariantImages = existingImages[i] || [];
+
+                for (let imgIdx = 0; imgIdx < 3; imgIdx++) {
+                    if (variantImages[i] && variantImages[i][imgIdx]) {
+                        const uploaded = await uploadToCloudinary(
+                            variantImages[i][imgIdx],
+                            "product_variants"
+                        );
+                        if (uploaded) finalImages.push(uploaded);
+                    } else if (existingVariantImages[imgIdx]) {
+                        finalImages.push(existingVariantImages[imgIdx]);
                     }
                 }
+
+                variant.images = finalImages;
+                await variant.save();
+                updateVariantIds.push(variant._id);
+            } else {
+                const newVariant = new ProductVariant({
+                    variantId: uuidv4(),
+                    color,
+                    price,
+                    stock,
+                    images: []
+                });
+
+                if (variantImages[i]) {
+                    for (let imgIdx = 0; imgIdx < 3; imgIdx++) {
+                        if (variantImages[i][imgIdx]) {
+                            const uploaded = await uploadToCloudinary(
+                                variantImages[i][imgIdx],
+                                'product_variants'
+                            );
+                            if (uploaded) {
+                                newVariant.images.push(uploaded);
+                            }
+                        }
+                    }
+                }
+
+                const saved = await newVariant.save();
+                updateVariantIds.push(saved._id);
             }
         }
 
-        const saved = await newVariant.save()
-        updateVariantIds.push(saved._id)
-    }
-}
-
-
         // Delete removed variants
-        const currentVariantIds = product.variantId.map((v) => v._id.toString())
-        const updateVariantIdStrings = updateVariantIds.map(id => id.toString())
+        const currentVariantIds = product.variantId.map((v) => v._id.toString());
+        const updateVariantIdStrings = updateVariantIds.map(id => id.toString());
         const deleted = currentVariantIds.filter(
             (id) => !updateVariantIdStrings.includes(id)
-        )
+        );
 
-        await ProductVariant.deleteMany({ _id: { $in: deleted } })
-        
+        await ProductVariant.deleteMany({ _id: { $in: deleted } });
+
         // Update product
-        product.productName = productname || product.productName
-        product.description = productdescription || product.description
-        product.categoryId = categoryId || product.categoryId
-        product.variantId = updateVariantIds
+        product.productName = productname || product.productName;
+        product.description = productdescription || product.description;
+        product.categoryId = categoryId || product.categoryId;
+        product.variantId = updateVariantIds;
 
-        const updatedProduct = await product.save()
-        
+        const updatedProduct = await product.save();
+
         return {
             product: updatedProduct,
             variants: updateVariantIds
-        }
-
+        };
     } catch (error) {
-        console.log(`error from updateproductservice ${error}`)
-        throw error
+        logger.error(`Error from updateProductService: ${error.message}`);
+        throw error;
     }
-}
+};
 
 export const toggleStatusProduct = async (productId, variantId) => {
     try {
-
-        if(productId) {
+        if (productId) {
             const product = await Product.findOne({ productId }).populate("variantId");
             if (!product) return { status: "Product Not Found" };
-    
-            product.isActive = !product.isActive
-            await product.save()
 
-            return { status: "product status updated"}
+            product.isActive = !product.isActive;
+            await product.save();
+
+            return { status: "product status updated" };
         }
 
-        if(variantId) {
-            const variant = await ProductVariant.findOne({variantId})
+        if (variantId) {
+            const variant = await ProductVariant.findOne({ variantId });
 
-            if(!variant) return {status: "variant not found"}
+            if (!variant) return { status: "variant not found" };
 
-            variant.isActive = !variant.isActive
-            await variant.save()
+            variant.isActive = !variant.isActive;
+            await variant.save();
 
-            return {status: "variant status updated"}
+            return { status: "variant status updated" };
         }
-
     } catch (error) {
-        console.log(`error from toggleStatusProduct ${error}`);
-        throw error
+        logger.error(`Error from toggleStatusProduct: ${error.message}`);
+        throw error;
     }
-}
+};

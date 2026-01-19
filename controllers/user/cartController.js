@@ -1,5 +1,6 @@
 import { cartDetails, cartNew, cartRemove, cartUpdate, checkInventory } from "../../service/user/cartService.js";
 import { STATUS_CODE } from "../../util/statusCodes.js";
+import logger from '../../util/logger.js'; // ✅ Add logger import
 
 export const cart = async (req, res) => {
     try {
@@ -7,7 +8,7 @@ export const cart = async (req, res) => {
         const result = await cartDetails(user._id);
         res.render('cart', { user, cart: result });
     } catch (error) {
-        console.error(`Error from cart controller: ${error}`);
+        logger.error(`Error from cart controller: ${error.message}`);
         res.redirect('/');
     }
 };
@@ -33,7 +34,7 @@ export const newCart = async (req, res) => {
         
         return res.status(STATUS_CODE.OK).json({ success: true });
     } catch (error) {
-        console.error(`Error from newCart controller: ${error}`);
+        logger.error(`Error from newCart controller: ${error.message}`);
         res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).json({ 
             success: false, 
             message: 'Internal server error' 
@@ -71,7 +72,7 @@ export const updateCart = async (req, res) => {
         
         return res.json({ success: true });
     } catch (error) {
-        console.error(`Error from updateCart controller: ${error}`);
+        logger.error(`Error from updateCart controller: ${error.message}`);
         return res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).json({ 
             success: false, 
             message: 'Internal server error' 
@@ -93,7 +94,7 @@ export const removeCart = async (req, res) => {
         
         return res.json({ success: true });
     } catch (error) {
-        console.error(`Error from removeCart controller: ${error}`);
+        logger.error(`Error from removeCart controller: ${error.message}`);
         return res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).json({ 
             success: false, 
             message: 'Internal server error' 
@@ -116,7 +117,7 @@ export const checkInventoryRoute = async (req, res) => {
         const inventoryCheck = await checkInventory(variantId, quantity);
         return res.json(inventoryCheck);
     } catch (error) {
-        console.error(`Error from inventory check: ${error}`);
+        logger.error(`Error from inventory check: ${error.message}`);
         return res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).json({ 
             success: false, 
             message: 'Internal server error' 

@@ -2,6 +2,7 @@ import { addressDetails } from "../../service/user/addressService.js";
 import { cartDetails } from "../../service/user/cartService.js";
 import { calculateFinalPrice, getValidCouponsForUser, tempOrder } from "../../service/user/checkoutService.js";
 import { STATUS_CODE } from "../../util/statusCodes.js";
+import logger from '../../util/logger.js'; // ✅ Add logger import
 
 export const checkout = async (req, res) => {
   try {
@@ -21,7 +22,6 @@ export const checkout = async (req, res) => {
       if (quantity <= variant.stock) {
         subtotal += variant.price * quantity;
       }
-      
     }
 
     const validCoupons = await getValidCouponsForUser(userId, subtotal);
@@ -43,7 +43,7 @@ export const checkout = async (req, res) => {
       messages: req.flash()
     });
   } catch (error) {
-    console.log(`Checkout error:`, error);
+    logger.error(`Checkout error: ${error.message}`);
     req.flash('error', 'An error occurred while loading checkout. Please try again.');
     return res.redirect('/cart');
   }
@@ -62,14 +62,13 @@ export const checkoutDatas = async (req, res) => {
     
     return res.status(STATUS_CODE.OK).json({ success: true });
   } catch (error) {
-    console.log(`checkoutDatas error:`, error);
+    logger.error(`checkoutDatas error: ${error.message}`);
     return res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: "Unable to process checkout. Please try again."
     });
   }
 };
-
 
 export const previewCheckout = async (req, res) => {
   try {
@@ -83,7 +82,6 @@ export const previewCheckout = async (req, res) => {
       });
     }
     
-    
     const recalculated = await tempOrder(userId, { 
       shippingAddressId, 
       contact 
@@ -95,7 +93,6 @@ export const previewCheckout = async (req, res) => {
         error: "Cart is empty or contains invalid items."
       });
     }
-    
     
     const priceCalculation = await calculateFinalPrice(
       recalculated.subtotal,
@@ -113,7 +110,7 @@ export const previewCheckout = async (req, res) => {
       hasProductOffers: recalculated.offersApplied
     });
   } catch (error) {
-    console.log('Preview error:', error);
+    logger.error(`Preview error: ${error.message}`);
     return res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).json({
       success: false,
       error: 'Failed to preview order. Please try again.'
@@ -131,9 +128,7 @@ export const getAvailableCoupons = async (req, res) => {
     const userId = user._id;
     const subtotal = parseFloat(req.query.subtotal) || 0;
 
-    
     const validCoupons = await getValidCouponsForUser(userId, subtotal);
-    
     
     const coupons = validCoupons.map(c => ({
       couponCode: c.couponCode,
@@ -150,7 +145,7 @@ export const getAvailableCoupons = async (req, res) => {
       count: coupons.length
     });
   } catch (error) {
-    console.error('Get coupons error:', error);
+    logger.error(`Get coupons error: ${error.message}`);
     return res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).json({ 
       success: false, 
       message: 'Failed to fetch available coupons' 

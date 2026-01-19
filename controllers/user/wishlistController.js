@@ -1,5 +1,6 @@
 import { addWishlist, removeWishlist, wishlistItems } from "../../service/user/wishlistService.js";
 import { STATUS_CODE } from "../../util/statusCodes.js";
+import logger from '../../util/logger.js'; // ✅ Add logger import
 
 export const wishlist = async (req, res) => {
   try {
@@ -22,40 +23,40 @@ export const wishlist = async (req, res) => {
       hasPrevPage: page > 1
     });
   } catch (error) {
-    console.log(`Error from wishlist: ${error}`);
+    logger.error(`Error from wishlist: ${error.message}`);
     return res.redirect('/profile');
   }
 };
 
 export const wishlistadd = async (req, res) => {
     try {
-        const userId = req.session.userDetail?._id
+        const userId = req.session.userDetail?._id;
         if (!userId) {
             return res.status(STATUS_CODE.UNAUTHORIZED).json({
                 success: false,
                 message: "Unauthorized"
             });
         }
-        const result = await addWishlist(userId, req.body)
+        const result = await addWishlist(userId, req.body);
 
-        return res.status(STATUS_CODE.OK).json({success: result})
+        return res.status(STATUS_CODE.OK).json({ success: result });
     } catch (error) {
-        console.log(`error from wishlistadd ${error}`);
-        res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).json({
+        logger.error(`Error from wishlistadd: ${error.message}`);
+        return res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).json({
             success: false,
             message: 'Internal server error'
-        })  
+        });
     }
-}
+};
 
 export const wishlistRemove = async (req, res) => {
   try {
-    console.log(req.query.itemId)
-    const result = await removeWishlist(req.query.itemId)
+    // 🔍 Removed debug console.log(req.query.itemId) as part of cleanup
+    const result = await removeWishlist(req.query.itemId);
 
-    return res.status(STATUS_CODE.OK).json({message: result})
+    return res.status(STATUS_CODE.OK).json({ message: result });
   } catch (error) {
-    console.log(`error from wishlistRemove ${error}`);
-    return res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).json()
+    logger.error(`Error from wishlistRemove: ${error.message}`);
+    return res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).json();
   }
-}
+};

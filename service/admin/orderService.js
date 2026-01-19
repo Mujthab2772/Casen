@@ -4,6 +4,7 @@ import { orderCancelEntire } from "../user/orderService.js";
 import { ProductVariant } from "../../models/productVariantModel.js";
 import { Wallet } from "../../models/walletModel.js";
 import { Transaction } from "../../models/transactionsModel.js";
+import logger from '../../util/logger.js'; // ✅ Add logger import
 
 async function refundToWallet(userId, amount, orderId, description, orderItemId = null) {
   try {
@@ -42,7 +43,7 @@ async function refundToWallet(userId, amount, orderId, description, orderItemId 
     
     return { success: true, wallet, transaction };
   } catch (error) {
-    console.error('Wallet refund failed:', error);
+    logger.error(`Wallet refund failed: ${error.message}`);
     throw new Error('Failed to process wallet refund');
   }
 }
@@ -119,7 +120,7 @@ export const orderDetails = async ({ skip, limit, search = "", status = "" }) =>
     
     return { orders, totalOrders };
   } catch (error) {
-    console.error(`Error in orderDetails service: ${error}`);
+    logger.error(`Error in orderDetails service: ${error.message}`);
     throw error;
   }
 };
@@ -137,7 +138,7 @@ export const orderSingle = async (orderId) => {
       { $unwind: '$userDetails' }
     ]);
   } catch (error) {
-    console.error(`Error from orderSingle: ${error}`);
+    logger.error(`Error from orderSingle: ${error.message}`);
     throw error;
   }
 };
@@ -193,7 +194,7 @@ export const statusUpdate = async (orderId, status, userId) => {
     
     return { success: true, order };
   } catch (error) {
-    console.error(`[statusUpdate] Order ID: ${orderId} | Error: ${error.message}`, {
+    logger.error(`[statusUpdate] Order ID: ${orderId} | Error: ${error.message}`, {
       stack: error.stack,
       userId,
       newStatus: status
@@ -294,7 +295,7 @@ export const itemStatusUpdate = async (orderId, orderItemId, status, userId) => 
     await order.save();
     return { success: true, order, item };
   } catch (error) {
-    console.error(`[itemStatusUpdate] Order ID: ${orderId}, Order Item ID: ${orderItemId} | Error: ${error.message}`);
+    logger.error(`[itemStatusUpdate] Order ID: ${orderId}, Order Item ID: ${orderItemId} | Error: ${error.message}`);
     throw new Error(`Item status update failed: ${error.message}`);
   }
 };
@@ -366,7 +367,7 @@ export const orderReturnUpdate = async (orderId, status, userId) => {
     
     return { success: true, order };
   } catch (error) {
-    console.error(`[orderReturnUpdate] Order ID: ${orderId} | Error: ${error.message}`);
+    logger.error(`[orderReturnUpdate] Order ID: ${orderId} | Error: ${error.message}`);
     throw new Error(`Order return processing failed: ${error.message}`);
   }
 };

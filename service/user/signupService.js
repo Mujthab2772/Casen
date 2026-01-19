@@ -1,11 +1,12 @@
 import otpCollection from "../../models/otpModel.js";
 import userCollection from "../../models/userModel.js";
-import {Wallet} from "../../models/walletModel.js";
-import {Transaction }from "../../models/transactionsModel.js";
+import { Wallet } from "../../models/walletModel.js";
+import { Transaction } from "../../models/transactionsModel.js";
 import { generateOtp } from "../../util/generateOtp.js";
 import { hashPassword } from "../../util/hashPassword.js";
 import { sendOtpEmail } from "../../util/sendOtp.js";
 import mongoose from 'mongoose';
+import logger from '../../util/logger.js'; // ✅ Add logger import
 
 const processReferralBonus = async (referralCode, newUserId) => {
     const session = await mongoose.startSession();
@@ -172,7 +173,7 @@ export const otpverify = async (email, otp) => {
                     newUser._id
                 );
             } catch (referralError) {
-                console.warn(`Referral processing failed but signup continues: ${referralError.message}`);
+                logger.warn(`Referral processing failed but signup continues: ${referralError.message}`);
             }
         }
         

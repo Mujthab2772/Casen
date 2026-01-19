@@ -1,18 +1,19 @@
-import categoryModel from "../../models/categoryModel.js"
-import offerModel from "../../models/offerModel.js"
-import { Product } from "../../models/productModel.js"
-import {v4 as uuidv} from 'uuid'
+import categoryModel from "../../models/categoryModel.js";
+import offerModel from "../../models/offerModel.js";
+import { Product } from "../../models/productModel.js";
+import { v4 as uuidv4 } from 'uuid';
+import logger from '../../util/logger.js'; // ✅ Add logger import
 
 const todayStart = new Date();
 todayStart.setHours(0, 0, 0, 0);
 
 export const availableItems = async () => {
   try {
-    const products = await Product.find({ isActive: true })
-    const category = await categoryModel.find({ isValid: true })
+    const products = await Product.find({ isActive: true });
+    const category = await categoryModel.find({ isValid: true });
     return { products, category };
   } catch (error) {
-    console.log(`Error from availableItems: ${error}`);
+    logger.error(`Error from availableItems: ${error.message}`);
     throw error;
   }
 };
@@ -67,7 +68,7 @@ export const getFilteredOffers = async ({ page, limit, search, status, offerType
   };
 };
 
-export const newOfferData = async(offerDetail) => {
+export const newOfferData = async (offerDetail) => {
   try {
     const {
       offerName,
@@ -79,24 +80,24 @@ export const newOfferData = async(offerDetail) => {
       applicableType,
       selectedProducts = [],
       selectedCategories = [],
-    } = offerDetail
+    } = offerDetail;
 
-    const offerExists = await offerModel.findOne({offerName})
-    if(offerExists) throw new Error("offer already exists")
+    const offerExists = await offerModel.findOne({ offerName });
+    if (offerExists) throw new Error("offer already exists");
 
-    let targetingType
-    if(applicableType === 'all'){
-      targetingType = 'all'
-    } else if(applicableType === 'products') {
-      targetingType = 'products'
-    } else if(applicableType === 'categories') {
-      targetingType = 'categories'
+    let targetingType;
+    if (applicableType === 'all') {
+      targetingType = 'all';
+    } else if (applicableType === 'products') {
+      targetingType = 'products';
+    } else if (applicableType === 'categories') {
+      targetingType = 'categories';
     } else {
-      throw new Error('Invalid applicableType')
+      throw new Error('Invalid applicableType');
     }
 
     const offer = new offerModel({
-      offerId: uuidv(),
+      offerId: uuidv4(),
       offerName,
       offerType,
       discountValue: Number(discountValue),
@@ -106,19 +107,19 @@ export const newOfferData = async(offerDetail) => {
       targetingType,
       'targeting.productIds': (targetingType === 'products') ? selectedProducts : [],
       'targeting.categoryIds': (targetingType === 'categories') ? selectedCategories : []
-    })
+    });
 
-    await offer.save()
-    return offer
+    await offer.save();
+    return offer;
   } catch (error) {
-    console.log(`error from newOfferData ${error}`);
-    throw error
+    logger.error(`Error from newOfferData: ${error.message}`);
+    throw error;
   }
-}
+};
 
 export const updateOffer = async (offerId, offerDetails) => {
   try {
-    const offer = await offerModel.findById({_id: offerId});
+    const offer = await offerModel.findById({ _id: offerId });
     if (!offer) {
       throw new Error('Offer not found');
     }
@@ -144,14 +145,14 @@ export const updateOffer = async (offerId, offerDetails) => {
     await offer.save();
     return offer;
   } catch (error) {
-    console.log(`Error in updateOffer:`, error);
+    logger.error(`Error in updateOffer: ${error.message}`);
     throw error;
   }
 };
 
 export const toggleOffer = async (offerId) => {
   try {
-    const offer = await offerModel.findById({_id: offerId});
+    const offer = await offerModel.findById({ _id: offerId });
     if (!offer) {
       throw new Error('Offer not found');
     }
@@ -160,7 +161,7 @@ export const toggleOffer = async (offerId) => {
     await offer.save();
     return offer;
   } catch (error) {
-    console.log(`error from toggleOffer:`, error);
+    logger.error(`Error from toggleOffer: ${error.message}`);
     throw error;
   }
 };

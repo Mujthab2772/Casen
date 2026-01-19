@@ -1,9 +1,10 @@
 import { otpverify, resendingOtp, signupVerify } from "../../service/user/signupService.js";
 import { STATUS_CODE } from "../../util/statusCodes.js";
+import logger from '../../util/logger.js'; // ✅ Add logger import
 
 export const signUpPageGet = (req, res) => {
     try {
-        res.render('signupPage', {
+        return res.render('signupPage', {
             errorFirstName: req.session.signUpErrFn,
             errorLastName: req.session.signUpErrLn,
             errorEmail: req.session.signUpErrEmail,
@@ -13,10 +14,10 @@ export const signUpPageGet = (req, res) => {
             errorReferral: req.session.signUpErrReferral
         });
     } catch (error) {
-        console.error(`signUpPageGet failed: ${error.message}`);
-        res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).redirect('/');
+        logger.error(`signUpPageGet failed: ${error.message}`);
+        return res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).redirect('/');
     }
-}
+};
 
 export const signUpPost = async (req, res) => {
     try {
@@ -57,7 +58,7 @@ export const signUpPost = async (req, res) => {
         return res.status(STATUS_CODE.CREATED).json({ success: true });
 
     } catch (error) {
-        console.error(`signUpPost failed: ${error.message}`);
+        logger.error(`signUpPost failed: ${error.message}`);
         return res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).json({
             success: false,
             error: "Internal server error"
@@ -67,15 +68,15 @@ export const signUpPost = async (req, res) => {
 
 export const otpPage = (req, res) => {
     try {
-        res.status(STATUS_CODE.OK).render('otpVerificationPage', {
+        return res.status(STATUS_CODE.OK).render('otpVerificationPage', {
             otpErr: req.session.otpInvalid, 
             path: "signupVerify"
         });
     } catch (error) {
-        console.error(`otpPage failed: ${error.message}`);
-        res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).redirect('/signUpPage');
+        logger.error(`otpPage failed: ${error.message}`);
+        return res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).redirect('/signUpPage');
     }
-}
+};
 
 export const otpPagePost = async (req, res) => {
     try {
@@ -101,10 +102,10 @@ export const otpPagePost = async (req, res) => {
         return res.status(STATUS_CODE.OK).redirect('/');
 
     } catch (error) {
-        console.error(`otpPagePost failed: ${error.message}`);
-        res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).redirect('/signUpOtp');
+        logger.error(`otpPagePost failed: ${error.message}`);
+        return res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).redirect('/signUpOtp');
     }
-}
+};
 
 export const resendOtp = async (req, res) => {
     try {
@@ -117,7 +118,7 @@ export const resendOtp = async (req, res) => {
         }
         return res.json({ success: true, redirectUrl: '/signUpOtp' });
     } catch (error) {
-        console.error(`resendOtp failed: ${error.message}`);
-        res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).redirect('/signUpOtp');
+        logger.error(`resendOtp failed: ${error.message}`);
+        return res.status(STATUS_CODE.INTERNAL_SERVER_ERROR).redirect('/signUpOtp');
     }
-}
+};

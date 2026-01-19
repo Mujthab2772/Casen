@@ -12,6 +12,7 @@ import { handleValidationErrors, validateCoupon } from "../middlewares/couponVal
 import { newOffer, offerAdd, offerDetail, offerEdit, offerToggle, offerUpdate } from "../controllers/admin/offerController.js"
 import { validateOfferCreation } from "../middlewares/offerMIddleware.js"
 import { dashboard, salesReportController } from "../controllers/admin/dashBoardController.js"
+import { authLimiter } from "../middlewares/rateLimiter.js"
 
 const router = express.Router()
 
@@ -21,7 +22,7 @@ router.get('/', (req, res) => {
 
 router.get("/login",adminCheckLogin, adminLogin) //adminlogin to login
 
-router.post("/login", adminLoginVerify)
+router.post("/login", authLimiter, adminLoginVerify)
 
 // Customer Page
 
