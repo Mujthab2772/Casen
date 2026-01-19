@@ -6,10 +6,11 @@ import couponModal from '../../models/couponModel.js';
 import offerModal from '../../models/offerModel.js';
 import mongoose from 'mongoose';
 
-export const dashboardDetails = async (page = 1, limit = 5) => {
+export const dashboardDetails = async (page = 1, period = 'daily', limit = 5) => {
   try {
     const skip = (page - 1) * limit;
     
+    // Existing metrics
     const totalRevenue = await orderModal.aggregate([
       {
         $match: { 
@@ -87,6 +88,164 @@ export const dashboardDetails = async (page = 1, limit = 5) => {
       { $count: "count" }
     ]);
     
+    // New: Sales data for chart
+    const today = new Date();
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(today.getDate() - 7);
+    
+    // Daily sales data (last 7 days)
+    const dailySales = await orderModal.aggregate([
+      {
+        $match: {
+          createdAt: { $gte: oneWeekAgo },
+          orderStatus: { $nin: ['cancelled', 'returned'] },
+          paymentStatus: 'paid'
+        }
+      },
+      {
+        $group: {
+          _id: {
+            date: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } }
+          },
+          totalSales: { $sum: "$subTotal" },
+          orderCount: { $sum: 1 }
+        }
+      },
+      { $sort: { "_id.date": 1 } }
+    ]);
+    
+    // Monthly sales data (last 12 months)
+    const monthlySales = await orderModal.aggregate([
+      {
+        $match: {
+          orderStatus: { $nin: ['cancelled', 'returned'] },
+          paymentStatus: 'paid'
+        }
+      },
+      {
+        $group: {
+          _id: {
+            year: { $year: "$createdAt" },
+            month: { $month: "$createdAt" }
+          },
+          totalSales: { $sum: "$subTotal" },
+          orderCount: { $sum: 1 }
+        }
+      },
+      { $sort: { "_id.year": 1, "_id.month": 1 } }
+    ]);
+    
+    // Yearly sales data (last 5 years)
+    const yearlySales = await orderModal.aggregate([
+      {
+        $match: {
+          orderStatus: { $nin: ['cancelled', 'returned'] },
+          paymentStatus: 'paid'
+        }
+      },
+      {
+        $group: {
+          _id: {
+            year: { $year: "$createdAt" }
+          },
+          totalSales: { $sum: "$subTotal" },
+          orderCount: { $sum: 1 }
+        }
+      },
+      { $sort: { "_id.year": 1 } }
+    ]);
+    
+    // New: Top 10 best selling products
+    const bestSellingProducts = await orderModal.aggregate([
+      { $unwind: "$items" },
+      {
+        $match: {
+          "items.orderStatus": { $nin: ['cancelled', 'returned'] },
+          orderStatus: { $nin: ['cancelled', 'returned'] },
+          paymentStatus: 'paid'
+        }
+      },
+      {
+        $group: {
+          _id: "$items.productId",
+          totalQuantity: { $sum: "$items.quantity" },
+          totalRevenue: { $sum: { $multiply: ["$items.quantity", "$items.price"] } }
+        }
+      },
+      {
+        $lookup: {
+          from: "products",
+          localField: "_id",
+          foreignField: "productId",
+          as: "productDetails"
+        }
+      },
+      { $unwind: "$productDetails" },
+      {
+        $lookup: {
+          from: "productvariants",
+          localField: "productDetails.variantId",
+          foreignField: "_id",
+          as: "variants"
+        }
+      },
+      {
+        $addFields: {
+          images: { $arrayElemAt: ["$variants.images", 0] }
+        }
+      },
+      {
+        $project: {
+          productName: "$productDetails.productName",
+          totalQuantity: 1,
+          totalRevenue: 1,
+          images: 1
+        }
+      },
+      { $sort: { totalRevenue: -1 } },
+      { $limit: 10 }
+    ]);
+    
+    // New: Top 10 best selling categories
+    const bestSellingCategories = await orderModal.aggregate([
+      { $unwind: "$items" },
+      {
+        $match: {
+          "items.orderStatus": { $nin: ['cancelled', 'returned'] },
+          orderStatus: { $nin: ['cancelled', 'returned'] },
+          paymentStatus: 'paid'
+        }
+      },
+      {
+        $lookup: {
+          from: "products",
+          localField: "items.productId",
+          foreignField: "productId",
+          as: "productDetails"
+        }
+      },
+      { $unwind: "$productDetails" },
+      {
+        $lookup: {
+          from: "categories",
+          localField: "productDetails.categoryId",
+          foreignField: "_id",
+          as: "categoryDetails"
+        }
+      },
+      { $unwind: "$categoryDetails" },
+      {
+        $group: {
+          _id: "$categoryDetails.categoryId",
+          categoryName: { $first: "$categoryDetails.categoryName" },
+          totalRevenue: { $sum: { $multiply: ["$items.quantity", "$items.price"] } },
+          totalProducts: { $sum: 1 }
+        }
+      },
+      { $sort: { totalRevenue: -1 } },
+      { $limit: 10 }
+    ]);
+    
     const totalPages = Math.ceil(totalOrdersCount / limit);
     
     return { 
@@ -101,7 +260,12 @@ export const dashboardDetails = async (page = 1, limit = 5) => {
         totalPages,
         totalItems: totalOrdersCount,
         itemsPerPage: limit
-      }
+      },
+      dailySales,
+      monthlySales,
+      yearlySales,
+      bestSellingProducts,
+      bestSellingCategories
     };
   } catch (error) {
     console.log(`error from dashboardDetails ${error}`);

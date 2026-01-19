@@ -7,6 +7,8 @@
 <link rel="icon" type="image/png" sizes="32x32" href="/logoTab.png" />
 <!-- Tailwind CSS -->
 <script src="https://cdn.tailwindcss.com"></script>
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 tailwind.config = {
   theme: {
@@ -130,11 +132,42 @@ body {
   font-weight: 500;
   color: #374151;
 }
+.best-seller-badge {
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  display: inline-block;
+}
+.best-seller-product {
+  background-color: #ecfdf5;
+  color: #065f46;
+}
+.best-seller-category {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+.chart-filter-button {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+.chart-filter-button.active {
+  background-color: #0284c7;
+  color: white;
+}
+.chart-filter-button:not(.active) {
+  background-color: #f3f4f6;
+  color: #4b5563;
+}
 </style>
 </head>
 <body class="bg-gray-50 font-sans antialiased">
 <div class="flex min-h-screen">
-  <!-- Sidebar -->
+  <!-- Sidebar remains unchanged -->
   <aside class="sidebar sidebar-expanded w-[227px] bg-white border-r border-gray-200 fixed left-0 top-0 h-screen overflow-y-auto z-10">
     <div class="px-4 py-6 flex items-center gap-3 border-b border-gray-200">
       <div class="w-10 h-10 bg-black rounded-md flex items-center justify-center flex-shrink-0">
@@ -225,7 +258,8 @@ body {
     <div class="bg-white border-b border-gray-200 px-8 py-6">
       <div class="flex justify-between items-center">
         <h1 class="text-3xl font-semibold text-black">Dashboard</h1>
-        <button class="inline-flex items-center gap-2 bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors">
+        <button class="inline-flex items-center gap-2 bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors"
+        onclick="window.location.href='/admin/addProduct'">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
           </svg>
@@ -290,6 +324,93 @@ body {
           </div>
           <p class="text-2xl font-bold text-gray-900"><%= productsInStock %></p>
           <p class="text-sm text-gray-500 mt-1"><%= outOfStockProducts %> out of stock</p>
+        </div>
+      </div>
+      
+      <!-- Sales Chart with Filters -->
+      <div class="bg-white rounded-xl border border-gray-200 p-6 mb-8">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-lg font-semibold text-gray-900">Sales Performance</h2>
+          <div class="flex gap-2">
+            <button class="chart-filter-button active" data-period="daily">Daily</button>
+            <button class="chart-filter-button" data-period="monthly">Monthly</button>
+            <button class="chart-filter-button" data-period="yearly">Yearly</button>
+          </div>
+        </div>
+        <div class="h-80">
+          <canvas id="salesChart"></canvas>
+        </div>
+      </div>
+      
+      <!-- Best Selling Products and Categories -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <!-- Best Selling Products -->
+        <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="text-lg font-semibold text-gray-900">Best Selling Products</h2>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead class="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">#</th>
+                  <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Product</th>
+                  <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Units Sold</th>
+                  <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Revenue</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-200">
+                <% bestSellingProducts.forEach((product, index) => { %>
+                <tr class="hover:bg-gray-50">
+                  <td class="px-6 py-4"><span class="font-medium"><%= index + 1 %></span></td>
+                  <td class="px-6 py-4 flex items-center gap-3">
+                    <% if (product.images && product.images.length > 0) { %>
+                    <img src="<%= product.images[0] %>" alt="<%= product.productName %>" class="w-8 h-8 rounded object-cover">
+                    <% } else { %>
+                    <div class="w-8 h-8 bg-gray-200 rounded flex items-center justify-center">
+                      <span class="text-xs text-gray-500">N/A</span>
+                    </div>
+                    <% } %>
+                    <span class="font-medium"><%= product.productName %></span>
+                  </td>
+                  <td class="px-6 py-4"><%= product.totalQuantity %></td>
+                  <td class="px-6 py-4 font-medium">₹<%= Number(product.totalRevenue).toFixed(2) %></td>
+                </tr>
+                <% }); %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        
+        <!-- Best Selling Categories -->
+        <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="text-lg font-semibold text-gray-900">Top Categories</h2>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead class="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">#</th>
+                  <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Category</th>
+                  <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Products</th>
+                  <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Revenue</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-200">
+                <% bestSellingCategories.forEach((category, index) => { %>
+                <tr class="hover:bg-gray-50">
+                  <td class="px-6 py-4"><span class="font-medium"><%= index + 1 %></span></td>
+                  <td class="px-6 py-4 flex items-center gap-3">
+                    <span class="font-medium"><%= category.categoryName %></span>
+                  </td>
+                  <td class="px-6 py-4"><%= category.totalProducts %></td>
+                  <td class="px-6 py-4 font-medium">₹<%= Number(category.totalRevenue).toFixed(2) %></td>
+                </tr>
+                <% }); %>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
       
@@ -390,5 +511,217 @@ body {
     </div>
   </main>
 </div>
+
+<!-- Hidden element to store JSON data safely -->
+<div id="sales-data" class="hidden"><%- JSON.stringify(salesData).replace(/<\//g, '<\\/') %></div>
+
+<script>
+// Initialize chart with data from server
+document.addEventListener('DOMContentLoaded', function() {
+  // Safely parse the JSON data embedded in the page
+  const salesData = JSON.parse(document.getElementById('sales-data').textContent);
+  
+  // Create the initial chart for daily data
+  createSalesChart('daily', salesData);
+  
+  // Add event listeners for filter buttons
+  document.querySelectorAll('.chart-filter-button').forEach(button => {
+    button.addEventListener('click', function() {
+      // Update active button
+      document.querySelectorAll('.chart-filter-button').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      this.classList.add('active');
+      
+      // Get selected period
+      const period = this.getAttribute('data-period');
+      
+      // Update chart
+      createSalesChart(period, salesData);
+    });
+  });
+});
+
+function createSalesChart(period, data) {
+  const ctx = document.getElementById('salesChart').getContext('2d');
+  
+  // Destroy existing chart if it's a valid Chart instance
+  if (window.salesChart && typeof window.salesChart.destroy === 'function') {
+    window.salesChart.destroy();
+  }
+  
+  let chartData = { labels: [], datasets: [] };
+  let title = '';
+  
+  // Format data based on selected period
+  switch(period) {
+    case 'daily':
+      // Last 7 days
+      title = 'Sales - Last 7 Days';
+      const dailyData = data.daily.slice(-7);
+      chartData.labels = dailyData.map(item => {
+        const date = new Date(item.date);
+        return date.toLocaleDateString('en-US', { 
+          weekday: 'short', 
+          month: 'short', 
+          day: 'numeric' 
+        });
+      });
+      chartData.datasets = [{
+        label: 'Revenue (₹)',
+        data: dailyData.map(item => item.total),
+        borderColor: '#0ea5e9',
+        backgroundColor: 'rgba(14, 165, 233, 0.1)',
+        borderWidth: 2,
+        fill: true,
+        tension: 0.3,
+        pointRadius: 3,
+        pointBackgroundColor: '#0ea5e9',
+        pointHoverRadius: 5,
+        pointHoverBackgroundColor: '#0ea5e9'
+      }];
+      break;
+    
+    case 'monthly':
+      // Last 12 months
+      title = 'Sales - Monthly';
+      const monthlyData = data.monthly.slice(-12);
+      chartData.labels = monthlyData.map(item => {
+        const date = new Date(item.year, item.month - 1);
+        return date.toLocaleDateString('en-US', { 
+          month: 'short', 
+          year: 'numeric' 
+        });
+      });
+      chartData.datasets = [{
+        label: 'Revenue (₹)',
+        data: monthlyData.map(item => item.total),
+        borderColor: '#0ea5e9',
+        backgroundColor: 'rgba(14, 165, 233, 0.1)',
+        borderWidth: 2,
+        fill: true,
+        tension: 0.3,
+        pointRadius: 3,
+        pointBackgroundColor: '#0ea5e9',
+        pointHoverRadius: 5,
+        pointHoverBackgroundColor: '#0ea5e9'
+      }];
+      break;
+    
+    case 'yearly':
+      // Last 5 years
+      title = 'Sales - Yearly';
+      const yearlyData = data.yearly.slice(-5);
+      chartData.labels = yearlyData.map(item => item.year.toString());
+      chartData.datasets = [{
+        label: 'Revenue (₹)',
+        data: yearlyData.map(item => item.total),
+        borderColor: '#0ea5e9',
+        backgroundColor: 'rgba(14, 165, 233, 0.1)',
+        borderWidth: 2,
+        fill: true,
+        tension: 0.3,
+        pointRadius: 3,
+        pointBackgroundColor: '#0ea5e9',
+        pointHoverRadius: 5,
+        pointHoverBackgroundColor: '#0ea5e9'
+      }];
+      break;
+  }
+  
+  // Create the chart
+  window.salesChart = new Chart(ctx, {
+    type: 'line',
+    data: chartData,
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        title: {
+          display: true,
+          text: title,
+          font: {
+            size: 16,
+            weight: 'bold'
+          },
+          padding: {
+            top: 10,
+            bottom: 20
+          }
+        },
+        tooltip: {
+          mode: 'index',
+          intersect: false,
+          callbacks: {
+            label: function(context) {
+              return `₹${parseFloat(context.parsed.y).toLocaleString('en-IN')}`;
+            }
+          }
+        },
+        legend: {
+          position: 'top',
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            callback: function(value) {
+              return '₹' + parseFloat(value).toLocaleString('en-IN');
+            }
+          },
+          grid: {
+            color: 'rgba(0, 0, 0, 0.05)'
+          }
+        },
+        x: {
+          grid: {
+            display: false
+          }
+        }
+      },
+      interaction: {
+        mode: 'nearest',
+        axis: 'x',
+        intersect: false
+      },
+      animation: {
+        duration: 1000,
+        easing: 'easeOutQuart'
+      }
+    }
+  });
+}
+
+// Fallback to show a message if Chart.js fails to load
+window.addEventListener('error', function(event) {
+  if (event.target && event.target.src && event.target.src.includes('chart.js')) {
+    console.error('Chart.js failed to load. Please check your internet connection or the CDN URL.');
+    const chartContainer = document.getElementById('salesChart');
+    if (chartContainer) {
+      chartContainer.parentElement.innerHTML = `
+        <div class="bg-gray-50 border-2 border-dashed rounded-lg p-8 text-center">
+          <p class="text-gray-500">Chart.js failed to load. Please refresh the page.</p>
+        </div>
+      `;
+    }
+  }
+});
+
+// Fallback if Chart.js is not available
+if (typeof Chart === 'undefined') {
+  console.error('Chart.js is not available. Please check your internet connection or the CDN URL.');
+  document.addEventListener('DOMContentLoaded', function() {
+    const chartContainer = document.getElementById('salesChart');
+    if (chartContainer) {
+      chartContainer.parentElement.innerHTML = `
+        <div class="bg-gray-50 border-2 border-dashed rounded-lg p-8 text-center">
+          <p class="text-gray-500">Chart.js failed to load. Please refresh the page.</p>
+        </div>
+      `;
+    }
+  });
+}
+</script>
 </body>
 </html>

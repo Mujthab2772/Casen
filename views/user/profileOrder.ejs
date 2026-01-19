@@ -795,9 +795,8 @@ const images = Array.isArray(item.images) ? item.images : [];
 const itemTotal = price * quantity;
 // Item actions (cancel or return button if applicable)
 let itemActions = '';
-const nonCancellableStatuses = ['delivered', 'cancelled', 'returned', 'return requested', 'requestingReturn'];
 const os = (order.orderStatus || '').toLowerCase();
-if (!isCancelled && !nonCancellableStatuses.includes(os) && items.length > 1) {
+if (!isCancelled && !['delivered', 'cancelled', 'returned', 'return requested', 'requestingreturn'].includes(os) && items.length > 1) {
 itemActions = `
 <div class="mt-2 flex justify-end">
 <button
@@ -862,15 +861,23 @@ const tax = order.taxAmount || 0;
 const shipping = order.shippingAmount || 0;
 const total = order.totalAmount || 0;
 const addr = order.address || {};
-// Action buttons logic
-const nonCancellableStatuses = ['delivered', 'cancelled', 'returned', 'return requested', 'requestingReturn'];
+// Action buttons logic - Updated to match requirements
 const os = (order.orderStatus || '').toLowerCase();
-const showCancelEntireButton = !nonCancellableStatuses.includes(os) && !isEntireOrderCancelled;
-const showReturnButton = os === 'delivered' && !items.some(item => 
-  item.orderStatus === 'requestingReturn' || 
-  item.orderStatus === 'return requested' || 
-  item.orderStatus === 'returned'
+const isNonCancellable = ['delivered', 'cancelled', 'returned', 'return requested', 'requestingreturn'].includes(os);
+const isDelivered = os === 'delivered';
+const isReturnRequested = ['return requested', 'requestingreturn'].includes(os);
+
+// Show cancel button only if order is not in non-cancellable status and not already cancelled
+const showCancelEntireButton = !isNonCancellable && !isEntireOrderCancelled;
+
+// Check if any item has an active return request
+const hasAnyReturnRequested = items.some(item => 
+  ['requestingreturn', 'return requested', 'returned'].includes((item.orderStatus || '').toLowerCase())
 );
+
+// Show return button only if order is delivered AND no items are in return-related states
+const showReturnButton = isDelivered && !hasAnyReturnRequested && !isReturnRequested;
+
 let actionButtonsHtml = `
 <div class="flex flex-wrap gap-2 mt-6 pt-6 border-t border-gray-200">
 <button
@@ -1401,7 +1408,6 @@ orderDataCache[orderId].items[itemIndex].orderStatus = 'requestingReturn';
 orderDataCache[orderId].items[itemIndex].returnReason = reason;
 orderDataCache[orderId].items[itemIndex].returnRequestedAt = new Date().toISOString();
 }
-
 Swal.fire({
 icon: 'success',
 title: 'Return Request Submitted!',

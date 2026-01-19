@@ -12,7 +12,42 @@ const __dirname = dirname(__filename);
 export const dashboard = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
-    const info = await dashboardDetails(page);
+    const period = req.query.period || 'daily';
+    
+    // Fetch all dashboard details including the new chart and best seller data
+    const info = await dashboardDetails(page, period);
+    
+    // Format sales data for the chart
+    const salesData = {
+      daily: info.dailySales.map(item => ({
+        date: item._id.date,
+        total: item.totalSales
+      })),
+      monthly: info.monthlySales.map(item => ({
+        year: item._id.year,
+        month: item._id.month,
+        total: item.totalSales
+      })),
+      yearly: info.yearlySales.map(item => ({
+        year: item._id.year,
+        total: item.totalSales
+      }))
+    };
+    
+    // Format best selling products data
+    const bestSellingProducts = info.bestSellingProducts.map(product => ({
+      productName: product.productName,
+      totalQuantity: product.totalQuantity,
+      totalRevenue: product.totalRevenue,
+      images: product.images || []
+    }));
+    
+    // Format best selling categories data
+    const bestSellingCategories = info.bestSellingCategories.map(category => ({
+      categoryName: category.categoryName,
+      totalProducts: category.totalProducts,
+      totalRevenue: category.totalRevenue
+    }));
     
     res.render('dashBoard', {
       totalRevenue: info.totalRevenue[0]?.totalrevenue?.toFixed(2) || 0,
@@ -21,7 +56,10 @@ export const dashboard = async (req, res) => {
       productsInStock: info.productsInStock,
       outOfStockProducts: info.outOfStockProducts,
       orderDetail: info.orderDetails,
-      pagination: info.pagination
+      pagination: info.pagination,
+      salesData: salesData,
+      bestSellingProducts: bestSellingProducts,
+      bestSellingCategories: bestSellingCategories
     });
   } catch (error) {
     console.log(`error from dashboard ${error}`);
