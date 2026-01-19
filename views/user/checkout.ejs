@@ -1,73 +1,109 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Checkout - Casen</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.10/dist/cdn.min.js"></script>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-    body {
-      font-family: 'Inter', sans-serif;
-    }
-    input::placeholder,
-    select:disabled {
-      color: #9ca3af;
-      opacity: 1;
-    }
-    .focus-within\:ring-1:focus-within {
-      --tw-ring-color: black;
-      --tw-ring-offset-width: 0px;
-      box-shadow: 0 0 0 1px black;
-    }
-    [x-cloak] {
-      display: none !important;
-    }
-    .flash-message {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      z-index: 9999;
-      padding: 1rem;
-      border-radius: 0.5rem;
-      color: white;
-      font-weight: 500;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-      animation: slide-in 0.3s ease-out, fade-out 0.5s ease-in 3.5s forwards;
-    }
-    .flash-error {
-      background-color: #ef4444;
-    }
-    .flash-success {
-      background-color: #10b981;
-    }
-    @keyframes slide-in {
-      from { transform: translateX(100%); opacity: 0; }
-      to { transform: translateX(0); opacity: 1; }
-    }
-    @keyframes fade-out {
-      from { opacity: 1; }
-      to { opacity: 0; transform: translateX(100%); }
-    }
-  </style>
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Checkout - Casen</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.10/dist/cdn.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        input::placeholder,
+        select:disabled {
+            color: #9ca3af;
+            opacity: 1;
+        }
+        
+        .focus-within\:ring-1:focus-within {
+            --tw-ring-color: black;
+            --tw-ring-offset-width: 0px;
+            box-shadow: 0 0 0 1px black;
+        }
+        
+        [x-cloak] {
+            display: none !important;
+        }
+        
+        .flash-message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            color: white;
+            font-weight: 500;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            animation: slide-in 0.3s ease-out, fade-out 0.5s ease-in 3.5s forwards;
+        }
+        
+        .flash-error {
+            background-color: #ef4444;
+        }
+        
+        .flash-success {
+            background-color: #10b981;
+        }
+        
+        @keyframes slide-in {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes fade-out {
+            from { opacity: 1; }
+            to { opacity: 0; transform: translateX(100%); }
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 2rem;
+            height: 2rem;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        
+        /* Ensure loading modal is hidden by default */
+        .loading-modal {
+            display: none;
+        }
+        
+        [x-cloak] .loading-modal {
+            display: none !important;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body class="bg-gray-50 text-gray-800">
-  <!-- Flash Messages -->
-  <% if (locals.messages && messages.error) { %>
-  <div class="flash-message flash-error" x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 4000)">
-    <%= messages.error %>
-  </div>
-  <% } %>
-  <% if (locals.messages && messages.success) { %>
-  <div class="flash-message flash-success" x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 4000)">
-    <%= messages.success %>
-  </div>
-  <% } %>
-  <!-- Header -->
-<header class="bg-white shadow-sm sticky top-0 z-50">
+    <!-- Flash Messages -->
+    <% if (locals.messages && messages.error) { %>
+    <div class="flash-message flash-error" x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 4000)">
+        <%= messages.error %>
+    </div>
+    <% } %>
+    
+    <% if (locals.messages && messages.success) { %>
+    <div class="flash-message flash-success" x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 4000)">
+        <%= messages.success %>
+    </div>
+    <% } %>
+
+    <!-- Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
         <div class="container mx-auto px-4 py-3 flex items-center justify-between">
             <!-- Logo -->
             <div class="flex items-center">
@@ -75,7 +111,7 @@
                     <img src="/logo.png" alt="Logo" class="h-8 object-contain">
                 </a>
             </div>
-
+            
             <!-- Desktop Navigation -->
             <nav class="hidden md:flex space-x-5">
                 <a href="/" class="text-sm font-medium transition-opacity hover:opacity-80">Home</a>
@@ -84,7 +120,7 @@
                 <a href="#" class="text-sm font-medium transition-opacity hover:opacity-80">Tablet Cases</a>
                 <a href="#" class="text-sm font-medium transition-opacity hover:opacity-80">Sale</a>
             </nav>
-
+            
             <!-- Icons & Auth -->
             <div class="flex items-center space-x-4">
                 <!-- Wishlist -->
@@ -93,14 +129,14 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                     </svg>
                 </button>
-
+                
                 <!-- Cart -->
                 <button class="p-2 rounded-full hover:bg-gray-100 transition-colors relative" onclick="window.location.href='/cart'">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
                 </button>
-
+                
                 <!-- User Menu -->
                 <% if (locals.user && user.profilePic) { %>
                 <div class="relative" x-data="{ open: false, imageError: false }" @click.away="open = false">
@@ -115,13 +151,13 @@
                         </template>
                     </button>
                     <div x-show="open"
-                         x-transition:enter="transition ease-out duration-150"
-                         x-transition:enter-start="opacity-0 scale-95"
-                         x-transition:enter-end="opacity-100 scale-100"
-                         x-transition:leave="transition ease-in duration-100"
-                         x-transition:leave-start="opacity-100 scale-100"
-                         x-transition:leave-end="opacity-0 scale-95"
-                         class="absolute right-0 mt-2 w-44 bg-white shadow-lg rounded-lg py-1 z-50">
+                        x-transition:enter="transition ease-out duration-150"
+                        x-transition:enter-start="opacity-0 scale-95"
+                        x-transition:enter-end="opacity-100 scale-100"
+                        x-transition:leave="transition ease-in duration-100"
+                        x-transition:leave-start="opacity-100 scale-100"
+                        x-transition:leave-end="opacity-0 scale-95"
+                        class="absolute right-0 mt-2 w-44 bg-white shadow-lg rounded-lg py-1 z-50">
                         <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">Profile</a>
                         <form action="/logout" method="post">
                             <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">Logout</button>
@@ -136,13 +172,13 @@
                         </svg>
                     </button>
                     <div x-show="open"
-                         x-transition:enter="transition ease-out duration-150"
-                         x-transition:enter-start="opacity-0 scale-95"
-                         x-transition:enter-end="opacity-100 scale-100"
-                         x-transition:leave="transition ease-in duration-100"
-                         x-transition:leave-start="opacity-100 scale-100"
-                         x-transition:leave-end="opacity-0 scale-95"
-                         class="absolute right-0 mt-2 w-44 bg-white shadow-lg rounded-lg py-1 z-50">
+                        x-transition:enter="transition ease-out duration-150"
+                        x-transition:enter-start="opacity-0 scale-95"
+                        x-transition:enter-end="opacity-100 scale-100"
+                        x-transition:leave="transition ease-in duration-100"
+                        x-transition:leave-start="opacity-100 scale-100"
+                        x-transition:leave-end="opacity-0 scale-95"
+                        class="absolute right-0 mt-2 w-44 bg-white shadow-lg rounded-lg py-1 z-50">
                         <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Profile</a>
                         <form action="/logout" method="post">
                             <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Logout</button>
@@ -157,7 +193,7 @@
                     Sign In
                 </a>
                 <% } %>
-
+                
                 <!-- Mobile Menu Button -->
                 <button class="md:hidden text-gray-600 hover:text-gray-900">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -167,756 +203,883 @@
             </div>
         </div>
     </header>
-  <main class="container mx-auto px-4 py-10">
-    <div class="flex items-center justify-between mb-12">
-      <button onclick="window.location.href='/cart'"
-        class="flex items-center text-sm font-medium text-gray-700 hover:text-black transition-colors">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24"
-          stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-        </svg>
-        Back to cart
-      </button>
-      <div class="flex items-center justify-between w-full max-w-md">
-        <div class="flex flex-col items-center">
-          <div
-            class="w-8 h-8 rounded-full border-2 border-gray-300 flex items-center justify-center text-xs font-medium text-gray-500">
-            1</div>
-          <span class="mt-2 text-xs text-gray-500">Cart</span>
-        </div>
-        <div class="flex-1 h-px bg-gray-200 mx-2"></div>
-        <div class="flex flex-col items-center">
-          <div class="w-8 h-8 rounded-full bg-black flex items-center justify-center text-xs font-medium text-white">2
-          </div>
-          <span class="mt-2 text-xs font-medium text-black">Information</span>
-        </div>
-        <div class="flex-1 h-px bg-gray-200 mx-2"></div>
-        <div class="flex flex-col items-center">
-          <div
-            class="w-8 h-8 rounded-full border-2 border-gray-300 flex items-center justify-center text-xs font-medium text-gray-500">
-            3</div>
-          <span class="mt-2 text-xs text-gray-500">Payment</span>
-        </div>
-      </div>
-      <div class="w-[96px]"></div>
-    </div>
-    <% 
-      let subtotal = 0;
-      for (let i = 0; i < cartProducts.length; i++) {
-        const item = cartProducts[i].products;
-        if (item.quantity <= item.variant.stock) {
-          subtotal += item.variant.price * item.quantity;
-        }
-      }
-      const shipping = subtotal > 0 ? "Free" : "0.00";
-    %>
-    <div class="flex flex-col lg:flex-row gap-8 max-w-6xl mx-auto" x-data="checkoutForm()">
-      <!-- LEFT: Form -->
-      <div class="lg:w-2/3">
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-8">
-          <section class="mb-8">
-            <h1 class="text-xl font-semibold mb-5">Contact Information</h1>
-            <div class="space-y-1">
-              <label class="block text-sm font-medium text-gray-700">Email address *</label>
-              <div class="relative">
-                <input type="email"
-                  x-model="email"
-                  @input.debounce.300="validateEmail"
-                  placeholder="you@example.com"
-                  :class="errors.email ? 'border-red-500 pr-10' : 'border-gray-200'"
-                  class="w-full px-4 py-3 text-base border rounded-lg focus:outline-none focus:ring-1 focus:ring-black placeholder:text-gray-400" />
-                <div x-show="!errors.email && email" class="absolute inset-y-0 right-0 flex items-center pr-3">
-                  <svg class="h-5 w-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                  </svg>
-                </div>
-                <p x-show="errors.email" x-text="errors.email" class="mt-1.5 text-sm text-red-600 font-medium"></p>
-              </div>
-            </div>
-            <div class="space-y-1 mt-5">
-              <label class="block text-sm font-medium text-gray-700">Phone number *</label>
-              <div class="relative">
-                <div
-                  class="flex items-center bg-white border rounded-lg overflow-hidden shadow-sm focus-within:ring-1 focus-within:ring-black transition">
-                  <div class="flex items-center bg-gray-50 border-r border-gray-200 px-3 py-3 min-w-[80px]">
-                    <span x-text="getFlag(phoneCode)" class="mr-1 text-lg"></span>
-                    <select x-model="phoneCode" @change="validatePhone"
-                      class="bg-transparent text-sm font-medium text-gray-700 outline-none cursor-pointer">
-                      <option value="+91">+91</option>
-                      <option value="+1">+1</option>
-                      <option value="+44">+44</option>
-                    </select>
-                  </div>
-                  <input type="tel"
-                    x-model="phone"
-                    @input.debounce.300="validatePhone"
-                    placeholder="12345 67890"
-                    class="flex-1 px-4 py-3 text-base placeholder-gray-400 focus:outline-none" />
-                </div>
-                <div x-show="!errors.phone && phone" class="absolute inset-y-0 right-0 flex items-center pr-3">
-                  <svg class="h-5 w-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                  </svg>
-                </div>
-                <p x-show="errors.phone" x-text="errors.phone" class="mt-1.5 text-sm text-red-600 font-medium"></p>
-              </div>
-            </div>
-            <p class="mt-5 text-sm text-gray-600">
-              By proceeding, you agree to our <a href="#" class="text-black underline">Terms of Service</a> and <a
-                href="#" class="text-black underline">Privacy Policy</a>.
-            </p>
-          </section>
-          <section>
-            <h2 class="text-xl font-semibold mb-5">Shipping Address</h2>
-            <div class="space-y-3 mb-6">
-              <% if (locals.userAddresses && userAddresses.length > 0) { %>
-                <% userAddresses.forEach((addr) => { %>
-                  <div @click="selectAddress('<%= addr.addressId %>')"
-                    :class="{ 'ring-2 ring-black border-transparent': selectedAddress === '<%= addr.addressId %>', 'border-gray-200': selectedAddress !== '<%= addr.addressId %>' }"
-                    class="relative p-4 border rounded-lg cursor-pointer transition-all bg-white">
-                    <div class="flex items-center justify-between">
-                      <div>
-                        <p class="font-medium text-gray-900"><%= addr.fullName %></p>
-                        <p class="text-sm text-gray-600">+91 <%= addr.phoneNumber %></p>
-                      </div>
-                      <div class="flex items-center">
-                        <div x-show="selectedAddress === '<%= addr.addressId %>'"
-                          class="w-5 h-5 rounded-full bg-black flex items-center justify-center">
-                          <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-white" viewBox="0 0 20 20"
-                            fill="currentColor">
-                            <path fill-rule="evenodd"
-                              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                              clip-rule="evenodd" />
-                          </svg>
-                        </div>
-                      </div>
-                    </div>
-                    <div x-show="selectedAddress === '<%= addr.addressId %>'"
-                      class="mt-3 pt-3 border-t border-gray-100">
-                      <p class="text-sm text-gray-600">
-                        <%= addr.streetAddress %><br />
-                        <%= addr.city %>, <%= addr.state %> <%= addr.postalCode %><br />
-                        <%= addr.country %>
-                      </p>
-                    </div>
-                  </div>
-                <% }); %>
-              <% } %>
-              <button @click="openAddressModal()"
-                class="relative w-full p-4 border-2 border-dashed rounded-lg text-gray-600 hover:border-gray-400 hover:bg-gray-50 transition-colors flex flex-col items-center justify-center gap-2">
-                <i class="fas fa-plus text-sm"></i>
-                <span class="text-sm font-medium">Add a new address</span>
-              </button>
-            </div>
-            <div x-show="errors.selectedAddress" class="mt-2 text-sm text-red-600 font-medium">
-              <p x-text="errors.selectedAddress"></p>
-            </div>
-          </section>
-          <button type="button" @click="submitCheckout"
-            class="w-full py-3.5 bg-black text-white text-base font-medium rounded-lg hover:bg-gray-800 transition-colors">
-            Continue to Payment
-          </button>
-        </div>
-      </div>
-      <!-- RIGHT: Order Summary -->
-      <div class="lg:w-1/3">
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 sticky top-24">
-          <h2 class="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4">Order Summary</h2>
-          <div class="space-y-3 mb-5">
-            <% for (let i = 0; i < cartProducts.length; i++) {
-              const item = cartProducts[i].products;
-              const isOutOfStock = item.quantity > item.variant.stock;
-            %>
-              <div class="flex items-start gap-3 pb-3 border-b border-gray-100 last:border-0 last:pb-0">
-                <img src="<%= item.variant.images[0] %>" alt="<%= item.product.productName %>"
-                  class="w-12 h-12 rounded-md object-cover flex-shrink-0" />
-                <div class="flex-1 min-w-0">
-                  <p class="text-sm font-medium text-gray-900 line-clamp-1">
-                    <%= item.product.productName %>
-                  </p>
-                  <p class="text-xs text-gray-500 mt-0.5">
-                    <%= item.variant.color %> • x<%= item.quantity %>
-                  </p>
-                </div>
-                <p class="text-sm font-medium text-gray-900 whitespace-nowrap">
-                  <%= isOutOfStock ? '—' : `₹ ${(item.variant.price * item.quantity).toFixed(2)}` %>
-                </p>
-              </div>
-            <% } %>
-          </div>
-          <div class="space-y-2 text-sm">
-            <div class="flex justify-between text-gray-600">
-              <span>Subtotal</span>
-              <span class="font-medium text-gray-900">₹ <%= subtotal.toFixed(2) %></span>
-            </div>
-            <div class="flex justify-between text-gray-600">
-              <span>Shipping</span>
-              <span class="font-medium text-gray-900"><%= shipping === "Free" ? "Free" : `₹ ${shipping}` %></span>
-            </div>
-            <div class="flex justify-between text-gray-600">
-              <span>Tax</span>
-              <span class="font-medium text-gray-900">₹ 0.00</span>
-            </div>
-            <div x-show="discountAmount > 0 && appliedCoupon" class="flex justify-between text-green-600 font-medium">
-              <span>Coupon (<span x-text="appliedCoupon"></span>)</span>
-              <span>- ₹ <span x-text="discountAmount.toFixed(2)"></span></span>
-            </div>
-          </div>
-          <div class="flex justify-between items-center mt-4 pt-4 border-t border-gray-200">
-            <span class="text-base font-bold text-gray-900">Total</span>
-            <span class="text-lg font-bold text-black">₹ <span x-text="totalWithDiscount.toFixed(2)"></span></span>
-          </div>
-          <div class="mt-4 pt-4 border-t border-gray-200">
-            <button type="button" @click="openCouponModal()"
-              class="w-full flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-md text-sm hover:bg-gray-200 transition-colors">
-              <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 104 0V7a2 2 0 00-2-2zM5 14a2 2 0 00-2 2v3a2 2 0 104 0v-3a2 2 0 00-2-2zM19 5a2 2 0 00-2 2v3a2 2 0 104 0V7a2 2 0 00-2-2zM19 14a2 2 0 00-2 2v3a2 2 0 104 0v-3a2 2 0 00-2-2z" />
-              </svg>
-              <span>View Available Coupons</span>
-            </button>
-            <div x-show="appliedCoupon"
-              class="mt-2 flex items-center justify-between bg-green-50 border border-green-200 rounded-md p-2">
-              <div class="flex items-center">
-                <svg class="h-4 w-4 text-green-500 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+
+    <main class="container mx-auto px-4 py-10">
+        <div class="flex items-center justify-between mb-12">
+            <button onclick="window.location.href='/cart'"
+                class="flex items-center text-sm font-medium text-gray-700 hover:text-black transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                 </svg>
-                <span class="text-xs font-medium text-green-700">Coupon applied: <span
-                    x-text="appliedCoupon"></span></span>
-              </div>
-              <button @click="removeCoupon()" class="text-xs text-green-600 hover:text-green-800">Remove</button>
-            </div>
-          </div>
-          <div class="mt-5 bg-blue-50 rounded-lg p-3 text-center">
-            <p class="text-xs font-medium text-blue-800">+<%= Math.round(subtotal) %> Club Points</p>
-            <p class="text-[10px] text-blue-600 mt-1">Earned after return period</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </main>
-  <!-- Trust Badges -->
-  <section class="py-5 border-t border-gray-100 bg-white text-center">
-    <div class="container mx-auto px-4 text-xs text-gray-500 flex flex-wrap justify-center gap-x-6 gap-y-2">
-      <span class="flex items-center gap-1.5"><i class="fas fa-headset text-gray-400"></i> Customer service</span>
-      <span class="flex items-center gap-1.5"><i class="fas fa-shipping-fast text-gray-400"></i> Free shipping</span>
-      <span class="flex items-center gap-1.5"><i class="fas fa-lock text-gray-400"></i> Secure payment</span>
-    </div>
-  </section>
-  <!-- Footer -->
-  <footer class="py-4 text-center text-xs text-gray-500 border-t border-gray-100">
-    © 2025 Casen. All rights reserved.
-  </footer>
-  <!-- Address Modal -->
-  <div x-data="addressModal()" x-show="open" x-cloak>
-    <div class="fixed inset-0 z-50 overflow-y-auto">
-      <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-        <div class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
-        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-        <div class="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
-          <div class="absolute top-4 right-4">
-            <button @click="closeModal()" class="text-gray-500 hover:text-gray-700">
-              <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
+                Back to cart
             </button>
-          </div>
-          <h3 class="text-lg font-medium text-gray-900 mb-4">Add New Address</h3>
-          <form @submit.prevent="submitAddress" class="space-y-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-              <input type="text" x-model="formData.fullName" placeholder="Enter your full name"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md" />
-              <p x-show="errors.fullName" x-text="errors.fullName" class="mt-1 text-sm text-red-600"></p>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Street Address</label>
-              <input type="text" x-model="formData.streetAddress" placeholder="Enter your street address"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md" />
-              <p x-show="errors.streetAddress" x-text="errors.streetAddress" class="mt-1 text-sm text-red-600"></p>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-              <input type="tel" x-model="formData.mobile" placeholder="Enter your phone number"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md" />
-              <p x-show="errors.mobile" x-text="errors.mobile" class="mt-1 text-sm text-red-600"></p>
-            </div>
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">City</label>
-                <input type="text" x-model="formData.city" placeholder="City"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md" />
-                <p x-show="errors.city" x-text="errors.city" class="mt-1 text-sm text-red-600"></p>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">State</label>
-                <input type="text" x-model="formData.state" placeholder="State"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md" />
-                <p x-show="errors.state" x-text="errors.state" class="mt-1 text-sm text-red-600"></p>
-              </div>
-            </div>
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Postal Code</label>
-                <input type="text" x-model="formData.postalcode" placeholder="Postal Code"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md" />
-                <p x-show="errors.postalcode" x-text="errors.postalcode" class="mt-1 text-sm text-red-600"></p>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Country</label>
-                <select x-model="formData.country" class="w-full px-3 py-2 border border-gray-300 rounded-md">
-                  <option value="">Select</option>
-                  <option value="India">India</option>
-                  <option value="United States">United States</option>
-                  <option value="Canada">Canada</option>
-                  <option value="United Kingdom">United Kingdom</option>
-                  <option value="Australia">Australia</option>
-                  <option value="Germany">Germany</option>
-                  <option value="France">France</option>
-                  <option value="Japan">Japan</option>
-                </select>
-                <p x-show="errors.country" x-text="errors.country" class="mt-1 text-sm text-red-600"></p>
-              </div>
-            </div>
-            <div class="flex items-center">
-              <input type="checkbox" x-model="formData.defaultOption" id="modalDefault"
-                class="h-4 w-4 text-black rounded" />
-              <label for="modalDefault" class="ml-2 text-sm text-gray-700">Make this my default shipping address</label>
-            </div>
-            <div class="flex justify-end gap-3 pt-2">
-              <button type="button" @click="closeModal()"
-                class="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200">Cancel</button>
-              <button type="submit" class="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800">Add Address</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-  </div>
-  <!-- Coupon Modal -->
-  <div x-data="couponModal()" x-show="open" x-cloak>
-    <div class="fixed inset-0 z-50 overflow-y-auto">
-      <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-        <div class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
-        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-        <div class="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
-          <div class="absolute top-4 right-4">
-            <button @click="closeModal()" class="text-gray-500 hover:text-gray-700">
-              <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-          <h3 class="text-lg font-medium text-gray-900 mb-4">Available Coupons</h3>
-          <div class="space-y-3 max-h-96 overflow-y-auto pr-2">
-            <template x-for="coupon in coupons" :key="coupon.couponCode">
-              <div class="border rounded-lg p-3 hover:border-gray-400 cursor-pointer transition-all" @click="applyCoupon(coupon.couponCode, coupon.minAmount)">
-                <div class="flex justify-between items-start">
-                  <div>
-                    <p class="font-bold text-lg" x-text="coupon.couponCode"></p>
-                    <p class="text-sm text-gray-600 mt-1" x-text="coupon.description || 'Discount coupon'"></p>
-                    <p class="text-xs text-gray-500 mt-1">Min order: ₹ <span x-text="coupon.minAmount || 0"></span></p>
-                  </div>
-                  <div class="bg-green-100 text-green-800 text-sm font-medium px-2 py-1 rounded">
-                    <template x-if="coupon.discountType === 'percentage'">
-                      <span x-text="coupon.discountAmount + '%'"></span>
-                    </template>
-                    <template x-if="coupon.discountType === 'fixed'">
-                      <span>₹ <span x-text="coupon.discountAmount || 0"></span></span>
-                    </template>
-                  </div>
+            
+            <div class="flex items-center justify-between w-full max-w-md">
+                <div class="flex flex-col items-center">
+                    <div class="w-8 h-8 rounded-full border-2 border-gray-300 flex items-center justify-center text-xs font-medium text-gray-500">
+                        1
+                    </div>
+                    <span class="mt-2 text-xs text-gray-500">Cart</span>
                 </div>
-              </div>
-            </template>
-            <div x-show="loading" class="text-center py-8">
-              <div class="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div>
-              <p class="text-gray-600 mt-2">Loading coupons...</p>
+                <div class="flex-1 h-px bg-gray-200 mx-2"></div>
+                <div class="flex flex-col items-center">
+                    <div class="w-8 h-8 rounded-full bg-black flex items-center justify-center text-xs font-medium text-white">
+                        2
+                    </div>
+                    <span class="mt-2 text-xs font-medium text-black">Information</span>
+                </div>
+                <div class="flex-1 h-px bg-gray-200 mx-2"></div>
+                <div class="flex flex-col items-center">
+                    <div class="w-8 h-8 rounded-full border-2 border-gray-300 flex items-center justify-center text-xs font-medium text-gray-500">
+                        3
+                    </div>
+                    <span class="mt-2 text-xs text-gray-500">Payment</span>
+                </div>
             </div>
-            <div x-show="error" class="text-center py-8 text-red-500">
-              <p x-text="error"></p>
-              <button @click="fetchCoupons" class="mt-2 text-sm text-blue-600 hover:text-blue-800">Retry</button>
-            </div>
-            <div x-show="!loading && !error && coupons.length === 0" class="text-center py-8 text-gray-500">
-              <p>No available coupons for this order</p>
-              <p class="text-sm mt-1">Minimum order value might be required for some coupons</p>
-            </div>
-          </div>
-          <div class="mt-6 flex justify-end">
-            <button @click="closeModal()" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">Close</button>
-          </div>
+            
+            <div class="w-[96px]"></div>
         </div>
-      </div>
+
+        <%
+        let subtotal = 0;
+        for (let i = 0; i < cartProducts.length; i++) {
+            const item = cartProducts[i].products;
+            if (item.quantity <= item.variant.stock) {
+                subtotal += item.variant.price * item.quantity;
+            }
+        }
+        const shipping = subtotal > 0 ? "Free" : "0.00";
+        %>
+
+        <div class="flex flex-col lg:flex-row gap-8 max-w-6xl mx-auto" x-data="checkoutForm()">
+            <!-- LEFT: Form -->
+            <div class="lg:w-2/3">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-8">
+                    <section class="mb-8">
+                        <h1 class="text-xl font-semibold mb-5">Contact Information</h1>
+                        <div class="space-y-1">
+                            <label class="block text-sm font-medium text-gray-700">Email address *</label>
+                            <div class="relative">
+                                <input type="email"
+                                    x-model="email"
+                                    @input.debounce.300="validateEmail"
+                                    placeholder="you@example.com"
+                                    :class="errors.email ? 'border-red-500 pr-10' : 'border-gray-200'"
+                                    class="w-full px-4 py-3 text-base border rounded-lg focus:outline-none focus:ring-1 focus:ring-black placeholder:text-gray-400" />
+                                <div x-show="!errors.email && email" class="absolute inset-y-0 right-0 flex items-center pr-3">
+                                    <svg class="h-5 w-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                </div>
+                                <p x-show="errors.email" x-text="errors.email" class="mt-1.5 text-sm text-red-600 font-medium"></p>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-1 mt-5">
+                            <label class="block text-sm font-medium text-gray-700">Phone number *</label>
+                            <div class="relative">
+                                <div class="flex items-center bg-white border rounded-lg overflow-hidden shadow-sm focus-within:ring-1 focus-within:ring-black transition">
+                                    <div class="flex items-center bg-gray-50 border-r border-gray-200 px-3 py-3 min-w-[80px]">
+                                        <span x-text="getFlag(phoneCode)" class="mr-1 text-lg"></span>
+                                        <select x-model="phoneCode" @change="validatePhone"
+                                            class="bg-transparent text-sm font-medium text-gray-700 outline-none cursor-pointer">
+                                            <option value="+91">+91</option>
+                                            <option value="+1">+1</option>
+                                            <option value="+44">+44</option>
+                                        </select>
+                                    </div>
+                                    <input type="tel"
+                                        x-model="phone"
+                                        @input.debounce.300="validatePhone"
+                                        placeholder="12345 67890"
+                                        class="flex-1 px-4 py-3 text-base placeholder-gray-400 focus:outline-none" />
+                                </div>
+                                <div x-show="!errors.phone && phone" class="absolute inset-y-0 right-0 flex items-center pr-3">
+                                    <svg class="h-5 w-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                </div>
+                                <p x-show="errors.phone" x-text="errors.phone" class="mt-1.5 text-sm text-red-600 font-medium"></p>
+                            </div>
+                        </div>
+                        
+                        <p class="mt-5 text-sm text-gray-600">
+                            By proceeding, you agree to our <a href="#" class="text-black underline">Terms of Service</a> and <a
+                                href="#" class="text-black underline">Privacy Policy</a>.
+                        </p>
+                    </section>
+                    
+                    <section>
+                        <h2 class="text-xl font-semibold mb-5">Shipping Address</h2>
+                        <div class="space-y-3 mb-6">
+                            <% if (locals.userAddresses && userAddresses.length > 0) { %>
+                            <% userAddresses.forEach((addr) => { %>
+                            <div @click="selectAddress('<%= addr.addressId %>')"
+                                :class="{ 'ring-2 ring-black border-transparent': selectedAddress === '<%= addr.addressId %>', 'border-gray-200': selectedAddress !== '<%= addr.addressId %>' }"
+                                class="relative p-4 border rounded-lg cursor-pointer transition-all bg-white">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="font-medium text-gray-900"><%= addr.fullName %></p>
+                                        <p class="text-sm text-gray-600">+91 <%= addr.phoneNumber %></p>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <div x-show="selectedAddress === '<%= addr.addressId %>'"
+                                            class="w-5 h-5 rounded-full bg-black flex items-center justify-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-white" viewBox="0 0 20 20"
+                                                fill="currentColor">
+                                                <path fill-rule="evenodd"
+                                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                    clip-rule="evenodd" />
+                                            </svg>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div x-show="selectedAddress === '<%= addr.addressId %>'"
+                                    class="mt-3 pt-3 border-t border-gray-100">
+                                    <p class="text-sm text-gray-600">
+                                        <%= addr.streetAddress %><br />
+                                        <%= addr.city %>, <%= addr.state %> <%= addr.postalCode %><br />
+                                        <%= addr.country %>
+                                    </p>
+                                </div>
+                            </div>
+                            <% }); %>
+                            <% } %>
+                            
+                            <button @click="openAddressModal()"
+                                class="relative w-full p-4 border-2 border-dashed rounded-lg text-gray-600 hover:border-gray-400 hover:bg-gray-50 transition-colors flex flex-col items-center justify-center gap-2">
+                                <i class="fas fa-plus text-sm"></i>
+                                <span class="text-sm font-medium">Add a new address</span>
+                            </button>
+                        </div>
+                        
+                        <div x-show="errors.selectedAddress" class="mt-2 text-sm text-red-600 font-medium">
+                            <p x-text="errors.selectedAddress"></p>
+                        </div>
+                    </section>
+                    
+                    <button type="button" @click="submitCheckout"
+                        :class="isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-black hover:bg-gray-800'"
+                        class="w-full py-3.5 text-white text-base font-medium rounded-lg transition-colors flex items-center justify-center gap-2">
+                        <template x-if="isLoading">
+                            <div class="loading-spinner"></div>
+                        </template>
+                        <span x-text="isLoading ? 'Processing...' : 'Continue to Payment'"></span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- RIGHT: Order Summary -->
+            <div class="lg:w-1/3">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 sticky top-24">
+                    <h2 class="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4">Order Summary</h2>
+                    <div class="space-y-3 mb-5">
+                        <% for (let i = 0; i < cartProducts.length; i++) {
+                            const item = cartProducts[i].products;
+                            const isOutOfStock = item.quantity > item.variant.stock;
+                        %>
+                        <div class="flex items-start gap-3 pb-3 border-b border-gray-100 last:border-0 last:pb-0">
+                            <img src="<%= item.variant.images[0] %>" alt="<%= item.product.productName %>"
+                                class="w-12 h-12 rounded-md object-cover flex-shrink-0" />
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium text-gray-900 line-clamp-1">
+                                    <%= item.product.productName %>
+                                </p>
+                                <p class="text-xs text-gray-500 mt-0.5">
+                                    <%= item.variant.color %> • x<%= item.quantity %>
+                                </p>
+                            </div>
+                            <p class="text-sm font-medium text-gray-900 whitespace-nowrap">
+                                <%= isOutOfStock ? '—' : `₹ ${(item.variant.price * item.quantity).toFixed(2)}` %>
+                            </p>
+                        </div>
+                        <% } %>
+                    </div>
+                    
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between text-gray-600">
+                            <span>Subtotal</span>
+                            <span class="font-medium text-gray-900">₹ <%= subtotal.toFixed(2) %></span>
+                        </div>
+                        <div class="flex justify-between text-gray-600">
+                            <span>Shipping</span>
+                            <span class="font-medium text-gray-900"><%= shipping === "Free" ? "Free" : `₹ ${shipping}` %></span>
+                        </div>
+                        <div class="flex justify-between text-gray-600">
+                            <span>Tax</span>
+                            <span class="font-medium text-gray-900">₹ 0.00</span>
+                        </div>
+                        <div x-show="discountAmount > 0 && appliedCoupon" class="flex justify-between text-green-600 font-medium">
+                            <span>Coupon (<span x-text="appliedCoupon"></span>)</span>
+                            <span>- ₹ <span x-text="discountAmount.toFixed(2)"></span></span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-between items-center mt-4 pt-4 border-t border-gray-200">
+                        <span class="text-base font-bold text-gray-900">Total</span>
+                        <span class="text-lg font-bold text-black">₹ <span x-text="totalWithDiscount.toFixed(2)"></span></span>
+                    </div>
+                    
+                    <div class="mt-4 pt-4 border-t border-gray-200">
+                        <button type="button" @click="openCouponModal()"
+                            class="w-full flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-md text-sm hover:bg-gray-200 transition-colors">
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 104 0V7a2 2 0 00-2-2zM5 14a2 2 0 00-2 2v3a2 2 0 104 0v-3a2 2 0 00-2-2zM19 5a2 2 0 00-2 2v3a2 2 0 104 0V7a2 2 0 00-2-2zM19 14a2 2 0 00-2 2v3a2 2 0 104 0v-3a2 2 0 00-2-2z" />
+                            </svg>
+                            <span>View Available Coupons</span>
+                        </button>
+                        
+                        <div x-show="appliedCoupon"
+                            class="mt-2 flex items-center justify-between bg-green-50 border border-green-200 rounded-md p-2">
+                            <div class="flex items-center">
+                                <svg class="h-4 w-4 text-green-500 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                <span class="text-xs font-medium text-green-700">Coupon applied: <span
+                                    x-text="appliedCoupon"></span></span>
+                            </div>
+                            <button @click="removeCoupon()" class="text-xs text-green-600 hover:text-green-800">Remove</button>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-5 bg-blue-50 rounded-lg p-3 text-center">
+                        <p class="text-xs font-medium text-blue-800">+<%= Math.round(subtotal) %> Club Points</p>
+                        <p class="text-[10px] text-blue-600 mt-1">Earned after return period</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Trust Badges -->
+    <section class="py-5 border-t border-gray-100 bg-white text-center">
+        <div class="container mx-auto px-4 text-xs text-gray-500 flex flex-wrap justify-center gap-x-6 gap-y-2">
+            <span class="flex items-center gap-1.5"><i class="fas fa-headset text-gray-400"></i> Customer service</span>
+            <span class="flex items-center gap-1.5"><i class="fas fa-shipping-fast text-gray-400"></i> Free shipping</span>
+            <span class="flex items-center gap-1.5"><i class="fas fa-lock text-gray-400"></i> Secure payment</span>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-4 text-center text-xs text-gray-500 border-t border-gray-100">
+        © 2025 Casen. All rights reserved.
+    </footer>
+
+    <!-- Loading Modal - Hidden by default -->
+    <div x-show="isLoading" x-cloak class="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50 flex items-center justify-center">
+        <div class="bg-white rounded-xl p-6 max-w-md w-full mx-4 shadow-lg">
+            <div class="flex justify-center mb-4">
+                <div class="loading-spinner w-8 h-8 border-4"></div>
+            </div>
+            <h3 class="text-xl font-bold text-center mb-2">Processing Your Order</h3>
+            <p class="text-gray-600 text-center mb-4">Please wait while we verify your information and prepare your payment.</p>
+            <div class="flex justify-center">
+                <div class="w-48 bg-gray-200 rounded-full h-2 overflow-hidden">
+                    <div class="bg-black h-2 rounded-full animate-pulse"></div>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
-  <!-- Alpine.js Logic -->
-  <script>
-    // Address Modal
-    window.addressModalController = null;
-    function addressModal() {
-      return {
-        open: false,
-        errors: {},
-        formData: {
-          fullName: '',
-          streetAddress: '',
-          mobile: '',
-          city: '',
-          state: '',
-          postalcode: '',
-          country: '',
-          defaultOption: false
-        },
-        init() {
-          window.addressModalController = this;
-        },
-        openModal() {
-          this.open = true;
-          this.errors = {};
-        },
-        closeModal() {
-          this.open = false;
-          this.errors = {};
-          this.formData = {
-            fullName: '',
-            streetAddress: '',
-            mobile: '',
-            city: '',
-            state: '',
-            postalcode: '',
-            country: '',
-            defaultOption: false
-          };
-        },
-        async submitAddress() {
-          this.errors = {};
-          // Client-side validation
-          if (!this.formData.fullName.trim()) {
-            this.errors.fullName = 'Full name is required';
-            return;
-          }
-          if (!this.formData.streetAddress.trim()) {
-            this.errors.streetAddress = 'Street address is required';
-            return;
-          }
-          if (!/^\d{10}$/.test(this.formData.mobile.replace(/\D/g, ''))) {
-            this.errors.mobile = 'Please enter a valid 10-digit mobile number';
-            return;
-          }
-          if (!this.formData.city.trim()) {
-            this.errors.city = 'City is required';
-            return;
-          }
-          if (!this.formData.state.trim()) {
-            this.errors.state = 'State is required';
-            return;
-          }
-          if (!/^\d{6}$/.test(this.formData.postalcode.trim())) {
-            this.errors.postalcode = 'Please enter a valid 6-digit postal code';
-            return;
-          }
-          if (!this.formData.country) {
-            this.errors.country = 'Country is required';
-            return;
-          }
-          const userId = '<%= user._id %>';
-          const url = `/profile/addAddress?userId=${userId}`;
-          try {
-            const res = await fetch(url, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(this.formData),
-              credentials: 'same-origin'
-            });
-            const result = await res.json();
-            if (res.ok) {
-              this.closeModal();
-              Swal.fire({
-                icon: 'success',
-                title: 'Success!',
-                text: 'Address added successfully!',
-                confirmButtonText: 'OK'
-              }).then(() => {
-                window.location.reload();
-              });
-            } else if (result.errors) {
-              result.errors.forEach(err => {
-                this.errors[err.path] = err.msg;
-              });
-            } else {
-              Swal.fire({
-                icon: 'error',
-                title: 'Oops...',
-                text: result.message || 'Failed to add address. Please try again.',
-                confirmButtonText: 'OK'
-              });
-            }
-          } catch (error) {
-            console.error('Address submission error:', error);
-            Swal.fire({
-              icon: 'error',
-              title: 'Error',
-              text: 'An unexpected error occurred. Please try again.',
-              confirmButtonText: 'OK'
-            });
-          }
+
+    <!-- Address Modal -->
+    <div x-data="addressModal()" x-show="open" x-cloak>
+        <div class="fixed inset-0 z-50 overflow-y-auto">
+            <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+                <div class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+                <div class="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+                    <div class="absolute top-4 right-4">
+                        <button @click="closeModal()" class="text-gray-500 hover:text-gray-700">
+                            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Add New Address</h3>
+                    <form @submit.prevent="submitAddress" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                            <input type="text" x-model="formData.fullName" placeholder="Enter your full name"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md" />
+                            <p x-show="errors.fullName" x-text="errors.fullName" class="mt-1 text-sm text-red-600"></p>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Street Address</label>
+                            <input type="text" x-model="formData.streetAddress" placeholder="Enter your street address"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md" />
+                            <p x-show="errors.streetAddress" x-text="errors.streetAddress" class="mt-1 text-sm text-red-600"></p>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                            <input type="tel" x-model="formData.mobile" placeholder="Enter your phone number"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md" />
+                            <p x-show="errors.mobile" x-text="errors.mobile" class="mt-1 text-sm text-red-600"></p>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">City</label>
+                                <input type="text" x-model="formData.city" placeholder="City"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md" />
+                                <p x-show="errors.city" x-text="errors.city" class="mt-1 text-sm text-red-600"></p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">State</label>
+                                <input type="text" x-model="formData.state" placeholder="State"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md" />
+                                <p x-show="errors.state" x-text="errors.state" class="mt-1 text-sm text-red-600"></p>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Postal Code</label>
+                                <input type="text" x-model="formData.postalcode" placeholder="Postal Code"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md" />
+                                <p x-show="errors.postalcode" x-text="errors.postalcode" class="mt-1 text-sm text-red-600"></p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Country</label>
+                                <select x-model="formData.country" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                                    <option value="">Select</option>
+                                    <option value="India">India</option>
+                                    <option value="United States">United States</option>
+                                    <option value="Canada">Canada</option>
+                                    <option value="United Kingdom">United Kingdom</option>
+                                    <option value="Australia">Australia</option>
+                                    <option value="Germany">Germany</option>
+                                    <option value="France">France</option>
+                                    <option value="Japan">Japan</option>
+                                </select>
+                                <p x-show="errors.country" x-text="errors.country" class="mt-1 text-sm text-red-600"></p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center">
+                            <input type="checkbox" x-model="formData.defaultOption" id="modalDefault"
+                                class="h-4 w-4 text-black rounded" />
+                            <label for="modalDefault" class="ml-2 text-sm text-gray-700">Make this my default shipping address</label>
+                        </div>
+                        
+                        <div class="flex justify-end gap-3 pt-2">
+                            <button type="button" @click="closeModal()"
+                                class="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200">Cancel</button>
+                            <button type="submit" class="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800">Add Address</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Coupon Modal -->
+    <div x-data="couponModal()" x-show="open" x-cloak>
+        <div class="fixed inset-0 z-50 overflow-y-auto">
+            <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+                <div class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+                <div class="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+                    <div class="absolute top-4 right-4">
+                        <button @click="closeModal()" class="text-gray-500 hover:text-gray-700">
+                            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Available Coupons</h3>
+                    <div class="space-y-3 max-h-96 overflow-y-auto pr-2">
+                        <template x-for="coupon in coupons" :key="coupon.couponCode">
+                            <div class="border rounded-lg p-3 hover:border-gray-400 cursor-pointer transition-all" @click="applyCoupon(coupon.couponCode, coupon.minAmount)">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <p class="font-bold text-lg" x-text="coupon.couponCode"></p>
+                                        <p class="text-sm text-gray-600 mt-1" x-text="coupon.description || 'Discount coupon'"></p>
+                                        <p class="text-xs text-gray-500 mt-1">Min order: ₹ <span x-text="coupon.minAmount || 0"></span></p>
+                                    </div>
+                                    <div class="bg-green-100 text-green-800 text-sm font-medium px-2 py-1 rounded">
+                                        <template x-if="coupon.discountType === 'percentage'">
+                                            <span x-text="coupon.discountAmount + '%'"></span>
+                                        </template>
+                                        <template x-if="coupon.discountType === 'fixed'">
+                                            <span>₹ <span x-text="coupon.discountAmount || 0"></span></span>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                        
+                        <div x-show="loading" class="text-center py-8">
+                            <div class="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div>
+                            <p class="text-gray-600 mt-2">Loading coupons...</p>
+                        </div>
+                        
+                        <div x-show="error" class="text-center py-8 text-red-500">
+                            <p x-text="error"></p>
+                            <button @click="fetchCoupons" class="mt-2 text-sm text-blue-600 hover:text-blue-800">Retry</button>
+                        </div>
+                        
+                        <div x-show="!loading && !error && coupons.length === 0" class="text-center py-8 text-gray-500">
+                            <p>No available coupons for this order</p>
+                            <p class="text-sm mt-1">Minimum order value might be required for some coupons</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6 flex justify-end">
+                        <button @click="closeModal()" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alpine.js Logic -->
+    <script>
+        // Address Modal
+        window.addressModalController = null;
+        function addressModal() {
+            return {
+                open: false,
+                errors: {},
+                formData: {
+                    fullName: '',
+                    streetAddress: '',
+                    mobile: '',
+                    city: '',
+                    state: '',
+                    postalcode: '',
+                    country: '',
+                    defaultOption: false
+                },
+                init() {
+                    window.addressModalController = this;
+                },
+                openModal() {
+                    this.open = true;
+                    this.errors = {};
+                },
+                closeModal() {
+                    this.open = false;
+                    this.errors = {};
+                    this.formData = {
+                        fullName: '',
+                        streetAddress: '',
+                        mobile: '',
+                        city: '',
+                        state: '',
+                        postalcode: '',
+                        country: '',
+                        defaultOption: false
+                    };
+                },
+                async submitAddress() {
+                    this.errors = {};
+                    // Client-side validation
+                    if (!this.formData.fullName.trim()) {
+                        this.errors.fullName = 'Full name is required';
+                        return;
+                    }
+                    if (!this.formData.streetAddress.trim()) {
+                        this.errors.streetAddress = 'Street address is required';
+                        return;
+                    }
+                    if (!/^\d{10}$/.test(this.formData.mobile.replace(/\D/g, ''))) {
+                        this.errors.mobile = 'Please enter a valid 10-digit mobile number';
+                        return;
+                    }
+                    if (!this.formData.city.trim()) {
+                        this.errors.city = 'City is required';
+                        return;
+                    }
+                    if (!this.formData.state.trim()) {
+                        this.errors.state = 'State is required';
+                        return;
+                    }
+                    if (!/^\d{6}$/.test(this.formData.postalcode.trim())) {
+                        this.errors.postalcode = 'Please enter a valid 6-digit postal code';
+                        return;
+                    }
+                    if (!this.formData.country) {
+                        this.errors.country = 'Country is required';
+                        return;
+                    }
+                    
+                    const userId = '<%= user._id %>';
+                    const url = `/profile/addAddress?userId=${userId}`;
+                    
+                    try {
+                        const res = await fetch(url, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(this.formData),
+                            credentials: 'same-origin'
+                        });
+                        
+                        const result = await res.json();
+                        
+                        if (res.ok) {
+                            this.closeModal();
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success!',
+                                text: 'Address added successfully!',
+                                confirmButtonText: 'OK'
+                            }).then(() => {
+                                window.location.reload();
+                            });
+                        } else if (result.errors) {
+                            result.errors.forEach(err => {
+                                this.errors[err.path] = err.msg;
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Oops...',
+                                text: result.message || 'Failed to add address. Please try again.',
+                                confirmButtonText: 'OK'
+                            });
+                        }
+                    } catch (error) {
+                        console.error('Address submission error:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'An unexpected error occurred. Please try again.',
+                            confirmButtonText: 'OK'
+                        });
+                    }
+                }
+            };
         }
-      };
-    }
-    // Coupon Modal - FIXED VERSION
-    window.couponModalController = null;
-    function couponModal() {
-      return {
-        open: false,
-        coupons: [],
-        loading: false,
-        error: null,
-        init() {
-          window.couponModalController = this;
-          // Try to parse from server-side data first
-          try {
-            // FIXED: Directly use availableCoupons without double JSON.stringify
-            
-            const serverCoupons = JSON.parse(decodeURIComponent('<%- encodeURIComponent(JSON.stringify(availableCoupons || [])) %>'))
-            if (Array.isArray(serverCoupons) && serverCoupons.length > 0) {
-              this.coupons = serverCoupons;
-              console.log('Coupons loaded from server:', this.coupons);
-            } else {
-              this.fetchCoupons();
-            }
-          } catch (e) {
-            console.log('Server coupon parse error:', e);
-            this.fetchCoupons();
-          }
-        },
-        openModal() { 
-          this.open = true;
-          if (this.coupons.length === 0 && !this.loading && !this.error) {
-            this.fetchCoupons();
-          }
-        },
-        closeModal() { 
-          this.open = false;
-          this.error = null;
-        },
-        async fetchCoupons() {
-          this.loading = true;
-          this.error = null;
-          
-          try {
-            // FIXED: Correct endpoint URL - should be /checkout/coupons
-            const res = await fetch('/checkout/coupons?subtotal=' + encodeURIComponent('<%= subtotal %>'), {
-              method: 'GET',
-              headers: { 'Content-Type': 'application/json' },
-              credentials: 'same-origin'
-            });
-            
-            const result = await res.json();
-            
-            if (res.ok && result.success && Array.isArray(result.coupons)) {
-              // Process and normalize coupon data
-              this.coupons = result.coupons.map(coupon => ({
-                couponCode: coupon.couponCode || coupon.code,
-                description: coupon.description || 'Discount coupon',
-                discountType: coupon.discountType || 'percentage',
-                discountAmount: coupon.discountAmount || 0,
-                minAmount: coupon.minAmount || 0,
-                maxAmount: coupon.maxAmount || null
-              }));
-              console.log('Coupons fetched successfully:', this.coupons);
-            } else {
-              this.error = result.message || 'No coupons available';
-              console.log('Coupon fetch error:', this.error);
-            }
-          } catch (err) {
-            this.error = 'Failed to load coupons. Please try again.';
-            console.error('Coupon fetch error:', err);
-          } finally {
-            this.loading = false;
-          }
-        },
-        applyCoupon(code, minAmount) {
-          if (window.checkoutFormController) {
-            window.checkoutFormController.applyCoupon(code, minAmount);
-          }
-          this.closeModal();
+
+        // Coupon Modal - FIXED VERSION with proper error handling
+        window.couponModalController = null;
+        function couponModal() {
+            return {
+                open: false,
+                coupons: [],
+                loading: false,
+                error: null,
+                init() {
+                    window.couponModalController = this;
+                    // Try to parse from server-side data first
+                    try {
+                        // Safely parse server-side coupons
+                        const serverCouponsData = `<%- JSON.stringify(availableCoupons || []) %>`;
+                        
+                        if (serverCouponsData && serverCouponsData !== '[]' && serverCouponsData !== 'undefined' && serverCouponsData !== '"undefined"') {
+                            const serverCoupons = JSON.parse(serverCouponsData);
+                            if (Array.isArray(serverCoupons) && serverCoupons.length > 0) {
+                                this.coupons = serverCoupons.map(coupon => ({
+                                    couponCode: coupon.couponCode || coupon.code || '',
+                                    description: coupon.description || 'Discount coupon',
+                                    discountType: coupon.discountType || 'percentage',
+                                    discountAmount: coupon.discountAmount || 0,
+                                    minAmount: coupon.minAmount || 0,
+                                    maxAmount: coupon.maxAmount || null
+                                }));
+                                console.log('Coupons loaded from server:', this.coupons);
+                                return;
+                            }
+                        }
+                        
+                        // If no valid server coupons, fetch from API
+                        this.fetchCoupons();
+                        
+                    } catch (e) {
+                        console.log('Server coupon parse error:', e);
+                        this.fetchCoupons();
+                    }
+                },
+                openModal() {
+                    this.open = true;
+                    if (this.coupons.length === 0 && !this.loading && !this.error) {
+                        this.fetchCoupons();
+                    }
+                },
+                closeModal() {
+                    this.open = false;
+                    this.error = null;
+                },
+                async fetchCoupons() {
+                    this.loading = true;
+                    this.error = null;
+                    
+                    try {
+                        const subtotal = parseFloat('<%= subtotal %>');
+                        const url = `/api/coupons?subtotal=${encodeURIComponent(subtotal)}`;
+                        
+                        const res = await fetch(url, {
+                            method: 'GET',
+                            headers: { 
+                                'Content-Type': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            },
+                            credentials: 'same-origin'
+                        });
+                        
+                        // Check if response is OK
+                        if (!res.ok) {
+                            let errorMessage = `Failed to load coupons (${res.status})`;
+                            
+                            try {
+                                // Try to parse error response
+                                const errorData = await res.json();
+                                errorMessage = errorData.message || errorData.error || errorMessage;
+                            } catch (jsonError) {
+                                // If can't parse JSON, check response text
+                                const textResponse = await res.text();
+                                if (textResponse.toLowerCase().includes('not found') || res.status === 404) {
+                                    errorMessage = 'Coupon service not available';
+                                } else if (textResponse.toLowerCase().includes('unauthorized') || res.status === 401) {
+                                    errorMessage = 'Please log in to view coupons';
+                                }
+                            }
+                            
+                            throw new Error(errorMessage);
+                        }
+                        
+                        // Check content type
+                        const contentType = res.headers.get('content-type');
+                        if (contentType && contentType.includes('application/json')) {
+                            const result = await res.json();
+                            
+                            if (result.success && Array.isArray(result.coupons)) {
+                                // Process and normalize coupon data
+                                this.coupons = result.coupons.map(coupon => ({
+                                    couponCode: coupon.couponCode || coupon.code || '',
+                                    description: coupon.description || 'Discount coupon',
+                                    discountType: coupon.discountType || 'percentage',
+                                    discountAmount: coupon.discountAmount || 0,
+                                    minAmount: coupon.minAmount || 0,
+                                    maxAmount: coupon.maxAmount || null
+                                }));
+                                
+                                console.log('Coupons fetched successfully:', this.coupons);
+                            } else {
+                                this.error = result.message || 'No coupons available at this time';
+                            }
+                        } else {
+                            // Response is not JSON - likely HTML error page
+                            const textResponse = await res.text();
+                            console.log('Non-JSON response received:', textResponse.substring(0, 200) + '...');
+                            this.error = 'Coupon service is currently unavailable. Please try again later.';
+                        }
+                        
+                    } catch (err) {
+                        this.error = err.message || 'Failed to load coupons. Please try again.';
+                        console.error('Coupon fetch error:', err);
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+                applyCoupon(code, minAmount) {
+                    if (window.checkoutFormController) {
+                        window.checkoutFormController.applyCoupon(code, minAmount);
+                    }
+                    this.closeModal();
+                }
+            };
         }
-      };
-    }
-    // Checkout Form
-    window.checkoutFormController = null;
-    function checkoutForm() {
-      return {
-        email: '<%= (session && session.checkout && session.checkout.contact && session.checkout.contact.email) ? session.checkout.contact.email : "" %>',
-        phone: '<%= (session && session.checkout && session.checkout.contact && session.checkout.contact.phone) ? session.checkout.contact.phone : "" %>',
-        phoneCode: '+91',
-        selectedAddress: '<%= (session && session.checkout && session.checkout.shippingAddressId) ? session.checkout.shippingAddressId : (userAddresses && userAddresses.find(a => a.isDefault) ? userAddresses.find(a => a.isDefault).addressId : (userAddresses && userAddresses.length > 0 ? userAddresses[0].addressId : "")) %>',
-        errors: {},
-        appliedCoupon: '<%= (session && session.checkout && session.checkout.appliedCouponCode) ? session.checkout.appliedCouponCode : "" %>',
-        discountAmount: 0,
-        subtotal: parseFloat('<%= subtotal.toFixed(2) %>'),
-        totalWithDiscount: parseFloat('<%= subtotal.toFixed(2) %>'),
-        init() {
-          window.checkoutFormController = this;
-          // Apply coupon if we have one in session
-          if (this.appliedCoupon) {
-            this.applyCoupon(this.appliedCoupon);
-          }
-        },
-        openAddressModal() {
-          if (window.addressModalController) {
-            window.addressModalController.openModal();
-          }
-        },
-        selectAddress(id) {
-          this.selectedAddress = id;
-          delete this.errors.selectedAddress;
-        },
-        getFlag(code) {
-          const flags = { '+91': '🇮🇳', '+1': '🇺🇸', '+44': '🇬🇧' };
-          return flags[code] || '🌐';
-        },
-        validateEmail() {
-          const email = this.email.trim();
-          if (!email) {
-            this.errors.email = 'Email is required.';
-            return false;
-          }
-          const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-          if (!re.test(email)) {
-            this.errors.email = 'Please enter a valid email address.';
-            return false;
-          }
-          delete this.errors.email;
-          return true;
-        },
-        validatePhone() {
-          if (!this.phone) {
-            this.errors.phone = 'Phone number is required.';
-            return false;
-          }
-          if (/[^\d\s\-\(\)\+]/.test(this.phone)) {
-            this.errors.phone = 'Phone number can only contain digits, spaces, hyphens, or parentheses.';
-            return false;
-          }
-          const clean = this.phone.replace(/\D/g, '');
-          if (this.phoneCode === '+91') {
-            if (clean.length !== 10) {
-              this.errors.phone = 'Indian phone numbers must be 10 digits.';
-              return false;
-            }
-          } else if (clean.length < 9 || clean.length > 15) {
-            this.errors.phone = 'Phone number must be 9–15 digits.';
-            return false;
-          }
-          delete this.errors.phone;
-          return true;
-        },
-        openCouponModal() {
-          if (!this.selectedAddress) {
-            Swal.fire('Error', 'Please select a shipping address first.', 'warning');
-            return;
-          }
-          if (!this.email || !this.phone) {
-            Swal.fire('Error', 'Please fill in your contact information first.', 'warning');
-            return;
-          }
-          if (window.couponModalController) {
-            window.couponModalController.openModal();
-          } else {
-            Swal.fire('Error', 'Coupon system not initialized. Please refresh the page.', 'error');
-          }
-        },
-        async applyCoupon(couponCode, minAmount) {
-          if (minAmount && this.subtotal < minAmount) {
-            Swal.fire('Error', `Minimum order value of ₹${minAmount} is required for this coupon.`, 'error');
-            return;
-          }
-          
-          if (!this.selectedAddress || !this.email || !this.phone) {
-            Swal.fire('Error', 'Please complete your contact and shipping information first.', 'warning');
-            return;
-          }
-          
-          try {
-            const res = await fetch('/checkout/preview', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                shippingAddressId: this.selectedAddress,
-                contact: { email: this.email, phone: this.phone },
-                couponCode
-              }),
-              credentials: 'same-origin'
-            });
-            const result = await res.json();
-            if (res.ok && result.success) {
-              this.appliedCoupon = result.validCoupon;
-              this.discountAmount = result.discount;
-              this.totalWithDiscount = result.total;
-              Swal.fire('Success', `Coupon applied successfully!`, 'success');
-            } else {
-              Swal.fire('Error', result.error || 'Invalid coupon or coupon conditions not met.', 'error');
-              if (this.appliedCoupon === couponCode) {
-                this.removeCoupon();
-              }
-            }
-          } catch (err) {
-            console.error('Coupon apply error:', err);
-            Swal.fire('Error', 'Failed to apply coupon. Please try again.', 'error');
-          }
-        },
-        removeCoupon() {
-          this.appliedCoupon = '';
-          this.discountAmount = 0;
-          this.totalWithDiscount = this.subtotal;
-        },
-        async submitCheckout() {
-          this.errors = {};
-          
-          // Validate all fields
-          const isEmailValid = this.validateEmail();
-          const isPhoneValid = this.validatePhone();
-          
-          if (!this.selectedAddress) {
-            this.errors.selectedAddress = 'Please select a shipping address';
-          }
-          
-          if (!isEmailValid || !isPhoneValid || !this.selectedAddress) {
-            Swal.fire('Error', 'Please complete all required fields.', 'warning');
-            return;
-          }
-          
-          try {
-            const res = await fetch('/checkout/process', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                contact: { email: this.email, phone: this.phone },
-                shippingAddressId: this.selectedAddress,
-                coupon: this.appliedCoupon || undefined
-              }),
-              credentials: 'same-origin'
-            });
-            
-            const result = await res.json();
-            
-            if (res.ok && result.success) {
-              window.location.href = '/payment';
-            } else {
-              // Handle specific error cases
-              if (result.error && result.error.includes('stock')) {
-                Swal.fire('Out of Stock', result.error, 'error');
-              } else {
-                Swal.fire('Error', result.message || result.error || 'Unable to process checkout. Please try again.', 'error');
-              }
-            }
-          } catch (err) {
-            console.error('Checkout error:', err);
-            Swal.fire('Error', 'Network error. Please check your connection and try again.', 'error');
-          }
+
+        // Checkout Form
+        window.checkoutFormController = null;
+        function checkoutForm() {
+            return {
+                email: '<%= (session && session.checkout && session.checkout.contact && session.checkout.contact.email) ? session.checkout.contact.email : "" %>',
+                phone: '<%= (session && session.checkout && session.checkout.contact && session.checkout.contact.phone) ? session.checkout.contact.phone : "" %>',
+                phoneCode: '+91',
+                selectedAddress: '<%= (session && session.checkout && session.checkout.shippingAddressId) ? session.checkout.shippingAddressId : (userAddresses && userAddresses.find(a => a.isDefault) ? userAddresses.find(a => a.isDefault).addressId : (userAddresses && userAddresses.length > 0 ? userAddresses[0].addressId : "")) %>',
+                errors: {},
+                appliedCoupon: '<%= (session && session.checkout && session.checkout.appliedCouponCode) ? session.checkout.appliedCouponCode : "" %>',
+                discountAmount: 0,
+                subtotal: parseFloat('<%= subtotal.toFixed(2) %>'),
+                totalWithDiscount: parseFloat('<%= subtotal.toFixed(2) %>'),
+                isLoading: false, // Ensure this starts as false
+                
+                init() {
+                    window.checkoutFormController = this;
+                    // Apply coupon if we have one in session
+                    if (this.appliedCoupon) {
+                        this.applyCoupon(this.appliedCoupon);
+                    }
+                },
+                
+                openAddressModal() {
+                    if (window.addressModalController) {
+                        window.addressModalController.openModal();
+                    }
+                },
+                
+                selectAddress(id) {
+                    this.selectedAddress = id;
+                    delete this.errors.selectedAddress;
+                },
+                
+                getFlag(code) {
+                    const flags = { '+91': '🇮🇳', '+1': '🇺🇸', '+44': '🇬🇧' };
+                    return flags[code] || '🌐';
+                },
+                
+                validateEmail() {
+                    const email = this.email.trim();
+                    if (!email) {
+                        this.errors.email = 'Email is required.';
+                        return false;
+                    }
+                    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!re.test(email)) {
+                        this.errors.email = 'Please enter a valid email address.';
+                        return false;
+                    }
+                    delete this.errors.email;
+                    return true;
+                },
+                
+                validatePhone() {
+                    if (!this.phone) {
+                        this.errors.phone = 'Phone number is required.';
+                        return false;
+                    }
+                    if (/[^\d\s\-\(\)\+]/.test(this.phone)) {
+                        this.errors.phone = 'Phone number can only contain digits, spaces, hyphens, or parentheses.';
+                        return false;
+                    }
+                    const clean = this.phone.replace(/\D/g, '');
+                    if (this.phoneCode === '+91') {
+                        if (clean.length !== 10) {
+                            this.errors.phone = 'Indian phone numbers must be 10 digits.';
+                            return false;
+                        }
+                    } else if (clean.length < 9 || clean.length > 15) {
+                        this.errors.phone = 'Phone number must be 9–15 digits.';
+                        return false;
+                    }
+                    delete this.errors.phone;
+                    return true;
+                },
+                
+                openCouponModal() {
+                    if (!this.selectedAddress) {
+                        Swal.fire('Error', 'Please select a shipping address first.', 'warning');
+                        return;
+                    }
+                    if (!this.email || !this.phone) {
+                        Swal.fire('Error', 'Please fill in your contact information first.', 'warning');
+                        return;
+                    }
+                    if (window.couponModalController) {
+                        window.couponModalController.openModal();
+                    } else {
+                        Swal.fire('Error', 'Coupon system not initialized. Please refresh the page.', 'error');
+                    }
+                },
+                
+                async applyCoupon(couponCode, minAmount) {
+                    if (minAmount && this.subtotal < minAmount) {
+                        Swal.fire('Error', `Minimum order value of ₹${minAmount} is required for this coupon.`, 'error');
+                        return;
+                    }
+                    
+                    if (!this.selectedAddress || !this.email || !this.phone) {
+                        Swal.fire('Error', 'Please complete your contact and shipping information first.', 'warning');
+                        return;
+                    }
+                    
+                    try {
+                        const res = await fetch('/checkout/preview', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                shippingAddressId: this.selectedAddress,
+                                contact: { email: this.email, phone: this.phone },
+                                couponCode
+                            }),
+                            credentials: 'same-origin'
+                        });
+                        
+                        const result = await res.json();
+                        
+                        if (res.ok && result.success) {
+                            this.appliedCoupon = result.validCoupon;
+                            this.discountAmount = result.discount;
+                            this.totalWithDiscount = result.total;
+                            Swal.fire('Success', `Coupon applied successfully!`, 'success');
+                        } else {
+                            Swal.fire('Error', result.error || 'Invalid coupon or coupon conditions not met.', 'error');
+                            if (this.appliedCoupon === couponCode) {
+                                this.removeCoupon();
+                            }
+                        }
+                    } catch (err) {
+                        console.error('Coupon apply error:', err);
+                        Swal.fire('Error', 'Failed to apply coupon. Please try again.', 'error');
+                    }
+                },
+                
+                removeCoupon() {
+                    this.appliedCoupon = '';
+                    this.discountAmount = 0;
+                    this.totalWithDiscount = this.subtotal;
+                },
+                
+                async submitCheckout() {
+                    // Clear any existing errors
+                    this.errors = {};
+                    
+                    // Validate all fields first
+                    const isEmailValid = this.validateEmail();
+                    const isPhoneValid = this.validatePhone();
+                    
+                    if (!this.selectedAddress) {
+                        this.errors.selectedAddress = 'Please select a shipping address';
+                    }
+                    
+                    if (!isEmailValid || !isPhoneValid || !this.selectedAddress) {
+                        Swal.fire('Error', 'Please complete all required fields.', 'warning');
+                        return;
+                    }
+                    
+                    // Show loading modal only when validation passes and we're ready to submit
+                    this.isLoading = true;
+                    
+                    try {
+                        const res = await fetch('/checkout/process', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                contact: { email: this.email, phone: this.phone },
+                                shippingAddressId: this.selectedAddress,
+                                coupon: this.appliedCoupon || undefined
+                            }),
+                            credentials: 'same-origin'
+                        });
+                        
+                        const result = await res.json();
+                        
+                        if (res.ok && result.success) {
+                            window.location.href = '/payment';
+                        } else {
+                            // Handle specific error cases
+                            if (result.error && result.error.includes('stock')) {
+                                Swal.fire('Out of Stock', result.error, 'error');
+                            } else {
+                                Swal.fire('Error', result.message || result.error || 'Unable to process checkout. Please try again.', 'error');
+                            }
+                        }
+                    } catch (err) {
+                        console.error('Checkout error:', err);
+                        Swal.fire('Error', 'Network error. Please check your connection and try again.', 'error');
+                    } finally {
+                        // Always hide loading modal when done (success or error)
+                        this.isLoading = false;
+                    }
+                }
+            };
         }
-      };
-    }
-  </script>
+    </script>
 </body>
 </html>

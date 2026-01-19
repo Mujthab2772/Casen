@@ -1,984 +1,912 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Cart - Casen</title>
-    
-    <!-- Tailwind CSS & Dependencies -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.10/dist/cdn.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    
-    <style>
-        .qty-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        
-        .offer-badge {
-            background: linear-gradient(135deg, #ff416c, #ff4b2b);
-            color: white;
-            padding: 2px 6px;
-            border-radius: 12px;
-            font-weight: bold;
-            font-size: 0.75rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            box-shadow: 0 1px 2px rgba(255, 65, 108, 0.3);
-        }
-        
-        .inventory-error {
-            animation: shake 0.5s;
-        }
-        
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-            20%, 40%, 60%, 80% { transform: translateX(5px); }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your Cart - Casen</title>
+<!-- Tailwind CSS & Dependencies -->
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.10/dist/cdn.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<style>
+.qty-btn:disabled {
+opacity: 0.5;
+cursor: not-allowed;
+}
+.offer-badge {
+background: linear-gradient(135deg, #ff416c, #ff4b2b);
+color: white;
+padding: 2px 6px;
+border-radius: 12px;
+font-weight: bold;
+font-size: 0.75rem;
+display: inline-flex;
+align-items: center;
+gap: 4px;
+box-shadow: 0 1px 2px rgba(255, 65, 108, 0.3);
+}
+.inventory-error {
+animation: shake 0.5s;
+}
+@keyframes shake {
+0%, 100% { transform: translateX(0); }
+10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+</style>
 </head>
 <body class="bg-white font-sans">
-    <!-- Header -->
-    <header class="bg-white shadow-sm sticky top-0 z-50">
-        <div class="container mx-auto px-4 py-3 flex items-center justify-between">
-            <!-- Logo -->
-            <div class="flex items-center">
-                <a href="/">
-                    <img src="/logo.png" alt="Logo" class="h-8 object-contain">
-                </a>
-            </div>
-            
-            <!-- Desktop Navigation -->
-            <nav class="hidden md:flex space-x-5">
-                <a href="/" class="text-sm font-medium transition-opacity hover:opacity-80">Home</a>
-                <a href="#" class="text-sm font-medium transition-opacity hover:opacity-80">About</a>
-                <a href="/products" class="text-sm font-medium transition-opacity hover:opacity-80">Phone Cases</a>
-                <a href="#" class="text-sm font-medium transition-opacity hover:opacity-80">Tablet Cases</a>
-                <a href="#" class="text-sm font-medium transition-opacity hover:opacity-80">Sale</a>
-            </nav>
-            
-            <!-- Icons & Auth -->
-            <div class="flex items-center space-x-4">
-                <!-- Wishlist -->
-                <button class="p-2 rounded-full hover:bg-gray-100 transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" onclick="window.location.href='/profile/wishlist'">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                    </svg>
-                </button>
-                
-                <!-- Cart -->
-                <button class="p-2 rounded-full hover:bg-gray-100 transition-colors relative" onclick="window.location.href='/cart'">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
-                </button>
-                
-                <!-- User Menu -->
-                <% if (locals.user && user.profilePic) { %>
-                <div class="relative" x-data="{ open: false, imageError: false }" @click.away="open = false">
-                    <button @click="open = !open" class="rounded-full overflow-hidden w-8 h-8 border border-transparent hover:border-gray-300 transition-colors focus:outline-none">
-                        <template x-if="!imageError">
-                            <img src="<%= user.profilePic %>" @error="imageError = true" alt="Profile" class="w-full h-full object-cover">
-                        </template>
-                        <template x-if="imageError">
-                            <div class="w-full h-full bg-gray-300 flex items-center justify-center text-gray-600 rounded-full">
-                                <span class="font-medium text-sm"><%= user.name ? user.name.charAt(0).toUpperCase() : 'U' %></span>
-                            </div>
-                        </template>
-                    </button>
-                    <div x-show="open"
-                         x-transition:enter="transition ease-out duration-150"
-                         x-transition:enter-start="opacity-0 scale-95"
-                         x-transition:enter-end="opacity-100 scale-100"
-                         x-transition:leave="transition ease-in duration-100"
-                         x-transition:leave-start="opacity-100 scale-100"
-                         x-transition:leave-end="opacity-0 scale-95"
-                         class="absolute right-0 mt-2 w-44 bg-white shadow-lg rounded-lg py-1 z-50">
-                        <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">Profile</a>
-                        <form action="/logout" method="post">
-                            <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">Logout</button>
-                        </form>
-                    </div>
-                </div>
-                <% } else if (locals.user) { %>
-                <div class="relative" x-data="{ open: false }" @click.away="open = false">
-                    <button @click="open = !open" class="w-8 h-8 flex items-center justify-center text-gray-600 hover:text-gray-900 transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg>
-                    </button>
-                    <div x-show="open"
-                         x-transition:enter="transition ease-out duration-150"
-                         x-transition:enter-start="opacity-0 scale-95"
-                         x-transition:enter-end="opacity-100 scale-100"
-                         x-transition:leave="transition ease-in duration-100"
-                         x-transition:leave-start="opacity-100 scale-100"
-                         x-transition:leave-end="opacity-0 scale-95"
-                         class="absolute right-0 mt-2 w-44 bg-white shadow-lg rounded-lg py-1 z-50">
-                        <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Profile</a>
-                        <form action="/logout" method="post">
-                            <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Logout</button>
-                        </form>
-                    </div>
-                </div>
-                <% } else { %>
-                <a href="/login" class="text-sm font-medium hover:transition-colors flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
-                    Sign In
-                </a>
-                <% } %>
-                
-                <!-- Mobile Menu Button -->
-                <button class="md:hidden text-gray-600 hover:text-gray-900">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                    </svg>
-                </button>
-            </div>
-        </div>
-    </header>
+<!-- Header -->
+<header class="bg-white shadow-sm sticky top-0 z-50">
+<div class="container mx-auto px-4 py-3 flex items-center justify-between">
+<!-- Logo -->
+<div class="flex items-center">
+<a href="/">
+<img src="/logo.png" alt="Logo" class="h-8 object-contain">
+</a>
+</div>
+<!-- Desktop Navigation -->
+<nav class="hidden md:flex space-x-5">
+<a href="/" class="text-sm font-medium transition-opacity hover:opacity-80">Home</a>
+<a href="#" class="text-sm font-medium transition-opacity hover:opacity-80">About</a>
+<a href="/products" class="text-sm font-medium transition-opacity hover:opacity-80">Phone Cases</a>
+<a href="#" class="text-sm font-medium transition-opacity hover:opacity-80">Tablet Cases</a>
+<a href="#" class="text-sm font-medium transition-opacity hover:opacity-80">Sale</a>
+</nav>
+<!-- Icons & Auth -->
+<div class="flex items-center space-x-4">
+<!-- Wishlist -->
+<button class="p-2 rounded-full hover:bg-gray-100 transition-colors">
+<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" onclick="window.location.href='/profile/wishlist'">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+</svg>
+</button>
+<!-- Cart -->
+<button class="p-2 rounded-full hover:bg-gray-100 transition-colors relative" onclick="window.location.href='/cart'">
+<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+</svg>
+</button>
+<!-- User Menu -->
+<% if (locals.user && user.profilePic) { %>
+<div class="relative" x-data="{ open: false, imageError: false }" @click.away="open = false">
+<button @click="open = !open" class="rounded-full overflow-hidden w-8 h-8 border border-transparent hover:border-gray-300 transition-colors focus:outline-none">
+<template x-if="!imageError">
+<img src="<%= user.profilePic %>" @error="imageError = true" alt="Profile" class="w-full h-full object-cover">
+</template>
+<template x-if="imageError">
+<div class="w-full h-full bg-gray-300 flex items-center justify-center text-gray-600 rounded-full">
+<span class="font-medium text-sm"><%= user.name ? user.name.charAt(0).toUpperCase() : 'U' %></span>
+</div>
+</template>
+</button>
+<div x-show="open"
+x-transition:enter="transition ease-out duration-150"
+x-transition:enter-start="opacity-0 scale-95"
+x-transition:enter-end="opacity-100 scale-100"
+x-transition:leave="transition ease-in duration-100"
+x-transition:leave-start="opacity-100 scale-100"
+x-transition:leave-end="opacity-0 scale-95"
+class="absolute right-0 mt-2 w-44 bg-white shadow-lg rounded-lg py-1 z-50">
+<a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">Profile</a>
+<form action="/logout" method="post">
+<button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">Logout</button>
+</form>
+</div>
+</div>
+<% } else if (locals.user) { %>
+<div class="relative" x-data="{ open: false }" @click.away="open = false">
+<button @click="open = !open" class="w-8 h-8 flex items-center justify-center text-gray-600 hover:text-gray-900 transition-colors">
+<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+</svg>
+</button>
+<div x-show="open"
+x-transition:enter="transition ease-out duration-150"
+x-transition:enter-start="opacity-0 scale-95"
+x-transition:enter-end="opacity-100 scale-100"
+x-transition:leave="transition ease-in duration-100"
+x-transition:leave-start="opacity-100 scale-100"
+x-transition:leave-end="opacity-0 scale-95"
+class="absolute right-0 mt-2 w-44 bg-white shadow-lg rounded-lg py-1 z-50">
+<a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Profile</a>
+<form action="/logout" method="post">
+<button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Logout</button>
+</form>
+</div>
+</div>
+<% } else { %>
+<a href="/login" class="text-sm font-medium hover:transition-colors flex items-center">
+<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+</svg>
+Sign In
+</a>
+<% } %>
+<!-- Mobile Menu Button -->
+<button class="md:hidden text-gray-600 hover:text-gray-900">
+<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+</svg>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="container mx-auto px-4 py-8">
+<!-- Centered Progress Bar Section -->
+<div class="mb-12">
+<div class="flex justify-start mb-4">
+<button onclick="window.location.href='/products'"
+class="flex items-center text-sm font-medium text-gray-700 hover:text-black transition-colors">
+<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+</svg>
+Continue Shopping
+</button>
+</div>
+<div class="flex justify-center">
+<div class="flex items-center justify-between w-full max-w-md">
+<div class="flex flex-col items-center">
+<div class="w-8 h-8 rounded-full bg-black flex items-center justify-center text-xs font-medium text-white">1</div>
+<span class="mt-2 text-xs text-gray-500">Cart</span>
+</div>
+<div class="flex-1 h-px bg-gray-200 mx-2"></div>
+<div class="flex flex-col items-center">
+<div class="w-8 h-8 rounded-full border-2 border-gray-300 flex items-center justify-center text-xs font-medium text-gray-500">2</div>
+<span class="mt-2 text-xs font-medium text-black">Information</span>
+</div>
+<div class="flex-1 h-px bg-gray-200 mx-2"></div>
+<div class="flex flex-col items-center">
+<div class="w-8 h-8 rounded-full border-2 border-gray-300 flex items-center justify-center text-xs font-medium text-gray-500">3</div>
+<span class="mt-2 text-xs text-gray-500">Payment</span>
+</div>
+</div>
+</div>
+</div>
+<div class="flex justify-between items-center mb-8">
+<h1 class="text-5xl font-bold">Your cart</h1>
+</div>
+<div class="flex flex-col lg:flex-row gap-8 min-h-[80vh]">
+<!-- Cart Items Section -->
+<div class="lg:w-2/3">
+<div class="border-b-4 border-black"></div>
+<div class="space-y-6 mt-4">
+<% if (cart.length === 0) { %>
+<p class="text-gray-500">Your cart is empty.</p>
+<% } else { %>
+<% for (let i = 0; i < cart.length; i++) {
+const item = cart[i].products;
+const trueStock = item.variant.stock;
+const maxPerOrder = 10;
+const qty = item.quantity;
+const isOutOfStock = qty > trueStock;
+const isOverMaxPerOrder = qty > maxPerOrder && qty <= trueStock;
+const isInvalid = isOutOfStock || isOverMaxPerOrder;
+const maxAllowedQty = Math.min(trueStock, maxPerOrder);
+const hasOffer = item.variant.hasOffer || false;
+const originalPrice = item.variant.originalPrice || item.variant.price;
+const currentPrice = item.variant.price;
+%>
+<div class="flex items-center py-4 border-b border-gray-200"
+data-cart-product-id="<%= item.cartProductId %>"
+data-variant-id="<%= item.variant._id %>"
+data-unit-price="<%= currentPrice %>"
+data-original-price="<%= originalPrice %>"
+data-has-offer="<%= hasOffer ? 'true' : 'false' %>"
+data-true-stock="<%= trueStock %>"
+data-max-per-order="<%= maxPerOrder %>"
+data-qty="<%= qty %>"
+data-is-invalid="<%= isInvalid ? 'true' : 'false' %>">
+<img src="<%= item.variant.images[0] || '/images/placeholder.png' %>" alt="<%= item.product.productName %>" class="w-20 h-20 object-cover mr-4">
+<div class="flex-grow">
+<a href="/product?product=<%= item.product.productId %>">
+<p class="font-medium"><%= item.product.productName %></p>
+</a>
+<p class="text-sm text-gray-600"><%= item.variant.color %></p>
+<!-- Price display with offer handling -->
+<div class="flex items-center mt-1">
+<% if (hasOffer) { %>
+<div class="flex flex-col">
+<span class="text-sm text-red-500 font-bold">Rs. <%= currentPrice.toFixed(2) %></span>
+<span class="text-xs text-gray-400 line-through">Rs. <%= originalPrice.toFixed(2) %></span>
+</div>
+<span class="ml-2">
+<span class="offer-badge">
+<i class="fas fa-tag"></i> Save <%= Math.round(((originalPrice - currentPrice) / originalPrice) * 100) %>%
+</span>
+</span>
+<% } else { %>
+<span class="text-sm">Rs. <%= currentPrice.toFixed(2) %></span>
+<% } %>
+</div>
+<p class="stock-status-text text-xs <%= isInvalid ? 'text-red-600 font-semibold' : 'text-gray-500' %> mt-1">
+<% if (isOutOfStock) { %>
+Out of stock
+<% } else if (isOverMaxPerOrder) { %>
+Max 10 per order
+<% } else { %>
+In stock: <%= trueStock %>
+<% } %>
+</p>
+</div>
+<div class="flex items-center space-x-2 mr-4">
+<button class="qty-btn decrease-btn w-6 h-6 flex items-center justify-center text-gray-600 hover:text-black text-sm font-medium border border-gray-300 rounded-sm transition-colors"
+data-action="decrease" <%= qty <= 1 ? 'disabled' : '' %>>−</button>
+<span class="qty-value w-6 text-center text-sm"><%= qty %></span>
+<button class="qty-btn increase-btn w-6 h-6 flex items-center justify-center text-gray-600 hover:text-black text-sm font-medium border border-gray-300 rounded-sm transition-colors"
+data-action="increase" <%= qty >= maxAllowedQty ? 'disabled' : '' %>>+</button>
+</div>
+<button class="remove-item text-xs text-gray-500 hover:text-red-500 transition-colors whitespace-nowrap"
+data-cart-product-id="<%= item.cartProductId %>">Remove</button>
+<% if (!isInvalid) { %>
+<div class="item-total font-medium ml-4">
+<% if (hasOffer) { %>
+<div class="flex flex-col">
+<span class="text-red-500">Rs.<%= (currentPrice * qty).toFixed(2) %></span>
+<span class="text-xs text-gray-500 line-through">Rs.<%= (originalPrice * qty).toFixed(2) %></span>
+</div>
+<% } else { %>
+Rs.<%= (currentPrice * qty).toFixed(2) %>
+<% } %>
+</div>
+<% } else { %>
+<div class="item-total font-medium ml-4 text-red-600">—</div>
+<% } %>
+</div>
+<% } %>
+<% } %>
+</div>
+</div>
+<!-- Price Details Section -->
+<div class="lg:w-1/3">
+<div class="bg-gray-50 rounded-lg p-4 sticky top-24">
+<p class="text-xl font-bold mb-3">Price details</p>
+<%
+let subtotal = 0;
+let totalSavings = 0;
+for (let i = 0; i < cart.length; i++) {
+const item = cart[i].products;
+const maxPerOrder = 10;
+const trueStock = item.variant.stock;
+const qty = item.quantity;
+const isInvalid = qty > trueStock || (qty > maxPerOrder && qty <= trueStock);
+const hasOffer = item.variant.hasOffer || false;
+const unitPrice = item.variant.price;
+const originalUnitPrice = item.variant.originalPrice || unitPrice;
+if (!isInvalid) {
+subtotal += originalUnitPrice * qty;
+if (hasOffer) {
+totalSavings += (originalUnitPrice - unitPrice) * qty;
+}
+}
+}
+const total = subtotal - totalSavings;
+const shipping = subtotal > 0 ? "Free Shipping" : "0.00 RS";
+%>
+<div class="text-sm space-y-1.5" id="price-breakdown">
+<div class="flex justify-between">
+<span>Subtotal</span>
+<span id="subtotal">Rs. <%= subtotal.toFixed(2) %></span>
+</div>
+<% if (totalSavings > 0) { %>
+<div class="flex justify-between text-green-600 font-medium" id="savings-row">
+<span>You saved</span>
+<span id="savings">Rs. <%= totalSavings.toFixed(2) %></span>
+</div>
+<% } %>
+<div class="flex justify-between">
+<span>Shipping Method</span>
+<span class="text-red-500 text-xs bg-white px-1.5 py-0.5 rounded" id="shipping">
+<%= shipping %>
+</span>
+</div>
+<div class="flex justify-between">
+<span>Tax</span>
+<span>0.00 RS</span>
+</div>
+</div>
+<div class="border-t my-3"></div>
+<div class="flex justify-between font-bold text-lg" id="total-price">
+<span>Total</span>
+<span>Rs. <%= total.toFixed(2) %></span>
+</div>
+<% if (cart.length > 0) { %>
+<button id="checkout-button"
+class="w-full bg-black text-white py-2.5 rounded-lg flex items-center justify-center hover:bg-gray-800 transition mt-4">
+<i class="fas fa-lock mr-2"></i> Check out
+</button>
+<% } else { %>
+<button id="checkout-button"
+class="w-full bg-gray-300 text-gray-700 py-2.5 rounded-lg flex items-center justify-center cursor-not-allowed mt-4">
+<i class="fas fa-lock mr-2"></i> Check out
+</button>
+<% } %>
+</div>
+</div>
+</div>
+</main>
+<!-- Trust Badges -->
+<section class="bg-white py-8 border-t border-gray-200">
+<div class="container mx-auto px-4">
+<div class="flex flex-col md:flex-row justify-around items-center space-y-4 md:space-y-0">
+<div class="flex items-center space-x-3">
+<i class="fas fa-headset text-2xl text-gray-600"></i>
+<div>
+<div class="font-medium">Customer service</div>
+<div class="text-xs text-gray-600">Your Satisfaction is Our Commitment—We're Here to Help!</div>
+</div>
+</div>
+<div class="flex items-center space-x-3">
+<i class="fas fa-shipping-fast text-2xl text-gray-600"></i>
+<div>
+<div class="font-medium">Fast Free Shipping</div>
+<div class="text-xs text-gray-600">Enjoy the convenience of fast, free shipping on all orders!</div>
+</div>
+</div>
+<div class="flex items-center space-x-3">
+<i class="fas fa-shield-alt text-2xl text-gray-600"></i>
+<div>
+<div class="font-medium">Secure payment</div>
+<div class="text-xs text-gray-600">Your payment information is processed securely</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Footer -->
+<footer class="bg-black text-white pt-8 pb-4">
+<div class="container mx-auto px-4">
+<div class="border-t border-gray-800 mt-8 pt-4">
+<p class="text-xs text-gray-500">© 2025 Casen.</p>
+</div>
+</div>
+</footer>
 
-    <!-- Main Content -->
-    <main class="container mx-auto px-4 py-8">
-        <!-- Centered Progress Bar Section -->
-        <div class="mb-12">
-            <div class="flex justify-start mb-4">
-                <button onclick="window.location.href='/products'"
-                        class="flex items-center text-sm font-medium text-gray-700 hover:text-black transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                    </svg>
-                    Continue Shopping
-                </button>
-            </div>
-            
-            <div class="flex justify-center">
-                <div class="flex items-center justify-between w-full max-w-md">
-                    <div class="flex flex-col items-center">
-                        <div class="w-8 h-8 rounded-full bg-black flex items-center justify-center text-xs font-medium text-white">1</div>
-                        <span class="mt-2 text-xs text-gray-500">Cart</span>
-                    </div>
-                    <div class="flex-1 h-px bg-gray-200 mx-2"></div>
-                    <div class="flex flex-col items-center">
-                        <div class="w-8 h-8 rounded-full border-2 border-gray-300 flex items-center justify-center text-xs font-medium text-gray-500">2</div>
-                        <span class="mt-2 text-xs font-medium text-black">Information</span>
-                    </div>
-                    <div class="flex-1 h-px bg-gray-200 mx-2"></div>
-                    <div class="flex flex-col items-center">
-                        <div class="w-8 h-8 rounded-full border-2 border-gray-300 flex items-center justify-center text-xs font-medium text-gray-500">3</div>
-                        <span class="mt-2 text-xs text-gray-500">Payment</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="flex justify-between items-center mb-8">
-            <h1 class="text-5xl font-bold">Your cart</h1>
-        </div>
-        
-        <div class="flex flex-col lg:flex-row gap-8 min-h-[80vh]">
-            <!-- Cart Items Section -->
-            <div class="lg:w-2/3">
-                <div class="border-b-4 border-black"></div>
-                <div class="space-y-6 mt-4">
-                    <% if (cart.length === 0) { %>
-                    <p class="text-gray-500">Your cart is empty.</p>
-                    <% } else { %>
-                    <% for (let i = 0; i < cart.length; i++) { 
-                        const item = cart[i].products; 
-                        const trueStock = item.variant.stock; 
-                        const maxPerOrder = 10; 
-                        const qty = item.quantity; 
-                        const isOutOfStock = qty > trueStock;
-                        const isOverMaxPerOrder = qty > maxPerOrder && qty <= trueStock; 
-                        const isInvalid = isOutOfStock || isOverMaxPerOrder; 
-                        const maxAllowedQty = Math.min(trueStock, maxPerOrder); 
-                        const hasOffer = item.variant.hasOffer || false; 
-                        const originalPrice = item.variant.originalPrice || item.variant.price; 
-                        const currentPrice = item.variant.price; 
-                    %>
-                    <div class="flex items-center py-4 border-b border-gray-200"
-                         data-cart-product-id="<%= item.cartProductId %>"
-                         data-variant-id="<%= item.variant._id %>"
-                         data-unit-price="<%= currentPrice %>"
-                         data-original-price="<%= originalPrice %>"
-                         data-has-offer="<%= hasOffer ? 'true' : 'false' %>"
-                         data-true-stock="<%= trueStock %>"
-                         data-max-per-order="<%= maxPerOrder %>"
-                         data-qty="<%= qty %>"
-                         data-is-invalid="<%= isInvalid ? 'true' : 'false' %>">
-                        <img src="<%= item.variant.images[0] || '/images/placeholder.png' %>" alt="<%= item.product.productName %>" class="w-20 h-20 object-cover mr-4">
-                        <div class="flex-grow">
-                            <a href="/product?product=<%= item.product.productId %>">
-                                <p class="font-medium"><%= item.product.productName %></p>
-                            </a>
-                            <p class="text-sm text-gray-600"><%= item.variant.color %></p>
-                            
-                            <!-- Price display with offer handling -->
-                            <div class="flex items-center mt-1">
-                                <% if (hasOffer) { %>
-                                <div class="flex flex-col">
-                                    <span class="text-sm text-red-500 font-bold">Rs. <%= currentPrice.toFixed(2) %></span>
-                                    <span class="text-xs text-gray-400 line-through">Rs. <%= originalPrice.toFixed(2) %></span>
-                                </div>
-                                <span class="ml-2">
-                                    <span class="offer-badge">
-                                        <i class="fas fa-tag"></i> Save <%= Math.round(((originalPrice - currentPrice) / originalPrice) * 100) %>%
-                                    </span>
-                                </span>
-                                <% } else { %>
-                                <span class="text-sm">Rs. <%= currentPrice.toFixed(2) %></span>
-                                <% } %>
-                            </div>
-                            
-                            <p class="stock-status-text text-xs <%= isInvalid ? 'text-red-600 font-semibold' : 'text-gray-500' %> mt-1">
-                                <% if (isOutOfStock) { %>
-                                Out of stock
-                                <% } else if (isOverMaxPerOrder) { %>
-                                Max 10 per order
-                                <% } else { %>
-                                In stock: <%= trueStock %>
-                                <% } %>
-                            </p>
-                        </div>
-                        
-                        <div class="flex items-center space-x-2 mr-4">
-                            <button class="qty-btn decrease-btn w-6 h-6 flex items-center justify-center text-gray-600 hover:text-black text-sm font-medium border border-gray-300 rounded-sm transition-colors"
-                                    data-action="decrease" <%= qty <= 1 ? 'disabled' : '' %>>−</button>
-                            <span class="qty-value w-6 text-center text-sm"><%= qty %></span>
-                            <button class="qty-btn increase-btn w-6 h-6 flex items-center justify-center text-gray-600 hover:text-black text-sm font-medium border border-gray-300 rounded-sm transition-colors"
-                                    data-action="increase" <%= qty >= maxAllowedQty ? 'disabled' : '' %>>+</button>
-                        </div>
-                        
-                        <button class="remove-item text-xs text-gray-500 hover:text-red-500 transition-colors whitespace-nowrap"
-                                data-cart-product-id="<%= item.cartProductId %>">Remove</button>
-                        
-                        <% if (!isInvalid) { %>
-                        <div class="item-total font-medium ml-4">
-                            <% if (hasOffer) { %>
-                            <div class="flex flex-col">
-                                <span class="text-red-500">Rs.<%= (currentPrice * qty).toFixed(2) %></span>
-                                <span class="text-xs text-gray-500 line-through">Rs.<%= (originalPrice * qty).toFixed(2) %></span>
-                            </div>
-                            <% } else { %>
-                            Rs.<%= (currentPrice * qty).toFixed(2) %>
-                            <% } %>
-                        </div>
-                        <% } else { %>
-                        <div class="item-total font-medium ml-4 text-red-600">—</div>
-                        <% } %>
-                    </div>
-                    <% } %>
-                    <% } %>
-                </div>
-            </div>
-            
-            <!-- Price Details Section -->
-            <div class="lg:w-1/3">
-                <div class="bg-gray-50 rounded-lg p-4 sticky top-24">
-                    <p class="text-xl font-bold mb-3">Price details</p>
-                    
-                    <% 
-                        let subtotal = 0; 
-                        let totalSavings = 0; 
-                        
-                        for (let i = 0; i < cart.length; i++) { 
-                            const item = cart[i].products; 
-                            const maxPerOrder = 10; 
-                            const trueStock = item.variant.stock; 
-                            const qty = item.quantity; 
-                            const isInvalid = qty > trueStock || (qty > maxPerOrder && qty <= trueStock);
-                            const hasOffer = item.variant.hasOffer || false; 
-                            const unitPrice = item.variant.price; 
-                            const originalUnitPrice = item.variant.originalPrice || unitPrice; 
-                            
-                            if (!isInvalid) { 
-                                subtotal += originalUnitPrice * qty; 
-                                if (hasOffer) { 
-                                    totalSavings += (originalUnitPrice - unitPrice) * qty; 
-                                } 
-                            } 
-                        } 
-                        
-                        const total = subtotal - totalSavings; 
-                        const shipping = subtotal > 0 ? "Free Shipping" : "0.00 RS";
-                    %>
-                    
-                    <div class="text-sm space-y-1.5" id="price-breakdown">
-                        <div class="flex justify-between">
-                            <span>Subtotal</span>
-                            <span id="subtotal">Rs. <%= subtotal.toFixed(2) %></span>
-                        </div>
-                        
-                        <% if (totalSavings > 0) { %>
-                        <div class="flex justify-between text-green-600 font-medium" id="savings-row">
-                            <span>You saved</span>
-                            <span id="savings">Rs. <%= totalSavings.toFixed(2) %></span>
-                        </div>
-                        <% } %>
-                        
-                        <div class="flex justify-between">
-                            <span>Shipping Method</span>
-                            <span class="text-red-500 text-xs bg-white px-1.5 py-0.5 rounded" id="shipping">
-                                <%= shipping %>
-                            </span>
-                        </div>
-                        
-                        <div class="flex justify-between">
-                            <span>Tax</span>
-                            <span>0.00 RS</span>
-                        </div>
-                    </div>
-                    
-                    <div class="border-t my-3"></div>
-                    
-                    <div class="flex justify-between font-bold text-lg" id="total-price">
-                        <span>Total</span>
-                        <span>Rs. <%= total.toFixed(2) %></span>
-                    </div>
-                    
-                    <% if (cart.length > 0) { %>
-                    <button id="checkout-button"
-                            class="w-full bg-black text-white py-2.5 rounded-lg flex items-center justify-center hover:bg-gray-800 transition mt-4">
-                        <i class="fas fa-lock mr-2"></i> Check out
-                    </button>
-                    <% } else { %>
-                    <button id="checkout-button"
-                            class="w-full bg-gray-300 text-gray-700 py-2.5 rounded-lg flex items-center justify-center cursor-not-allowed mt-4">
-                        <i class="fas fa-lock mr-2"></i> Check out
-                    </button>
-                    <% } %>
-                </div>
-            </div>
-        </div>
-    </main>
+<!-- Loading Modal -->
+<div id="loading-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+  <div class="bg-white rounded-xl p-8 shadow-lg max-w-md w-full mx-4">
+    <div class="flex justify-center mb-4">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-black"></div>
+    </div>
+    <h3 class="text-xl font-bold text-center mb-2">Processing Your Order</h3>
+    <p class="text-gray-600 text-center mb-4">Please wait while we verify your items and prepare your checkout.</p>
+    <div class="flex justify-center">
+      <div class="w-48 bg-gray-200 rounded-full h-2 overflow-hidden">
+        <div class="bg-black h-2 rounded-full animate-pulse"></div>
+      </div>
+    </div>
+  </div>
+</div>
 
-    <!-- Trust Badges -->
-    <section class="bg-white py-8 border-t border-gray-200">
-        <div class="container mx-auto px-4">
-            <div class="flex flex-col md:flex-row justify-around items-center space-y-4 md:space-y-0">
-                <div class="flex items-center space-x-3">
-                    <i class="fas fa-headset text-2xl text-gray-600"></i>
-                    <div>
-                        <div class="font-medium">Customer service</div>
-                        <div class="text-xs text-gray-600">Your Satisfaction is Our Commitment—We're Here to Help!</div>
-                    </div>
-                </div>
-                <div class="flex items-center space-x-3">
-                    <i class="fas fa-shipping-fast text-2xl text-gray-600"></i>
-                    <div>
-                        <div class="font-medium">Fast Free Shipping</div>
-                        <div class="text-xs text-gray-600">Enjoy the convenience of fast, free shipping on all orders!</div>
-                    </div>
-                </div>
-                <div class="flex items-center space-x-3">
-                    <i class="fas fa-shield-alt text-2xl text-gray-600"></i>
-                    <div>
-                        <div class="font-medium">Secure payment</div>
-                        <div class="text-xs text-gray-600">Your payment information is processed securely</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+<!-- Cart Scripts with Real-time Inventory Checking -->
+<script>
+/**
+* Show alert using SweetAlert2
+* @param {string} title - Alert title
+* @param {string} text - Alert message
+* @param {string} icon - Alert icon type (info, error, warning, success)
+*/
+function showAlert(title, text, icon = 'info') {
+Swal.fire({
+title,
+text,
+icon,
+timer: 3000,
+timerProgressBar: true,
+toast: true,
+position: 'top-end',
+showConfirmButton: false
+});
+}
+/**
+* Show empty cart alert with option to continue shopping
+*/
+function showEmptyCartAlert() {
+Swal.fire({
+title: 'Your cart is empty',
+text: 'Please add some items to your cart before checking out.',
+icon: 'info',
+confirmButtonText: 'Continue shopping',
+customClass: {
+confirmButton: 'bg-black text-white hover:bg-gray-800'
+}
+}).then((result) => {
+if (result.isConfirmed) {
+window.location.href = '/products';
+}
+});
+}
+/**
+* Show inventory error with shake animation
+* @param {HTMLElement} element - Element to animate
+* @param {string} message - Error message
+*/
+function showInventoryError(element, message) {
+element.classList.add('inventory-error');
+setTimeout(() => {
+element.classList.remove('inventory-error');
+}, 500);
+showAlert('Inventory Error', message, 'error');
+}
+document.addEventListener('DOMContentLoaded', () => {
+// Real-time inventory check function
+async function checkInventory(variantId, requestedQuantity) {
+try {
+const response = await fetch(`/inventory/check`, {
+method: 'POST',
+headers: {
+'Content-Type': 'application/json',
+},
+body: JSON.stringify({ variantId, quantity: requestedQuantity })
+});
+if (!response.ok) {
+throw new Error('Failed to check inventory');
+}
+return await response.json();
+} catch (error) {
+console.error('Inventory check error:', error);
+// Default to allowing the operation if inventory check fails
+return { success: true, availableStock: Infinity };
+}
+}
+// Quantity buttons with real-time inventory checking
+document.querySelectorAll('.qty-btn:not([data-enhanced])').forEach(button => {
+button.setAttribute('data-enhanced', 'true');
+button.addEventListener('click', async (e) => {
+const action = e.currentTarget.dataset.action;
+const cartItem = e.currentTarget.closest('[data-cart-product-id]');
+if (!cartItem) return;
+const cartProductId = cartItem.dataset.cartProductId;
+const variantId = cartItem.dataset.variantId;
+const unitPrice = parseFloat(cartItem.dataset.unitPrice);
+const originalPrice = parseFloat(cartItem.dataset.originalPrice);
+const hasOffer = cartItem.dataset.hasOffer === 'true';
+const trueStock = parseInt(cartItem.dataset.trueStock, 10);
+const maxPerOrder = parseInt(cartItem.dataset.maxPerOrder, 10);
+const qtyValueEl = cartItem.querySelector('.qty-value');
+if (!qtyValueEl || !variantId) return;
+let currentQty = parseInt(qtyValueEl.textContent.trim(), 10);
+if (isNaN(currentQty)) currentQty = 1;
+// Determine new quantity based on action
+const newQty = action === 'increase' ? currentQty + 1 : currentQty - 1;
+// Early validation - client side checks
+if (action === 'decrease' && newQty < 1) {
+showInventoryError(cartItem, 'Cannot have less than 1 item');
+return;
+}
+if (newQty > maxPerOrder) {
+showInventoryError(cartItem, `Maximum ${maxPerOrder} items per order allowed`);
+return;
+}
+// Real-time inventory check before proceeding
+try {
+const inventoryCheck = await checkInventory(variantId, newQty);
+if (!inventoryCheck.success) {
+// Handle different inventory scenarios
+if (inventoryCheck.reason === 'out_of_stock') {
+showInventoryError(cartItem, 'Item is out of stock');
+// Update UI to show out of stock status
+cartItem.dataset.isInvalid = 'true';
+const stockStatusEl = cartItem.querySelector('.stock-status-text');
+if (stockStatusEl) {
+stockStatusEl.textContent = 'Out of stock';
+stockStatusEl.className = 'stock-status-text text-xs text-red-600 font-semibold';
+}
+return;
+}
+if (inventoryCheck.reason === 'insufficient_stock') {
+const available = inventoryCheck.availableStock;
+showInventoryError(cartItem, `Only ${available} items available in stock`);
+// Update UI to show correct stock information
+cartItem.dataset.trueStock = available;
+cartItem.dataset.isInvalid = available < newQty ? 'true' : 'false';
+const stockStatusEl = cartItem.querySelector('.stock-status-text');
+if (stockStatusEl) {
+if (available === 0) {
+stockStatusEl.textContent = 'Out of stock';
+} else if (newQty > available) {
+stockStatusEl.textContent = `Only ${available} available`;
+} else {
+stockStatusEl.textContent = `In stock: ${available}`;
+}
+stockStatusEl.className = 'stock-status-text text-xs ' +
+(newQty > available ? 'text-red-600 font-semibold' : 'text-gray-500');
+}
+// If requested quantity exceeds available stock, cap it at available stock
+if (newQty > available && available > 0) {
+await updateQuantityToMaxAvailable(cartItem, available, unitPrice, originalPrice, hasOffer);
+}
+return;
+}
+}
+// If inventory check passes, proceed with quantity update
+await updateCartItemQuantity(
+cartItem,
+cartProductId,
+newQty,
+unitPrice,
+originalPrice,
+hasOffer,
+trueStock,
+maxPerOrder
+);
+} catch (error) {
+console.error('Error during inventory check:', error);
+showInventoryError(cartItem, 'Failed to check inventory. Please try again.');
+}
+});
+});
+/**
+* Update cart item quantity with proper validation
+*/
+async function updateCartItemQuantity(cartItem, cartProductId, newQty, unitPrice, originalPrice, hasOffer, trueStock, maxPerOrder) {
+const qtyValueEl = cartItem.querySelector('.qty-value');
+const stockStatusEl = cartItem.querySelector('.stock-status-text');
+const totalEl = cartItem.querySelector('.item-total');
+// Calculate inventory status
+const isOutOfStock = newQty > trueStock;
+const isOverMaxPerOrder = newQty > maxPerOrder && newQty <= trueStock;
+const isInvalid = isOutOfStock || isOverMaxPerOrder;
+const maxAllowedQty = Math.min(trueStock, maxPerOrder);
+try {
+// Update UI immediately for better UX
+qtyValueEl.textContent = newQty;
+cartItem.dataset.isInvalid = isInvalid ? 'true' : 'false';
+cartItem.dataset.qty = newQty;
+// Update stock status text
+if (stockStatusEl) {
+if (isOutOfStock) {
+stockStatusEl.textContent = 'Out of stock';
+} else if (isOverMaxPerOrder) {
+stockStatusEl.textContent = 'Max 10 per order';
+} else {
+stockStatusEl.textContent = `In stock: ${trueStock}`;
+}
+stockStatusEl.className = 'stock-status-text text-xs ' +
+(isInvalid ? 'text-red-600 font-semibold' : 'text-gray-500');
+}
+// Update total price display
+if (totalEl) {
+if (isInvalid) {
+totalEl.innerHTML = '<div class="text-red-600">—</div>';
+} else {
+if (hasOffer) {
+totalEl.innerHTML = `
+<div class="flex flex-col">
+<span class="text-red-500 font-medium">Rs.${(unitPrice * newQty).toFixed(2)}</span>
+<span class="text-xs text-gray-500 line-through">Rs.${(originalPrice * newQty).toFixed(2)}</span>
+</div>
+`;
+} else {
+totalEl.innerHTML = `<span class="font-medium">Rs.${(unitPrice * newQty).toFixed(2)}</span>`;
+}
+}
+}
+// Update button states
+const decBtn = cartItem.querySelector('.decrease-btn');
+const incBtn = cartItem.querySelector('.increase-btn');
+if (decBtn) decBtn.disabled = newQty <= 1;
+if (incBtn) incBtn.disabled = newQty >= maxAllowedQty;
+// Update server-side
+const res = await fetch(`/cart/update`, {
+method: 'PUT',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ cartProductId, quantity: newQty })
+});
+if (!res.ok) {
+const errorData = await res.json();
+throw new Error(errorData.message || 'Update failed');
+}
+// Recalculate totals after successful update
+recalculateTotals();
+} catch (err) {
+console.error('Update failed:', err);
+// Revert UI changes on error
+qtyValueEl.textContent = parseInt(cartItem.dataset.qty, 10) || 1;
+const currentQty = parseInt(qtyValueEl.textContent, 10);
+const wasOutOfStock = currentQty > trueStock;
+const wasOverMax = currentQty > maxPerOrder && currentQty <= trueStock;
+const wasInvalid = wasOutOfStock || wasOverMax;
+cartItem.dataset.isInvalid = wasInvalid ? 'true' : 'false';
+// Revert stock status
+if (stockStatusEl) {
+if (wasOutOfStock) {
+stockStatusEl.textContent = 'Out of stock';
+} else if (wasOverMax) {
+stockStatusEl.textContent = 'Max 10 per order';
+} else {
+stockStatusEl.textContent = `In stock: ${trueStock}`;
+}
+stockStatusEl.className = 'stock-status-text text-xs ' +
+(wasInvalid ? 'text-red-600 font-semibold' : 'text-gray-500');
+}
+// Revert total display
+if (totalEl) {
+if (wasInvalid) {
+totalEl.innerHTML = '<div class="text-red-600">—</div>';
+} else {
+if (hasOffer) {
+totalEl.innerHTML = `
+<div class="flex flex-col">
+<span class="text-red-500 font-medium">Rs.${(unitPrice * currentQty).toFixed(2)}</span>
+<span class="text-xs text-gray-500 line-through">Rs.${(originalPrice * currentQty).toFixed(2)}</span>
+</div>
+`;
+} else {
+totalEl.innerHTML = `<span class="font-medium">Rs.${(unitPrice * currentQty).toFixed(2)}</span>`;
+}
+}
+}
+// Revert button states
+const decBtn = cartItem.querySelector('.decrease-btn');
+const incBtn = cartItem.querySelector('.increase-btn');
+if (decBtn) decBtn.disabled = currentQty <= 1;
+if (incBtn) incBtn.disabled = currentQty >= maxAllowedQty;
+// Show error message
+showAlert('Error', err.message || 'Failed to update quantity. Please try again.', 'error');
+recalculateTotals();
+}
+}
+/**
+* Update quantity to maximum available stock when requested quantity exceeds available
+*/
+async function updateQuantityToMaxAvailable(cartItem, availableStock, unitPrice, originalPrice, hasOffer) {
+const cartProductId = cartItem.dataset.cartProductId;
+const currentQty = parseInt(cartItem.querySelector('.qty-value').textContent, 10);
+const trueStock = availableStock;
+const maxPerOrder = parseInt(cartItem.dataset.maxPerOrder, 10);
+const maxAllowed = Math.min(trueStock, maxPerOrder);
+if (maxAllowed <= 0) {
+// Item is completely out of stock
+showInventoryError(cartItem, 'Item is out of stock. Would you like to remove it?');
+return;
+}
+if (currentQty > maxAllowed) {
+const shouldUpdate = await Swal.fire({
+title: 'Quantity Adjusted',
+text: `Only ${maxAllowed} items are available. Update your cart quantity?`,
+icon: 'info',
+showCancelButton: true,
+confirmButtonText: 'Update Quantity',
+cancelButtonText: 'Keep Current'
+});
+if (shouldUpdate.isConfirmed) {
+await updateCartItemQuantity(
+cartItem,
+cartProductId,
+maxAllowed,
+unitPrice,
+originalPrice,
+hasOffer,
+trueStock,
+maxPerOrder
+);
+}
+}
+}
+// Remove item functionality
+document.querySelectorAll('.remove-item').forEach(button => {
+button.addEventListener('click', async (e) => {
+const cartProductId = e.currentTarget.dataset.cartProductId;
+const cartItem = e.currentTarget.closest('[data-cart-product-id]');
+const result = await Swal.fire({
+title: 'Remove item?',
+text: "This action cannot be undone.",
+icon: 'warning',
+showCancelButton: true,
+confirmButtonText: 'Yes, remove it!',
+cancelButtonText: 'Cancel'
+});
+if (result.isConfirmed) {
+try {
+const res = await fetch(`/cart/remove`, {
+method: 'DELETE',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ cartProductId })
+});
+if (res.ok) {
+cartItem.remove();
+recalculateTotals();
+const itemsLeft = document.querySelectorAll('[data-cart-product-id]').length;
+window.location.reload()
+if (itemsLeft === 0) {
+window.location.href = '/cart';
+}
+} else {
+showAlert('Error', 'Failed to remove item', 'error');
+}
+} catch (err) {
+showAlert('Error', 'Network error. Please try again.', 'error');
+}
+}
+});
+});
+// Checkout validation with real-time inventory check
+const checkoutButton = document.getElementById('checkout-button');
+const loadingModal = document.getElementById('loading-modal');
 
-    <!-- Footer -->
-    <footer class="bg-black text-white pt-8 pb-4">
-        <div class="container mx-auto px-4">
-            <div class="border-t border-gray-800 mt-8 pt-4">
-                <p class="text-xs text-gray-500">© 2025 Casen.</p>
-            </div>
-        </div>
-    </footer>
-
-    <!-- Cart Scripts with Real-time Inventory Checking -->
-    <script>
-        /**
-         * Show alert using SweetAlert2
-         * @param {string} title - Alert title
-         * @param {string} text - Alert message
-         * @param {string} icon - Alert icon type (info, error, warning, success)
-         */
-        function showAlert(title, text, icon = 'info') {
-            Swal.fire({ 
-                title, 
-                text, 
-                icon, 
-                timer: 3000, 
-                timerProgressBar: true,
-                toast: true,
-                position: 'top-end',
-                showConfirmButton: false
-            });
-        }
-
-        /**
-         * Show empty cart alert with option to continue shopping
-         */
-        function showEmptyCartAlert() {
-            Swal.fire({
-                title: 'Your cart is empty',
-                text: 'Please add some items to your cart before checking out.',
-                icon: 'info',
-                confirmButtonText: 'Continue shopping',
-                customClass: {
-                    confirmButton: 'bg-black text-white hover:bg-gray-800'
-                }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    window.location.href = '/products';
-                }
-            });
-        }
-
-        /**
-         * Show inventory error with shake animation
-         * @param {HTMLElement} element - Element to animate
-         * @param {string} message - Error message
-         */
-        function showInventoryError(element, message) {
-            element.classList.add('inventory-error');
-            setTimeout(() => {
-                element.classList.remove('inventory-error');
-            }, 500);
-            showAlert('Inventory Error', message, 'error');
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            // Real-time inventory check function
-            async function checkInventory(variantId, requestedQuantity) {
-                try {
-                    const response = await fetch(`/inventory/check`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ variantId, quantity: requestedQuantity })
-                    });
-                    
-                    if (!response.ok) {
-                        throw new Error('Failed to check inventory');
-                    }
-                    
-                    return await response.json();
-                } catch (error) {
-                    console.error('Inventory check error:', error);
-                    // Default to allowing the operation if inventory check fails
-                    return { success: true, availableStock: Infinity };
-                }
-            }
-
-            // Quantity buttons with real-time inventory checking
-            document.querySelectorAll('.qty-btn:not([data-enhanced])').forEach(button => {
-                button.setAttribute('data-enhanced', 'true');
-                button.addEventListener('click', async (e) => {
-                    const action = e.currentTarget.dataset.action;
-                    const cartItem = e.currentTarget.closest('[data-cart-product-id]');
-                    if (!cartItem) return;
-                    
-                    const cartProductId = cartItem.dataset.cartProductId;
-                    const variantId = cartItem.dataset.variantId;
-                    const unitPrice = parseFloat(cartItem.dataset.unitPrice);
-                    const originalPrice = parseFloat(cartItem.dataset.originalPrice);
-                    const hasOffer = cartItem.dataset.hasOffer === 'true';
-                    const trueStock = parseInt(cartItem.dataset.trueStock, 10);
-                    const maxPerOrder = parseInt(cartItem.dataset.maxPerOrder, 10);
-                    const qtyValueEl = cartItem.querySelector('.qty-value');
-                    
-                    if (!qtyValueEl || !variantId) return;
-                    
-                    let currentQty = parseInt(qtyValueEl.textContent.trim(), 10);
-                    if (isNaN(currentQty)) currentQty = 1;
-                    
-                    // Determine new quantity based on action
-                    const newQty = action === 'increase' ? currentQty + 1 : currentQty - 1;
-                    
-                    // Early validation - client side checks
-                    if (action === 'decrease' && newQty < 1) {
-                        showInventoryError(cartItem, 'Cannot have less than 1 item');
-                        return;
-                    }
-                    
-                    if (newQty > maxPerOrder) {
-                        showInventoryError(cartItem, `Maximum ${maxPerOrder} items per order allowed`);
-                        return;
-                    }
-                    
-                    // Real-time inventory check before proceeding
-                    try {
-                        const inventoryCheck = await checkInventory(variantId, newQty);
-                        
-                        if (!inventoryCheck.success) {
-                            // Handle different inventory scenarios
-                            if (inventoryCheck.reason === 'out_of_stock') {
-                                showInventoryError(cartItem, 'Item is out of stock');
-                                // Update UI to show out of stock status
-                                cartItem.dataset.isInvalid = 'true';
-                                const stockStatusEl = cartItem.querySelector('.stock-status-text');
-                                if (stockStatusEl) {
-                                    stockStatusEl.textContent = 'Out of stock';
-                                    stockStatusEl.className = 'stock-status-text text-xs text-red-600 font-semibold';
-                                }
-                                return;
-                            }
-                            
-                            if (inventoryCheck.reason === 'insufficient_stock') {
-                                const available = inventoryCheck.availableStock;
-                                showInventoryError(cartItem, `Only ${available} items available in stock`);
-                                
-                                // Update UI to show correct stock information
-                                cartItem.dataset.trueStock = available;
-                                cartItem.dataset.isInvalid = available < newQty ? 'true' : 'false';
-                                
-                                const stockStatusEl = cartItem.querySelector('.stock-status-text');
-                                if (stockStatusEl) {
-                                    if (available === 0) {
-                                        stockStatusEl.textContent = 'Out of stock';
-                                    } else if (newQty > available) {
-                                        stockStatusEl.textContent = `Only ${available} available`;
-                                    } else {
-                                        stockStatusEl.textContent = `In stock: ${available}`;
-                                    }
-                                    stockStatusEl.className = 'stock-status-text text-xs ' + 
-                                        (newQty > available ? 'text-red-600 font-semibold' : 'text-gray-500');
-                                }
-                                
-                                // If requested quantity exceeds available stock, cap it at available stock
-                                if (newQty > available && available > 0) {
-                                    await updateQuantityToMaxAvailable(cartItem, available, unitPrice, originalPrice, hasOffer);
-                                }
-                                return;
-                            }
-                        }
-                        
-                        // If inventory check passes, proceed with quantity update
-                        await updateCartItemQuantity(
-                            cartItem, 
-                            cartProductId, 
-                            newQty, 
-                            unitPrice, 
-                            originalPrice, 
-                            hasOffer, 
-                            trueStock, 
-                            maxPerOrder
-                        );
-                        
-                    } catch (error) {
-                        console.error('Error during inventory check:', error);
-                        showInventoryError(cartItem, 'Failed to check inventory. Please try again.');
-                    }
-                });
-            });
-
-            /**
-             * Update cart item quantity with proper validation
-             */
-            async function updateCartItemQuantity(cartItem, cartProductId, newQty, unitPrice, originalPrice, hasOffer, trueStock, maxPerOrder) {
-                const qtyValueEl = cartItem.querySelector('.qty-value');
-                const stockStatusEl = cartItem.querySelector('.stock-status-text');
-                const totalEl = cartItem.querySelector('.item-total');
-                
-                // Calculate inventory status
-                const isOutOfStock = newQty > trueStock;
-                const isOverMaxPerOrder = newQty > maxPerOrder && newQty <= trueStock;
-                const isInvalid = isOutOfStock || isOverMaxPerOrder;
-                const maxAllowedQty = Math.min(trueStock, maxPerOrder);
-                
-                try {
-                    // Update UI immediately for better UX
-                    qtyValueEl.textContent = newQty;
-                    cartItem.dataset.isInvalid = isInvalid ? 'true' : 'false';
-                    cartItem.dataset.qty = newQty;
-                    
-                    // Update stock status text
-                    if (stockStatusEl) {
-                        if (isOutOfStock) {
-                            stockStatusEl.textContent = 'Out of stock';
-                        } else if (isOverMaxPerOrder) {
-                            stockStatusEl.textContent = 'Max 10 per order';
-                        } else {
-                            stockStatusEl.textContent = `In stock: ${trueStock}`;
-                        }
-                        
-                        stockStatusEl.className = 'stock-status-text text-xs ' + 
-                            (isInvalid ? 'text-red-600 font-semibold' : 'text-gray-500');
-                    }
-                    
-                    // Update total price display
-                    if (totalEl) {
-                        if (isInvalid) {
-                            totalEl.innerHTML = '<div class="text-red-600">—</div>';
-                        } else {
-                            if (hasOffer) {
-                                totalEl.innerHTML = `
-                                    <div class="flex flex-col">
-                                        <span class="text-red-500 font-medium">Rs.${(unitPrice * newQty).toFixed(2)}</span>
-                                        <span class="text-xs text-gray-500 line-through">Rs.${(originalPrice * newQty).toFixed(2)}</span>
-                                    </div>
-                                `;
-                            } else {
-                                totalEl.innerHTML = `<span class="font-medium">Rs.${(unitPrice * newQty).toFixed(2)}</span>`;
-                            }
-                        }
-                    }
-                    
-                    // Update button states
-                    const decBtn = cartItem.querySelector('.decrease-btn');
-                    const incBtn = cartItem.querySelector('.increase-btn');
-                    if (decBtn) decBtn.disabled = newQty <= 1;
-                    if (incBtn) incBtn.disabled = newQty >= maxAllowedQty;
-                    
-                    // Update server-side
-                    const res = await fetch(`/cart/update`, {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ cartProductId, quantity: newQty })
-                    });
-                    
-                    if (!res.ok) {
-                        const errorData = await res.json();
-                        throw new Error(errorData.message || 'Update failed');
-                    }
-                    
-                    // Recalculate totals after successful update
-                    recalculateTotals();
-                    
-                } catch (err) {
-                    console.error('Update failed:', err);
-                    
-                    // Revert UI changes on error
-                    qtyValueEl.textContent = parseInt(cartItem.dataset.qty, 10) || 1;
-                    
-                    const currentQty = parseInt(qtyValueEl.textContent, 10);
-                    const wasOutOfStock = currentQty > trueStock;
-                    const wasOverMax = currentQty > maxPerOrder && currentQty <= trueStock;
-                    const wasInvalid = wasOutOfStock || wasOverMax;
-                    
-                    cartItem.dataset.isInvalid = wasInvalid ? 'true' : 'false';
-                    
-                    // Revert stock status
-                    if (stockStatusEl) {
-                        if (wasOutOfStock) {
-                            stockStatusEl.textContent = 'Out of stock';
-                        } else if (wasOverMax) {
-                            stockStatusEl.textContent = 'Max 10 per order';
-                        } else {
-                            stockStatusEl.textContent = `In stock: ${trueStock}`;
-                        }
-                        
-                        stockStatusEl.className = 'stock-status-text text-xs ' + 
-                            (wasInvalid ? 'text-red-600 font-semibold' : 'text-gray-500');
-                    }
-                    
-                    // Revert total display
-                    if (totalEl) {
-                        if (wasInvalid) {
-                            totalEl.innerHTML = '<div class="text-red-600">—</div>';
-                        } else {
-                            if (hasOffer) {
-                                totalEl.innerHTML = `
-                                    <div class="flex flex-col">
-                                        <span class="text-red-500 font-medium">Rs.${(unitPrice * currentQty).toFixed(2)}</span>
-                                        <span class="text-xs text-gray-500 line-through">Rs.${(originalPrice * currentQty).toFixed(2)}</span>
-                                    </div>
-                                `;
-                            } else {
-                                totalEl.innerHTML = `<span class="font-medium">Rs.${(unitPrice * currentQty).toFixed(2)}</span>`;
-                            }
-                        }
-                    }
-                    
-                    // Revert button states
-                    const decBtn = cartItem.querySelector('.decrease-btn');
-                    const incBtn = cartItem.querySelector('.increase-btn');
-                    if (decBtn) decBtn.disabled = currentQty <= 1;
-                    if (incBtn) incBtn.disabled = currentQty >= maxAllowedQty;
-                    
-                    // Show error message
-                    showAlert('Error', err.message || 'Failed to update quantity. Please try again.', 'error');
-                    recalculateTotals();
-                }
-            }
-
-            /**
-             * Update quantity to maximum available stock when requested quantity exceeds available
-             */
-            async function updateQuantityToMaxAvailable(cartItem, availableStock, unitPrice, originalPrice, hasOffer) {
-                const cartProductId = cartItem.dataset.cartProductId;
-                const currentQty = parseInt(cartItem.querySelector('.qty-value').textContent, 10);
-                const trueStock = availableStock;
-                const maxPerOrder = parseInt(cartItem.dataset.maxPerOrder, 10);
-                const maxAllowed = Math.min(trueStock, maxPerOrder);
-                
-                if (maxAllowed <= 0) {
-                    // Item is completely out of stock
-                    showInventoryError(cartItem, 'Item is out of stock. Would you like to remove it?');
-                    return;
-                }
-                
-                if (currentQty > maxAllowed) {
-                    const shouldUpdate = await Swal.fire({
-                        title: 'Quantity Adjusted',
-                        text: `Only ${maxAllowed} items are available. Update your cart quantity?`,
-                        icon: 'info',
-                        showCancelButton: true,
-                        confirmButtonText: 'Update Quantity',
-                        cancelButtonText: 'Keep Current'
-                    });
-                    
-                    if (shouldUpdate.isConfirmed) {
-                        await updateCartItemQuantity(
-                            cartItem,
-                            cartProductId,
-                            maxAllowed,
-                            unitPrice,
-                            originalPrice,
-                            hasOffer,
-                            trueStock,
-                            maxPerOrder
-                        );
-                    }
-                }
-            }
-
-            // Remove item functionality
-            document.querySelectorAll('.remove-item').forEach(button => {
-                button.addEventListener('click', async (e) => {
-                    const cartProductId = e.currentTarget.dataset.cartProductId;
-                    const cartItem = e.currentTarget.closest('[data-cart-product-id]');
-                    
-                    const result = await Swal.fire({
-                        title: 'Remove item?',
-                        text: "This action cannot be undone.",
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonText: 'Yes, remove it!',
-                        cancelButtonText: 'Cancel'
-                    });
-                    
-                    if (result.isConfirmed) {
-                        try {
-                            const res = await fetch(`/cart/remove`, {
-                                method: 'DELETE',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ cartProductId })
-                            });
-                            
-                            if (res.ok) {
-                                cartItem.remove();
-                                recalculateTotals();
-                                const itemsLeft = document.querySelectorAll('[data-cart-product-id]').length;
-                                window.location.reload()
-                                if (itemsLeft === 0) {
-                                    window.location.href = '/cart';
-                                }
-                            } else {
-                                showAlert('Error', 'Failed to remove item', 'error');
-                            }
-                        } catch (err) {
-                            showAlert('Error', 'Network error. Please try again.', 'error');
-                        }
-                    }
-                });
-            });
-
-            // Checkout validation with real-time inventory check
-            const checkoutButton = document.getElementById('checkout-button');
-            if (checkoutButton) {
-                checkoutButton.addEventListener('click', async function (e) {
-                    const cartItems = document.querySelectorAll('[data-cart-product-id]');
-                    
-                    if (cartItems.length === 0) {
-                        e.preventDefault();
-                        showEmptyCartAlert();
-                        return;
-                    }
-                    
-                    // Check inventory for all items before proceeding to checkout
-                    const inventoryChecks = [];
-                    let hasInventoryIssues = false;
-                    
-                    for (const item of cartItems) {
-                        const variantId = item.dataset.variantId;
-                        const qty = parseInt(item.querySelector('.qty-value')?.textContent.trim(), 10);
-                        const productName = item.querySelector('p.font-medium')?.textContent || 'this item';
-                        
-                        if (!variantId || isNaN(qty) || qty <= 0) continue;
-                        
-                        try {
-                            const inventoryCheck = await checkInventory(variantId, qty);
-                            
-                            if (!inventoryCheck.success) {
-                                hasInventoryIssues = true;
-                                
-                                if (inventoryCheck.reason === 'out_of_stock') {
-                                    showAlert('Out of Stock', `"${productName}" is out of stock`, 'error');
-                                } else if (inventoryCheck.reason === 'insufficient_stock') {
-                                    showAlert('Insufficient Stock', `"${productName}" only has ${inventoryCheck.availableStock} available`, 'error');
-                                }
-                                
-                                // Update UI to reflect current inventory
-                                item.dataset.trueStock = inventoryCheck.availableStock || 0;
-                                updateCartItemUI(item);
-                            }
-                        } catch (error) {
-                            console.error('Inventory check failed:', error);
-                            // Continue with checkout if inventory check fails, but log the error
-                            continue;
-                        }
-                    }
-                    
-                    if (hasInventoryIssues) {
-                        e.preventDefault();
-                        recalculateTotals();
-                        return;
-                    }
-                    
-                    // If all inventory checks pass, proceed to checkout
-                    window.location.href = '/checkout';
-                });
-            }
-
-            /**
-             * Update cart item UI based on current data attributes
-             */
-            function updateCartItemUI(item) {
-                const qty = parseInt(item.dataset.qty, 10);
-                const trueStock = parseInt(item.dataset.trueStock, 10);
-                const maxPerOrder = parseInt(item.dataset.maxPerOrder, 10);
-                const isInvalid = item.dataset.isInvalid === 'true';
-                const hasOffer = item.dataset.hasOffer === 'true';
-                const unitPrice = parseFloat(item.dataset.unitPrice);
-                const originalPrice = parseFloat(item.dataset.originalPrice);
-                
-                const qtyValueEl = item.querySelector('.qty-value');
-                const stockStatusEl = item.querySelector('.stock-status-text');
-                const totalEl = item.querySelector('.item-total');
-                const decBtn = item.querySelector('.decrease-btn');
-                const incBtn = item.querySelector('.increase-btn');
-                
-                if (qtyValueEl) qtyValueEl.textContent = qty;
-                
-                if (stockStatusEl) {
-                    if (qty > trueStock) {
-                        stockStatusEl.textContent = 'Out of stock';
-                    } else if (qty > maxPerOrder) {
-                        stockStatusEl.textContent = 'Max 10 per order';
-                    } else {
-                        stockStatusEl.textContent = `In stock: ${trueStock}`;
-                    }
-                    
-                    stockStatusEl.className = 'stock-status-text text-xs ' + 
-                        (isInvalid ? 'text-red-600 font-semibold' : 'text-gray-500');
-                }
-                
-                if (totalEl) {
-                    if (isInvalid) {
-                        totalEl.innerHTML = '<div class="text-red-600">—</div>';
-                    } else {
-                        if (hasOffer) {
-                            totalEl.innerHTML = `
-                                <div class="flex flex-col">
-                                    <span class="text-red-500 font-medium">Rs.${(unitPrice * qty).toFixed(2)}</span>
-                                    <span class="text-xs text-gray-500 line-through">Rs.${(originalPrice * qty).toFixed(2)}</span>
-                                </div>
-                            `;
-                        } else {
-                            totalEl.innerHTML = `<span class="font-medium">Rs.${(unitPrice * qty).toFixed(2)}</span>`;
-                        }
-                    }
-                }
-                
-                const maxAllowed = Math.min(trueStock, maxPerOrder);
-                if (decBtn) decBtn.disabled = qty <= 1;
-                if (incBtn) incBtn.disabled = qty >= maxAllowed;
-            }
-
-            // Initialize button states
-            document.querySelectorAll('[data-cart-product-id]').forEach(item => {
-                const qtyEl = item.querySelector('.qty-value');
-                const trueStock = parseInt(item.dataset.trueStock, 10);
-                const maxPerOrder = parseInt(item.dataset.maxPerOrder, 10);
-                const qty = parseInt(qtyEl?.textContent.trim(), 10);
-                
-                if (!isNaN(qty)) {
-                    const decBtn = item.querySelector('.decrease-btn');
-                    const incBtn = item.querySelector('.increase-btn');
-                    const maxAllowed = Math.min(trueStock, maxPerOrder);
-                    
-                    if (decBtn) decBtn.disabled = qty <= 1;
-                    if (incBtn) incBtn.disabled = qty >= maxAllowed;
-                }
-            });
-
-            // Recalculate totals function
-            function recalculateTotals() {
-                let subtotal = 0;
-                let totalSavings = 0;
-                
-                const items = document.querySelectorAll('[data-cart-product-id]');
-                items.forEach(item => {
-                    const isInvalid = item.dataset.isInvalid === 'true';
-                    if (isInvalid) return;
-                    
-                    const currentPrice = parseFloat(item.dataset.unitPrice);
-                    const originalPrice = parseFloat(item.dataset.originalPrice);
-                    const hasOffer = item.dataset.hasOffer === 'true';
-                    const qtyEl = item.querySelector('.qty-value');
-                    
-                    if (!qtyEl) return;
-                    
-                    const qty = parseInt(qtyEl.textContent.trim(), 10);
-                    if (!isNaN(qty) && qty > 0) {
-                        subtotal += originalPrice * qty;
-                        if (hasOffer) {
-                            totalSavings += (originalPrice - currentPrice) * qty;
-                        }
-                    }
-                });
-                
-                const total = subtotal - totalSavings;
-                const shipping = subtotal > 0 ? "Free Shipping" : "0.00 RS";
-                
-                // Update UI elements
-                document.getElementById('subtotal').textContent = `Rs. ${subtotal.toFixed(2)}`;
-                
-                // Handle savings display
-                const savingsElement = document.getElementById('savings');
-                const savingsRow = savingsElement ? savingsElement.closest('div.flex') : null;
-                
-                if (totalSavings > 0) {
-                    if (savingsRow) {
-                        savingsRow.classList.remove('hidden');
-                        savingsElement.textContent = `Rs. ${totalSavings.toFixed(2)}`;
-                    } else {
-                        const priceBreakdown = document.getElementById('price-breakdown');
-                        const savingsRowHTML = `
-                            <div class="flex justify-between text-green-600 font-medium" id="savings-row">
-                                <span>You saved</span>
-                                <span id="savings">Rs. ${totalSavings.toFixed(2)}</span>
-                            </div>
-                        `;
-                        priceBreakdown.insertAdjacentHTML('beforeend', savingsRowHTML);
-                    }
-                } else if (savingsRow) {
-                    savingsRow.classList.add('hidden');
-                }
-                
-                // Update shipping and total
-                document.getElementById('shipping').textContent = shipping;
-                document.querySelector('#total-price span:last-child').textContent = `Rs. ${total.toFixed(2)}`;
-            }
-
-            // Initial calculation
-            recalculateTotals();
-        });
-    </script>
+if (checkoutButton && loadingModal) {
+checkoutButton.addEventListener('click', async function (e) {
+// Show loading modal immediately
+loadingModal.classList.remove('hidden');
+checkoutButton.disabled = true;
+checkoutButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Processing...';
+  
+const cartItems = document.querySelectorAll('[data-cart-product-id]');
+if (cartItems.length === 0) {
+loadingModal.classList.add('hidden');
+checkoutButton.disabled = false;
+checkoutButton.innerHTML = '<i class="fas fa-lock mr-2"></i> Check out';
+showEmptyCartAlert();
+return;
+}
+  
+// Check inventory for all items before proceeding to checkout
+const inventoryChecks = [];
+let hasInventoryIssues = false;
+for (const item of cartItems) {
+const variantId = item.dataset.variantId;
+const qty = parseInt(item.querySelector('.qty-value')?.textContent.trim(), 10);
+const productName = item.querySelector('p.font-medium')?.textContent || 'this item';
+if (!variantId || isNaN(qty) || qty <= 0) continue;
+  
+try {
+const inventoryCheck = await checkInventory(variantId, qty);
+if (!inventoryCheck.success) {
+hasInventoryIssues = true;
+if (inventoryCheck.reason === 'out_of_stock') {
+showAlert('Out of Stock', `"${productName}" is out of stock`, 'error');
+} else if (inventoryCheck.reason === 'insufficient_stock') {
+showAlert('Insufficient Stock', `"${productName}" only has ${inventoryCheck.availableStock} available`, 'error');
+}
+// Update UI to reflect current inventory
+item.dataset.trueStock = inventoryCheck.availableStock || 0;
+updateCartItemUI(item);
+}
+} catch (error) {
+console.error('Inventory check failed:', error);
+// Continue with checkout if inventory check fails, but log the error
+continue;
+}
+}
+  
+if (hasInventoryIssues) {
+loadingModal.classList.add('hidden');
+checkoutButton.disabled = false;
+checkoutButton.innerHTML = '<i class="fas fa-lock mr-2"></i> Check out';
+recalculateTotals();
+return;
+}
+  
+// If all inventory checks pass, proceed to checkout
+window.location.href = '/checkout';
+  
+// In case navigation doesn't happen immediately
+setTimeout(() => {
+loadingModal.classList.add('hidden');
+checkoutButton.disabled = false;
+checkoutButton.innerHTML = '<i class="fas fa-lock mr-2"></i> Check out';
+}, 3000);
+});
+}
+/**
+* Update cart item UI based on current data attributes
+*/
+function updateCartItemUI(item) {
+const qty = parseInt(item.dataset.qty, 10);
+const trueStock = parseInt(item.dataset.trueStock, 10);
+const maxPerOrder = parseInt(item.dataset.maxPerOrder, 10);
+const isInvalid = item.dataset.isInvalid === 'true';
+const hasOffer = item.dataset.hasOffer === 'true';
+const unitPrice = parseFloat(item.dataset.unitPrice);
+const originalPrice = parseFloat(item.dataset.originalPrice);
+const qtyValueEl = item.querySelector('.qty-value');
+const stockStatusEl = item.querySelector('.stock-status-text');
+const totalEl = item.querySelector('.item-total');
+const decBtn = item.querySelector('.decrease-btn');
+const incBtn = item.querySelector('.increase-btn');
+  
+if (qtyValueEl) qtyValueEl.textContent = qty;
+if (stockStatusEl) {
+if (qty > trueStock) {
+stockStatusEl.textContent = 'Out of stock';
+} else if (qty > maxPerOrder) {
+stockStatusEl.textContent = 'Max 10 per order';
+} else {
+stockStatusEl.textContent = `In stock: ${trueStock}`;
+}
+stockStatusEl.className = 'stock-status-text text-xs ' +
+(isInvalid ? 'text-red-600 font-semibold' : 'text-gray-500');
+}
+if (totalEl) {
+if (isInvalid) {
+totalEl.innerHTML = '<div class="text-red-600">—</div>';
+} else {
+if (hasOffer) {
+totalEl.innerHTML = `
+<div class="flex flex-col">
+<span class="text-red-500 font-medium">Rs.${(unitPrice * qty).toFixed(2)}</span>
+<span class="text-xs text-gray-500 line-through">Rs.${(originalPrice * qty).toFixed(2)}</span>
+</div>
+`;
+} else {
+totalEl.innerHTML = `<span class="font-medium">Rs.${(unitPrice * qty).toFixed(2)}</span>`;
+}
+}
+}
+  
+const maxAllowed = Math.min(trueStock, maxPerOrder);
+if (decBtn) decBtn.disabled = qty <= 1;
+if (incBtn) incBtn.disabled = qty >= maxAllowed;
+}
+// Initialize button states
+document.querySelectorAll('[data-cart-product-id]').forEach(item => {
+const qtyEl = item.querySelector('.qty-value');
+const trueStock = parseInt(item.dataset.trueStock, 10);
+const maxPerOrder = parseInt(item.dataset.maxPerOrder, 10);
+const qty = parseInt(qtyEl?.textContent.trim(), 10);
+if (!isNaN(qty)) {
+const decBtn = item.querySelector('.decrease-btn');
+const incBtn = item.querySelector('.increase-btn');
+const maxAllowed = Math.min(trueStock, maxPerOrder);
+if (decBtn) decBtn.disabled = qty <= 1;
+if (incBtn) incBtn.disabled = qty >= maxAllowed;
+}
+});
+// Recalculate totals function
+function recalculateTotals() {
+let subtotal = 0;
+let totalSavings = 0;
+const items = document.querySelectorAll('[data-cart-product-id]');
+items.forEach(item => {
+const isInvalid = item.dataset.isInvalid === 'true';
+if (isInvalid) return;
+const currentPrice = parseFloat(item.dataset.unitPrice);
+const originalPrice = parseFloat(item.dataset.originalPrice);
+const hasOffer = item.dataset.hasOffer === 'true';
+const qtyEl = item.querySelector('.qty-value');
+if (!qtyEl) return;
+const qty = parseInt(qtyEl.textContent.trim(), 10);
+if (!isNaN(qty) && qty > 0) {
+subtotal += originalPrice * qty;
+if (hasOffer) {
+totalSavings += (originalPrice - currentPrice) * qty;
+}
+}
+});
+const total = subtotal - totalSavings;
+const shipping = subtotal > 0 ? "Free Shipping" : "0.00 RS";
+// Update UI elements
+document.getElementById('subtotal').textContent = `Rs. ${subtotal.toFixed(2)}`;
+// Handle savings display
+const savingsElement = document.getElementById('savings');
+const savingsRow = savingsElement ? savingsElement.closest('div.flex') : null;
+if (totalSavings > 0) {
+if (savingsRow) {
+savingsRow.classList.remove('hidden');
+savingsElement.textContent = `Rs. ${totalSavings.toFixed(2)}`;
+} else {
+const priceBreakdown = document.getElementById('price-breakdown');
+const savingsRowHTML = `
+<div class="flex justify-between text-green-600 font-medium" id="savings-row">
+<span>You saved</span>
+<span id="savings">Rs. ${totalSavings.toFixed(2)}</span>
+</div>
+`;
+priceBreakdown.insertAdjacentHTML('beforeend', savingsRowHTML);
+}
+} else if (savingsRow) {
+savingsRow.classList.add('hidden');
+}
+// Update shipping and total
+document.getElementById('shipping').textContent = shipping;
+document.querySelector('#total-price span:last-child').textContent = `Rs. ${total.toFixed(2)}`;
+}
+// Initial calculation
+recalculateTotals();
+});
+</script>
 </body>
 </html>
