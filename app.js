@@ -31,7 +31,7 @@ app.use(express.static(path.join(__dirname, 'public/user')))
 app.use(generalLimiter)
 
 app.use(morgan(
-    ':method :url :status :res[content-length - :response-time ms',
+    ':method :url :status :res[content-length] - :response-time ms',
     { stream: { write: (message) => logger.http(message.trim())}}
 ))
 
