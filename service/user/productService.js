@@ -1,7 +1,7 @@
 import categoryModel from "../../models/categoryModel.js";
 import { Product } from "../../models/productModel.js";
 import Offer from "../../models/offerModel.js";
-import logger from '../../util/logger.js'; // ✅ Add logger import
+import logger from '../../util/logger.js';
 
 export const productDetails = async ({
     search = '',
@@ -24,7 +24,6 @@ export const productDetails = async ({
             endDate: { $gte: today }
         }).lean();
         
-        
         let searchString = '';
         if (typeof search === 'string') {
             searchString = search.trim();
@@ -37,7 +36,6 @@ export const productDetails = async ({
             matchStage.productName = { $regex: searchString, $options: 'i' };
         }
         pipeline.push({ $match: matchStage });
-        
         
         pipeline.push({
             $lookup: {
@@ -65,7 +63,6 @@ export const productDetails = async ({
         });
         pipeline.push({ $match: { "variants.isActive": true } });
         
-        
         if (category) {
             const cats = (typeof category === 'string' ? category.split(',') : [])
                 .map(c => c.trim())
@@ -75,7 +72,6 @@ export const productDetails = async ({
             }
         }
         
-        
         if (product) {
             const prods = (typeof product === 'string' ? product.split(',') : [])
                 .map(p => p.trim())
@@ -84,7 +80,6 @@ export const productDetails = async ({
                 pipeline.push({ $match: { productName: { $in: prods } } });
             }
         }
-        
         
         if (minPrice !== undefined || maxPrice !== undefined) {
             const priceMatch = {};
@@ -96,10 +91,9 @@ export const productDetails = async ({
         }
         
         if(color) {
-            const colorRegex = new RegExp(color.trim(), 'i')
-            pipeline.push({$match: {"variants.color": colorRegex}})
+            const colorRegex = new RegExp(color.trim(), 'i');
+            pipeline.push({$match: {"variants.color": colorRegex}});
         }
-        
         
         const sortMap = {
             priceLowToHigh: { "variants.price": 1 },
@@ -111,17 +105,14 @@ export const productDetails = async ({
         const sortStage = sortMap[sort] || { createdAt: -1 };
         pipeline.push({ $sort: sortStage });
         
-        
         const skip = (page - 1) * limit;
         pipeline.push({ $skip: skip }, { $limit: limit });
         
         const data = await Product.aggregate(pipeline);
         
-        
         const dataWithOffers = data.map(item => {
             return applyBestOfferToProduct(item, activeOffers);
         });
-        
         
         const countPipeline = pipeline
             .filter(s => !s.$skip && !s.$limit && !s.$sort)
@@ -150,28 +141,33 @@ export const productDetails = async ({
     }
 };
 
-
+// Unified offer application logic
 const applyBestOfferToProduct = (product, activeOffers) => {
     if (!product || !product.variants) {
         return product;
     }
 
-    
     const productIdStr = product._id.toString();
-    
-    
     const categoryIdStr = product.category?._id?.toString() || '';
 
-    
+    // Handle array of variants
     if (Array.isArray(product.variants)) {
         return {
             ...product,
-            variants: product.variants.map(variant => applyOfferToVariant(variant, productIdStr, categoryIdStr, activeOffers, product.productName))
+            variants: product.variants.map(variant => 
+                applyOfferToVariant(variant, productIdStr, categoryIdStr, activeOffers)
+            )
         };
     } 
-    
+    // Handle single variant object
     else {
-        const updatedVariant = applyOfferToVariant(product.variants, productIdStr, categoryIdStr, activeOffers, product.productName);
+        const updatedVariant = applyOfferToVariant(
+            product.variants, 
+            productIdStr, 
+            categoryIdStr, 
+            activeOffers
+        );
+        
         return {
             ...product,
             variants: updatedVariant,
@@ -180,15 +176,14 @@ const applyBestOfferToProduct = (product, activeOffers) => {
     }
 };
 
-
-const applyOfferToVariant = (variant, productIdStr, categoryIdStr, activeOffers, productName) => {
+const applyOfferToVariant = (variant, productIdStr, categoryIdStr, activeOffers) => {
     if (!variant || !variant.price || variant.price <= 0) {
         return variant;
     }
 
-    const today = new Date();
+    const originalPrice = parseFloat(variant.price.toString());
     
-    
+    // Filter relevant offers
     const productOffers = activeOffers.filter(offer =>
         offer.targetingType === 'products' &&
         offer.targeting.productIds.some(id => id.toString() === productIdStr)
@@ -205,9 +200,8 @@ const applyOfferToVariant = (variant, productIdStr, categoryIdStr, activeOffers,
     
     let bestOffer = null;
     
-    
+    // Prioritize specific offers (product/category) over global
     if (productOffers.length > 0 || categoryOffers.length > 0) {
-        
         const specificOffers = [...productOffers, ...categoryOffers].filter(Boolean);
         if (specificOffers.length > 0) {
             bestOffer = specificOffers.reduce((best, current) => {
@@ -215,40 +209,56 @@ const applyOfferToVariant = (variant, productIdStr, categoryIdStr, activeOffers,
                 
                 const bestValue = best.offerType === 'percentage'
                     ? best.discountValue
-                    : (best.discountValue / variant.price) * 100;
+                    : (best.discountValue / originalPrice) * 100;
+                    
                 const currentValue = current.offerType === 'percentage'
                     ? current.discountValue
-                    : (current.discountValue / variant.price) * 100;
+                    : (current.discountValue / originalPrice) * 100;
+                    
                 return currentValue > bestValue ? current : best;
             }, null);
         }
-    }
-    
+    } 
+    // Fallback to best global offer
     else if (globalOffers.length > 0) {
-        bestOffer = globalOffers[0]; 
+        bestOffer = globalOffers.reduce((best, current) => {
+            if (!best) return current;
+            
+            const bestValue = best.offerType === 'percentage'
+                ? best.discountValue
+                : (best.discountValue / originalPrice) * 100;
+                
+            const currentValue = current.offerType === 'percentage'
+                ? current.discountValue
+                : (current.discountValue / originalPrice) * 100;
+                
+            return currentValue > bestValue ? current : best;
+        }, null);
     }
     
+    // Create updated variant with offer info
+    const updatedVariant = { 
+        ...variant, 
+        originalPrice: originalPrice,
+        hasOffer: false,
+        offerInfo: null
+    };
     
-    const updatedVariant = { ...variant };
-    
-    
+    // Apply best offer if found
     if (bestOffer) {
-        const originalPrice = parseFloat(variant.price.toString());
         let discountAmount = 0;
         let finalPrice = originalPrice;
         
         if (bestOffer.offerType === 'percentage') {
             discountAmount = (originalPrice * bestOffer.discountValue) / 100;
             finalPrice = originalPrice - discountAmount;
-        }
+        } 
         else if (bestOffer.offerType === 'fixed') {
             discountAmount = Math.min(bestOffer.discountValue, originalPrice);
             finalPrice = originalPrice - discountAmount;
         }
         
-        
         finalPrice = Math.max(0, finalPrice);
-        
         
         updatedVariant.offerInfo = {
             offerId: bestOffer._id.toString(),
@@ -258,18 +268,14 @@ const applyOfferToVariant = (variant, productIdStr, categoryIdStr, activeOffers,
             discountPercentage: bestOffer.offerType === 'percentage'
                 ? bestOffer.discountValue
                 : (discountAmount / originalPrice) * 100,
-            originalPrice: originalPrice,
-            discountAmount: discountAmount,
-            finalPrice: finalPrice
+            originalPrice,
+            discountAmount,
+            finalPrice
         };
-        
         
         updatedVariant.originalPrice = originalPrice;
         updatedVariant.price = finalPrice;
         updatedVariant.hasOffer = true;
-    } else {
-        
-        updatedVariant.originalPrice = parseFloat(variant.price.toString());
     }
     
     return updatedVariant;
@@ -321,7 +327,6 @@ export const singleProductFetch = async (productId) => {
                 }));
         }
         
-        
         return applyBestOfferToProduct(product, activeOffers);
     } catch (error) {
         logger.error(`Error from singleProductFetch: ${error.message}`);
@@ -364,7 +369,6 @@ export const productDetailsFilter = async () => {
             { $sort: { createdAt: -1 } },
             { $limit: 10 }
         ]);
-        
         
         return products.map(item => applyBestOfferToProduct(item, activeOffers));
     } catch (error) {
