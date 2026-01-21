@@ -19,7 +19,6 @@ import { validateProfileUpdate } from "../middlewares/validateProfileUpdate.js"
 import { wishlist, wishlistadd, wishlistRemove } from "../controllers/user/wishlistController.js"
 import { wallet, walletAddNew, walletNewView } from "../controllers/user/walletController.js"
 import { referral } from "../controllers/user/referralController.js"
-import { authLimiter } from "../middlewares/rateLimiter.js"
 
 
 
@@ -27,13 +26,13 @@ const router = express.Router()
 
 router.get('/signUpPage',preventAuthAccess, signUpPageGet)
 
-router.post('/signup', preventAuthAccess,validateSignUp, authLimiter, signUpPost)
+router.post('/signup', preventAuthAccess,validateSignUp, signUpPost)
 
 router.get('/signUpOtp',preventAuthAccess, otpPage)
 
-router.post('/otpverify/signupVerify',preventAuthAccess, authLimiter, otpPagePost)
+router.post('/otpverify/signupVerify',preventAuthAccess, otpPagePost)
 
-router.post('/resendOtp/signupVerify',preventAuthAccess, authLimiter, resendOtp)
+router.post('/resendOtp/signupVerify',preventAuthAccess, resendOtp)
 
 router.get('/auth/google',preventAuthAccess, googleAuth)
 
@@ -41,21 +40,21 @@ router.get('/auth/google/callback',preventAuthAccess, googleAuthCallback)
 
 router.get('/login',preventAuthAccess, loginGet)
 
-router.post('/login',preventAuthAccess, authLimiter, login)
+router.post('/login',preventAuthAccess, login)
 
 router.get('/forgotPassword',preventAuthAccess, forgotPass)
 
-router.post('/forgotPassword',preventAuthAccess, authLimiter, forgotPassResetPost)
+router.post('/forgotPassword',preventAuthAccess, forgotPassResetPost)
 
 router.get("/forgotOtp",preventAuthAccess, forgotOtpPage)
 
-router.post('/forgotOtpVerify',preventAuthAccess, authLimiter, forgotOtpVerify)
+router.post('/forgotOtpVerify',preventAuthAccess, forgotOtpVerify)
 
-router.post('/resendForgotOtp',preventAuthAccess, authLimiter, resendforgotOtp)
+router.post('/resendForgotOtp',preventAuthAccess,  resendforgotOtp)
 
 router.get('/resetPasswordPage',preventAuthAccess, resetPassword)
 
-router.patch('/resetPassword',preventAuthAccess, resetPasswordValidate, authLimiter, resetPasswordVerify)
+router.patch('/resetPassword',preventAuthAccess, resetPasswordValidate, resetPasswordVerify)
 
 
 /// landing Page

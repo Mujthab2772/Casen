@@ -55,7 +55,7 @@ export const forgotPassReset = async (email) => {
         let otpUser = await otpCollection.findOne({ email: forgotPassEmail });
 
         if (!otpUser) {
-            otpUser = new otpCollection({ email: forgotPassEmail, otp: newOtp });
+            otpUser = new otpCollection({ email: forgotPassEmail, otp: newOtp, otpExpiresAt });
         } else {
             otpUser.otp = newOtp;
             otpUser.otpExpiresAt = otpExpiresAt;

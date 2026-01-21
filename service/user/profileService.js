@@ -99,7 +99,7 @@ export const verifyEmailChangeOTP = async (email, otp) => {
 
 export const setPassword = async (currentPassword, newPassword, userId) => {
   try {
-    const user = await userCollection.findOne({ userId });
+    const user = await userCollection.findById({ _id: userId });
     if (!user) {
       return { error: 'User not found.' };
     }

@@ -9,7 +9,7 @@ import userRouter from "./routes/userRoute.js";
 import methodOverride from 'method-override'
 import passport from './config/passport.js';
 import flash from "connect-flash";
-import { generalLimiter } from "./middlewares/rateLimiter.js";
+// import { generalLimiter } from "./middlewares/rateLimiter.js";
 import morgan from "morgan";
 import logger from "./util/logger.js";
 
@@ -28,7 +28,6 @@ app.set('view engine', "ejs")
 app.use(express.static(path.join(__dirname, 'public/admin')))
 app.use(express.static(path.join(__dirname, 'public/user')))
 
-app.use(generalLimiter)
 
 app.use(morgan(
     ':method :url :status :res[content-length] - :response-time ms',
