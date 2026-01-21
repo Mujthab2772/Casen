@@ -62,11 +62,17 @@ router.patch('/updateProduct',adminCheck, productStatus)
 // order page
 
 router.get('/order', adminCheck, orders);
+
 router.get('/order/:orderId', adminCheck, singleOrder);
+
 router.post('/order/:orderId/update-status', adminCheck, orderStatus);
+
 router.post('/order/:orderId/item/:orderItemId/update-status', adminCheck, itemStatus);
+
 router.post('/order/:orderId/item/:orderItemId/return-status', adminCheck, itemReturnStatus);
+
 router.post('/order/:orderId/return-status', adminCheck, orderReturnStatus);
+
 // coupon 
 
 router.get('/coupons', adminCheck, couponFetch)

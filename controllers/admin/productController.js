@@ -130,10 +130,10 @@ export const productStatus = async (req, res) => {
   try {
     const { productId, variantId } = req.query;
 
-    if (!productId) {
-      logger.warn('Toggle product status missing productId');
-      return res.status(STATUS_CODE.BAD_REQUEST).json({ success: false, error: 'Missing productId' });
-    }
+    // if (!productId) {
+    //   logger.warn('Toggle product status missing productId');
+    //   return res.status(STATUS_CODE.BAD_REQUEST).json({ success: false, error: 'Missing productId' });
+    // }
 
     await toggleStatusProduct(productId, variantId);
     logger.info(`Product status toggled: product=${productId}, variant=${variantId || 'all'}`);

@@ -599,6 +599,7 @@ document.querySelectorAll('.toggle-variant-btn').forEach(button => {
     const variantId = this.dataset.variantId;
     const isActive = this.dataset.isActive === 'true';
     const newIsActive = !isActive;
+    console.log(this.dataset)
 
     // Optional: show loading state (disable button)
     const originalClasses = this.className;
@@ -606,8 +607,8 @@ document.querySelectorAll('.toggle-variant-btn').forEach(button => {
     this.classList.add('opacity-70', 'cursor-not-allowed');
 
     try {
-      const response = await fetch(`/admin/updateProduct?variantId=${variantId}&_method=PATCH`, {
-        method: 'POST',
+      const response = await fetch(`/admin/updateProduct?variantId=${variantId}`, {
+        method: "PATCH",
         headers: {
           'Accept': 'application/json', // helps backend detect AJAX
         }
