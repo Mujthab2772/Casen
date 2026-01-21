@@ -14,6 +14,7 @@ export const checkout = async (req, res) => {
 
     const userId = user._id;
     const cartProducts = await cartDetails(userId);
+    if(cartProducts.length === 0) return res.redirect('/cart')
     const userAddresses = await addressDetails(userId);
 
     let subtotal = 0;
