@@ -35,3 +35,12 @@ export const logout = async (req, res) => {
         res.redirect('/'); // optional fallback
     }
 }
+
+export const aboutSection = async (req, res) => {
+    try {
+        const user = req.session.userDetail
+        res.render('about', {user})
+    } catch (error) {
+        logger.error(`error from aboutSection ${err}`)
+    }
+}

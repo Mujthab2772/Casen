@@ -3,7 +3,7 @@ import { otpPage, otpPagePost, resendOtp, signUpPageGet, signUpPost } from "../c
 import { resetPasswordValidate, validateSignUp } from "../middlewares/validationMiddleware.js"
 import { googleAuth, googleAuthCallback } from "../controllers/user/googleAuthController.js"
 import { forgotOtpPage, forgotOtpVerify, forgotPass, forgotPassResetPost, login, loginGet, resendforgotOtp, resetPassword, resetPasswordVerify } from "../controllers/user/loginController.js"
-import { landingPage, logout } from "../controllers/user/landingPage.js"
+import { aboutSection, landingPage, logout } from "../controllers/user/landingPage.js"
 import { fetchProducts, singleProduct } from "../controllers/user/productsController.js"
 import { preventAuthAccess, requireActiveUser, userProfile } from "../middlewares/userMiddleware.js"
 import { editProfile, newPassword, otpResend, otpVerify, ProfileUser, setNewPass, updateProfile, verifyEmail } from "../controllers/user/profileController.js"
@@ -60,6 +60,8 @@ router.patch('/resetPassword',preventAuthAccess, resetPasswordValidate, resetPas
 /// landing Page
 
 router.get('/',requireActiveUser, landingPage)
+
+router.get('/about', requireActiveUser, aboutSection)
 
 router.get('/products',requireActiveUser, fetchProducts)
 
