@@ -1,18 +1,20 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" type="image/png" sizes="32x32" href="/logoTab.png">
   <title>Edit Product</title>
-
-  <link href="https://cdn.jsdelivr.net/npm/cropperjs@1.5.13/dist/cropper.min.css" rel="stylesheet"/>
+  
+  <link href="https://cdn.jsdelivr.net/npm/cropperjs@1.5.13/dist/cropper.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/cropperjs@1.5.13/dist/cropper.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
+  
   <style>
-    .hidden { 
-      display: none; 
+    .hidden {
+      display: none;
     }
+    
     .sidebar {
       width: 227px;
       position: fixed;
@@ -21,29 +23,36 @@
       background-color: white;
       border-right: 1px solid #e2e8f0;
     }
+    
     .main-content {
       margin-left: 227px;
       padding: 1.5rem;
       min-height: 100vh;
       background-color: #f8fafc;
     }
+    
     .variant-card {
       transition: all 0.2s ease;
     }
+    
     .variant-card:hover {
       transform: translateY(-2px);
       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     }
+    
     .image-slot {
       transition: all 0.2s ease;
     }
+    
     .image-slot:hover {
       border-color: #22c55e;
       background-color: #f8fafc;
     }
+    
     .image-slot:hover .image-actions {
       opacity: 1;
     }
+    
     .image-actions {
       opacity: 0;
       transition: opacity 0.2s ease;
@@ -53,9 +62,7 @@
 <body class="bg-gray-50">
   <!-- Sidebar -->
   <aside class="sidebar">
-    <%- include('partial/aside', {
-      selected: 'products'
-    }) %>
+    <%- include('partial/aside', { selected: 'products' }) %>
   </aside>
 
   <!-- Main Content Area -->
@@ -160,14 +167,14 @@
       <div class="bg-white p-5 rounded-xl max-w-lg w-full">
         <h3 class="font-semibold text-lg mb-3">Crop Image</h3>
         <div class="max-h-[60vh] overflow-auto">
-          <img id="cropImage" class="max-w-full mx-auto block" />
+          <img id="cropImage" class="max-w-full mx-auto block" alt="Crop preview">
         </div>
         <div class="mt-5 flex justify-end space-x-3">
-          <button id="cancelCrop" 
+          <button id="cancelCrop" type="button"
                   class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
             Cancel
           </button>
-          <button id="applyCrop" 
+          <button id="applyCrop" type="button"
                   class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
             Apply
           </button>
@@ -306,7 +313,7 @@
           title.textContent = `Variant ${variantIndex + 1}`;
           
           const removeBtn = document.createElement('button');
-          removeBtn.type = 'button';
+          removeBtn.type = 'button';  // Critical fix: prevent form submission
           removeBtn.className = 'text-red-600 hover:text-red-800 font-medium';
           removeBtn.textContent = 'Remove';
           removeBtn.dataset.action = 'remove-variant';
@@ -408,23 +415,30 @@
               const img = document.createElement('img');
               img.src = escapeHtml(variant.images[i]);
               img.className = 'object-cover w-full h-full rounded-lg';
+              img.alt = `Variant ${variantIndex + 1} image ${i + 1}`;
               
               const actions = document.createElement('div');
               actions.className = 'image-actions absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 flex items-center justify-center space-x-2 opacity-0';
               
+              // Remove button with explicit type
               const removeBtn = document.createElement('button');
+              removeBtn.type = 'button';  // Critical fix: prevent form submission
               removeBtn.className = 'remove-image bg-red-500 text-white w-8 h-8 rounded-full flex items-center justify-center';
               removeBtn.dataset.action = 'remove-image';
               removeBtn.dataset.variant = variantIndex;
               removeBtn.dataset.image = i;
               removeBtn.innerHTML = '&times;';
+              removeBtn.setAttribute('aria-label', 'Remove image');
               
+              // Crop button with explicit type
               const cropBtn = document.createElement('button');
+              cropBtn.type = 'button';  // Critical fix: prevent form submission
               cropBtn.className = 'crop-image bg-blue-500 text-white w-8 h-8 rounded-full flex items-center justify-center';
               cropBtn.dataset.action = 'crop-image';
               cropBtn.dataset.variant = variantIndex;
               cropBtn.dataset.image = i;
               cropBtn.textContent = '✂';
+              cropBtn.setAttribute('aria-label', 'Crop image');
               
               actions.appendChild(removeBtn);
               actions.appendChild(cropBtn);

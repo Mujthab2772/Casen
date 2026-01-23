@@ -35,7 +35,7 @@ export const validateCategoryName = async (categoryName, description, currentCat
         }
 
         const trimmedDesc = description.trim();
-        if (trimmedDesc.length < 50) {
+        if (trimmedDesc.length > 50) {
             return "Description must be less than 50 characters.";
         }
 
