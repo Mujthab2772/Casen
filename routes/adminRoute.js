@@ -61,16 +61,22 @@ router.patch('/updateProduct',adminCheck, productStatus)
 
 // order page
 
+// Get all orders with pagination, search and filtering
 router.get('/order', adminCheck, orders);
-
+    
+// Get a single order details
 router.get('/order/:orderId', adminCheck, singleOrder);
-
+    
+// Update order status (e.g., pending -> confirmed)
 router.post('/order/:orderId/update-status', adminCheck, orderStatus);
-
+    
+// Update individual item status within an order
 router.post('/order/:orderId/item/:orderItemId/update-status', adminCheck, itemStatus);
-
+    
+// Approve/deny return for a specific item
 router.post('/order/:orderId/item/:orderItemId/return-status', adminCheck, itemReturnStatus);
-
+    
+// Approve/deny return for an entire order
 router.post('/order/:orderId/return-status', adminCheck, orderReturnStatus);
 
 // coupon 
