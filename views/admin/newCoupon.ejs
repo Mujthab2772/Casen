@@ -302,6 +302,8 @@
       const minNum = minClean ? parseFloat(minClean) : 0;
       if (minPurchase && (isNaN(minNum) || minNum <= 0)) return showError('Minimum purchase must be a positive number.');
 
+      if(value > minPurchase) return showError('value must be less than Min purchase amount')
+
       // Max discount (only for percentage)
       if (discountType === 'percentage') {
         if (valNum < 1 || valNum > 100) return showError('Percentage must be between 1% and 100%.');

@@ -49,10 +49,19 @@ export const addNewCoupon = async (req, res) => {
   try {
     const coupon = await couponAddNew(req.body);
     logger.info(`New coupon created: ${req.body.couponCode}`);
-    return res.status(STATUS_CODE.CREATED).json({
-      success: true,
-      message: 'Coupon created successfully'
-    });
+
+    if(coupon === 'successfully created') {
+      return res.status(STATUS_CODE.CREATED).json({
+        success: true,
+        message: coupon
+      });
+    }
+
+    return res.status(STATUS_CODE.CONFLICT).json({
+        success: true,
+        message: coupon
+      });
+    
   } catch (error) {
     if (error.code === 11000) {
       logger.warn(`Coupon creation failed: duplicate code "${req.body.couponCode}"`);

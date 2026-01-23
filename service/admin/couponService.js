@@ -66,6 +66,13 @@ export const couponAddNew = async (newCouponDetails) => {
       perUserLimit
     } = newCouponDetails;
 
+    const checkCoupon = await couponModel.findOne({couponCode: /couponCode/i})
+    if(checkCoupon) {
+      return 'Coupon already exits'
+    }
+
+    if(discountAmount > minAmount) return 'value must be less than Min purchase amount'
+
     const coupon = new couponModel({
       couponId: uuidv4(),
       couponCode,
@@ -79,7 +86,7 @@ export const couponAddNew = async (newCouponDetails) => {
     });
 
     await coupon.save();
-    return coupon;
+    return 'successfully created'
   } catch (error) {
     logger.error(`Error from couponAddNew: ${error.message}`);
     throw error;

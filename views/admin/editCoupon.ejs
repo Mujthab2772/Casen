@@ -204,7 +204,7 @@
       limitPerCustomerInput.value = coupon.perUserLimit;
 
       if (coupon.minAmount !== null) {
-        minPurchaseInput.value = '₹ ' + coupon.minAmount;
+        minPurchaseInput.value = coupon.minAmount;
       }
 
       if (discountType === 'percentage') {
@@ -218,7 +218,7 @@
           maxDiscountInput.disabled = false;
         }
       } else {
-        valueInput.value = '₹ ' + coupon.amount;
+        valueInput.value = coupon.amount;
         currencySymbol.textContent = '₹';
         prefixSymbol.innerHTML = ' ₹ ';
         maxDiscountInput.disabled = true;
@@ -231,14 +231,14 @@
         if (discountType === 'percentage') {
           e.target.value = val;
         } else {
-          e.target.value = val ? '₹ ' + val : '';
+          e.target.value = val ? val : '';
         }
       }
 
       function handleMinPurchaseInput(e) {
         let val = e.target.value.replace(/[^0-9.]/g, '');
         if (val.split('.').length > 2) val = val.replace(/\.+$/, '');
-        e.target.value = val ? '₹ ' + val : '';
+        e.target.value = val ? val : '';
       }
 
       valueInput.addEventListener('input', handleValueInput);
@@ -275,6 +275,7 @@
         const minClean = minPurchase.replace(/[^0-9.]/g, '');
         const minNum = minClean ? parseFloat(minClean) : 0;
         if (minPurchase && (isNaN(minNum) || minNum <= 0)) return showError('Minimum purchase must be a positive number.');
+        if(valNum > minPurchase) return showError('value must be less than Min purchase amount')
 
         if (discountType === 'percentage') {
           if (valNum < 1 || valNum > 100) return showError('Percentage must be between 1% and 100%.');
