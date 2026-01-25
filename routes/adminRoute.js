@@ -113,10 +113,9 @@ router.get('/dashboard', adminCheck, dashboard)
 
 // Analytics
 
-router.get('/analytics', adminCheck, salesReportController.getSalesReportPage);
-
-router.get('/sales-reports/export/pdf', adminCheck, salesReportController.exportSalesReportPDF);
-
+router.get('/analytics', adminCheck, salesReportController.getSalesReportPage.bind(salesReportController));
+router.get('/sales-reports/export/pdf', adminCheck, salesReportController.exportSalesReportPDF.bind(salesReportController));
+router.get('/sales-reports/export/excel', adminCheck, salesReportController.exportSalesReportExcel.bind(salesReportController));
 //logout 
 
 router.post('/logout', logout)

@@ -275,12 +275,21 @@ export const dashboardDetails = async (page = 1, period = 'daily', limit = 5) =>
 };
 
 export const salesReportService = {
+  /**
+   * Get summary metrics for the sales report
+   */
   async getSummaryMetrics(filters = {}) {
     try {
       const dateFilter = this.buildDateFilter(filters);
 
+      // Get current period summary
       const summary = await orderModal.aggregate([
-        { $match: { ...dateFilter, orderStatus: { $in: ['delivered', 'shipped'] } } },
+        { 
+          $match: { 
+            ...dateFilter, 
+            orderStatus: { $in: ['delivered', 'shipped'] } 
+          } 
+        },
         {
           $group: {
             _id: null,
@@ -293,6 +302,7 @@ export const salesReportService = {
         }
       ]);
 
+      // Get previous period summary for comparison
       const previousPeriodSummary = await this.getPreviousPeriodSummary(dateFilter);
 
       return {
@@ -311,11 +321,14 @@ export const salesReportService = {
         }
       };
     } catch (error) {
-      logger.error(`Error in getSummaryMetrics: ${error.message}`);
+      logger.error(`Error in getSummaryMetrics: ${error.message}`, error);
       throw new Error(`Error fetching summary metrics: ${error.message}`);
     }
   },
 
+  /**
+   * Get detailed sales report data with pagination
+   */
   async getSalesReportDetails(filters = {}, page = 1, limit = 10) {
     try {
       const { period = 'weekly' } = filters;
@@ -324,6 +337,7 @@ export const salesReportService = {
       let groupConfig = {};
       let sortConfig = {};
       
+      // Configure grouping based on period
       switch (period) {
         case 'daily':
           groupConfig = {
@@ -359,6 +373,7 @@ export const salesReportService = {
           sortConfig = { "_id.year": -1, "_id.week": -1 };
       }
 
+      // Get total count for pagination
       const totalCountPipeline = [
         { $match: { ...dateFilter, orderStatus: { $in: ['delivered', 'shipped'] } } },
         {
@@ -374,6 +389,7 @@ export const salesReportService = {
       const totalPages = Math.ceil(totalItems / limit);
       const skip = (page - 1) * limit;
 
+      // Get report data with pagination
       const reportData = await orderModal.aggregate([
         { $match: { ...dateFilter, orderStatus: { $in: ['delivered', 'shipped'] } } },
         {
@@ -412,22 +428,28 @@ export const salesReportService = {
         reportData: this.formatReportData(reportData, period),
       };
     } catch (error) {
-      logger.error(`Error in getSalesReportDetails: ${error.message}`);
+      logger.error(`Error in getSalesReportDetails: ${error.message}`, error);
       throw new Error(`Error fetching sales report details: ${error.message}`);
     }
   },
 
+  /**
+   * Get coupon analysis data
+   */
   async getCouponAnalysis(filters = {}) {
     try {
       const dateFilter = this.buildDateFilter(filters);
       
+      // Get coupon usage data
       const couponUsage = await orderModal.aggregate([
-        { $match: { 
-          ...dateFilter, 
-          orderStatus: { $in: ['delivered', 'shipped'] },
-          "appliedCoupon.couponId": { $exists: true, $ne: null },
-          "appliedCoupon.discountAmount": { $gt: 0 }
-        } },
+        { 
+          $match: { 
+            ...dateFilter, 
+            orderStatus: { $in: ['delivered', 'shipped'] },
+            "appliedCoupon.couponId": { $exists: true, $ne: null },
+            "appliedCoupon.discountAmount": { $gt: 0 }
+          } 
+        },
         {
           $group: {
             _id: "$appliedCoupon.couponCode",
@@ -437,6 +459,7 @@ export const salesReportService = {
         }
       ]);
 
+      // Get coupon details
       const couponCodes = [...new Set(couponUsage.map(c => c._id))];
       let couponDetails = [];
       
@@ -444,15 +467,16 @@ export const salesReportService = {
         couponDetails = await couponModal.find({ couponCode: { $in: couponCodes } }).lean();
       }
       
+      // Format coupon analysis data
       return couponUsage.map(coupon => {
         const details = couponDetails.find(d => d.couponCode === coupon._id);
         
         let description = 'No details available';
         if (details) {
           if (details.discountType === 'percentage') {
-            description = `${details.discountAmount}% off${details.minAmount ? ` on orders above $${details.minAmount}` : ''}`;
+            description = `${details.discountAmount}% off${details.minAmount ? ` on orders above Rs.${details.minAmount}` : ''}`;
           } else {
-            description = `$${details.discountAmount} off${details.minAmount ? ` on orders above $${details.minAmount}` : ''}`;
+            description = `Rs.${details.discountAmount} off${details.minAmount ? ` on orders above Rs.${details.minAmount}` : ''}`;
           }
         }
         
@@ -466,11 +490,14 @@ export const salesReportService = {
         };
       });
     } catch (error) {
-      logger.error(`Error in getCouponAnalysis: ${error.message}`);
+      logger.error(`Error in getCouponAnalysis: ${error.message}`, error);
       return [];
     }
   },
 
+  /**
+   * Get product sales data for charts
+   */
   async getProductSalesData(filters = {}) {
     try {
       const dateFilter = this.buildDateFilter(filters);
@@ -494,6 +521,7 @@ export const salesReportService = {
       const labels = productSales.map(item => item.productName || 'Unknown Product');
       const data = productSales.map(item => item.totalQuantity || 0);
       
+      // Generate colors for chart
       const backgroundColors = [];
       const borderColors = [];
       const baseColors = [
@@ -512,7 +540,7 @@ export const salesReportService = {
         borderColors
       };
     } catch (error) {
-      logger.error(`Error fetching product sales data: ${error.message}`);
+      logger.error(`Error fetching product sales data: ${error.message}`, error);
       return {
         labels: ['No Data'],
         data: [0],
@@ -522,9 +550,65 @@ export const salesReportService = {
     }
   },
 
+  /**
+   * Get detailed orders data with pagination
+   */
+  async getDetailedOrders(filters = {}, page = 1, limit = 10) {
+  try {
+    const dateFilter = this.buildDateFilter(filters);
+    
+    const totalCount = await orderModal.countDocuments({
+      ...dateFilter,
+      orderStatus: { $in: ['delivered', 'shipped'] }
+    });
+    
+    const totalPages = Math.ceil(totalCount / limit);
+    const skip = (page - 1) * limit;
+    
+    const orders = await orderModal.find({
+      ...dateFilter,
+      orderStatus: { $in: ['delivered', 'shipped'] }
+    })
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit)
+    .populate('userId', 'firstName lastName email')
+    .lean();
+    
+    return {
+      orders: orders.map(order => ({
+        id: order._id.toString(),
+        // FIX: Use order.orderId instead of order.orderNumber
+        orderNumber: `ORD-${order._id.toString().slice(0, 8).toUpperCase()}`,
+        date: new Date(order.createdAt).toLocaleDateString(),
+        customer: order.userId 
+          ? `${order.userId.firstName} ${order.userId.lastName}` 
+          : 'Unknown Customer',
+        email: order.userId?.email || 'N/A',
+        items: order.items?.length || 0,
+        totalAmount: order.totalAmount || 0,
+        status: order.orderStatus
+      })),
+      pagination: {
+        currentPage: page,
+        totalPages,
+        totalItems: totalCount,
+        itemsPerPage: limit
+      }
+    };
+  } catch (error) {
+    logger.error(`Error in getDetailedOrders: ${error.message}`, error);
+    throw new Error(`Error fetching detailed orders: ${error.message}`);
+  }
+},
+
+  /**
+   * Build date filter based on report period
+   */
   buildDateFilter(filters) {
     const { reportPeriod = 'last7days', startDate, endDate } = filters;
     
+    // Handle custom date range
     if ((reportPeriod === 'custom' || reportPeriod.includes('custom')) && startDate && endDate) {
       const start = new Date(startDate);
       start.setUTCHours(0, 0, 0, 0);
@@ -534,6 +618,7 @@ export const salesReportService = {
       const today = new Date();
       today.setUTCHours(23, 59, 59, 999);
       
+      // Validate dates
       if (start > today) start = today;
       if (end > today) end = today;
       
@@ -551,6 +636,7 @@ export const salesReportService = {
       };
     }
     
+    // Handle predefined periods
     const now = new Date();
     now.setUTCHours(23, 59, 59, 999); 
     let startDateObj = new Date();
@@ -592,25 +678,34 @@ export const salesReportService = {
     };
   },
 
+  /**
+   * Calculate percentage change between current and previous values
+   */
   calculatePercentageChange(currentValue, previousValue) {
     if (previousValue === 0 && currentValue === 0) return 0;
     if (previousValue === 0) return currentValue > 0 ? 100 : -100;
     return ((currentValue - previousValue) / previousValue) * 100;
   },
 
+  /**
+   * Get summary metrics for the previous period
+   */
   async getPreviousPeriodSummary(dateFilter) {
     try {
       const startDate = dateFilter.createdAt.$gte;
       const endDate = dateFilter.createdAt.$lte;
       
+      // Calculate previous period duration
       const periodDuration = endDate.getTime() - startDate.getTime();
       
       const prevEndDate = new Date(startDate.getTime() - 1); 
       const prevStartDate = new Date(prevEndDate.getTime() - periodDuration);
       
+      // Set minimum date boundary
       const minDate = new Date(2000, 0, 1);
       if (prevStartDate < minDate) prevStartDate = minDate;
       
+      // Get previous period summary
       const summary = await orderModal.aggregate([
         { 
           $match: { 
@@ -637,11 +732,14 @@ export const salesReportService = {
         grossSales: (summary[0]?.subTotal || 0) + (summary[0]?.taxAmount || 0)
       };
     } catch (error) {
-      logger.error(`Error getting previous period summary: ${error.message}`);
+      logger.error(`Error getting previous period summary: ${error.message}`, error);
       return { totalSales: 0, totalOrders: 0, totalDiscount: 0, grossSales: 0 };
     }
   },
 
+  /**
+   * Format report data for display
+   */
   formatReportData(reportData, period) {
     if (!reportData || reportData.length === 0) {
       return [{
@@ -658,6 +756,7 @@ export const salesReportService = {
     return reportData.map(item => {
       let datePeriod = '';
       
+      // Format date period based on view
       switch (period) {
         case 'daily':
           datePeriod = item._id.date ? item._id.date : 'Unknown date';
@@ -687,6 +786,7 @@ export const salesReportService = {
           datePeriod = 'Unknown period';
       }
       
+      // Calculate coupons applied
       let couponsApplied = 0;
       if (item.couponData && Array.isArray(item.couponData)) {
         couponsApplied = item.couponData

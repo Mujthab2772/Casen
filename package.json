@@ -19,6 +19,7 @@
     "csrf": "^3.1.0",
     "dotenv": "^17.2.3",
     "ejs": "^3.1.10",
+    "exceljs": "^4.4.0",
     "express": "^5.1.0",
     "express-rate-limit": "^8.2.1",
     "express-router": "^0.0.1",
@@ -34,7 +35,9 @@
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "pdfkit": "^0.17.2",
+    "pdfkit-table": "^0.1.99",
     "razorpay": "^2.9.6",
+    "svg-to-pdfkit": "^0.1.8",
     "uuid": "^13.0.0",
     "winston": "^3.19.0"
   },
