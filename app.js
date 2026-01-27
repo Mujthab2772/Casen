@@ -12,6 +12,8 @@ import flash from "connect-flash";
 // import { generalLimiter } from "./middlewares/rateLimiter.js";
 import morgan from "morgan";
 import logger from "./util/logger.js";
+import cors from 'cors'
+import { callback } from "chart.js/helpers";
 
 dotenv.config();
 const app = express()
@@ -33,8 +35,27 @@ app.use(morgan(
     ':method :url :status :res[content-length] - :response-time ms',
     { stream: { write: (message) => logger.http(message.trim())}}
 ))
-
 logger.info("Application starting up...")
+
+const allowedOrigins = [
+    'http://localhost:5000',
+]
+
+const corsOptions = {
+    origin: (origin, callback) => {
+        if(!origin) return callback(null, true);
+
+        if(allowedOrigins.includes(origin)) {
+            callback(null, true)
+        }else {
+            callback(new Error('Not allowed by CORS'))
+        }
+    },
+    Credential: true,
+    optionSuccessStatus: 200
+}
+
+app.use(cors(corsOptions))
 
 app.use(session({
     secret: "Casen@2772",
