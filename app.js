@@ -39,6 +39,8 @@ logger.info("Application starting up...")
 
 const allowedOrigins = [
     'http://localhost:5000',
+    'https://mujthab.xyz',
+    'https://www.mujthab.xyz'
 ]
 
 const corsOptions = {
