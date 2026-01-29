@@ -71,105 +71,105 @@ router.post('/logout', logout)
 
 // user Profile
 
-router.get('/profile', userProfile, ProfileUser)
+router.get('/profile', userProfile, requireActiveUser, ProfileUser)
 
-router.get('/profile/edit', userProfile, editProfile)
+router.get('/profile/edit', userProfile, requireActiveUser, editProfile)
 
-router.put('/profile/edit', userProfile, upload.single("profilePic"), validateProfileUpdate, updateProfile)
+router.put('/profile/edit', userProfile, requireActiveUser, upload.single("profilePic"), validateProfileUpdate, updateProfile)
 
-router.get('/profile/email/otp', userProfile, verifyEmail)
+router.get('/profile/email/otp', userProfile, requireActiveUser, verifyEmail)
 
-router.post('/otpverify/emailVerify', userProfile, otpVerify)
+router.post('/otpverify/emailVerify', userProfile, requireActiveUser, otpVerify)
 
-router.post('/resendOtp/emailVerify',userProfile, otpResend)
+router.post('/resendOtp/emailVerify',userProfile, requireActiveUser, otpResend)
 
 //address
 
-router.get('/profile/address', userProfile, address)
+router.get('/profile/address', userProfile, requireActiveUser, address)
 
-router.get('/profile/newAddress', userProfile, addressFetch)
+router.get('/profile/newAddress', userProfile, requireActiveUser, addressFetch)
 
-router.post('/profile/addAddress', userProfile, validateAddress, addressNew)
+router.post('/profile/addAddress', userProfile, requireActiveUser, validateAddress, addressNew)
 
-router.get('/profile/editAddress', userProfile, addressEdit)
+router.get('/profile/editAddress', userProfile, requireActiveUser, addressEdit)
 
-router.put('/profile/editAddress/update', userProfile, validateAddress, addressEditUpdate)
+router.put('/profile/editAddress/update', userProfile, requireActiveUser, validateAddress, addressEditUpdate)
 
-router.delete('/profile/deleteAddress', userProfile, deleteAddress)
+router.delete('/profile/deleteAddress', userProfile, requireActiveUser, deleteAddress)
 
 // cart 
 
-router.get('/cart', userProfile, cart)
+router.get('/cart', userProfile, requireActiveUser, cart)
 
-router.post('/cart/add', userProfile, newCart)
+router.post('/cart/add', userProfile, requireActiveUser, newCart)
 
-router.put('/cart/update', userProfile, updateCart)
+router.put('/cart/update', userProfile, requireActiveUser, updateCart)
 
-router.delete('/cart/remove', userProfile, removeCart)
+router.delete('/cart/remove', userProfile, requireActiveUser, removeCart)
 
-router.post('/inventory/check',userProfile, checkInventoryRoute);
+router.post('/inventory/check',userProfile, requireActiveUser, checkInventoryRoute);
 
 // checkout
 
-router.get('/checkout', userProfile, checkout)
+router.get('/checkout', userProfile, requireActiveUser, checkout)
 
-router.post('/checkout/process', userProfile, checkoutDatas)
+router.post('/checkout/process', userProfile, requireActiveUser, checkoutDatas)
 
-router.post('/checkout/preview', userProfile, previewCheckout);
+router.post('/checkout/preview', userProfile, requireActiveUser, previewCheckout);
 
-router.get('/coupons',userProfile, getAvailableCoupons);
+router.get('/coupons',userProfile, requireActiveUser, getAvailableCoupons);
 
 
 // payment 
 
-router.get('/payment', userProfile, payment)
+router.get('/payment', userProfile, requireActiveUser, payment)
 
-router.post('/payment/process', userProfile, paymentProcess)
+router.post('/payment/process', userProfile, requireActiveUser, paymentProcess)
 
-router.get('/payment/verify', userProfile, verifyPayment)
+router.get('/payment/verify', userProfile, requireActiveUser, verifyPayment)
 
 // success payment 
 
-router.get('/payment/success', userProfile, paymentSuccess)
+router.get('/payment/success', userProfile, requireActiveUser, paymentSuccess)
 
-router.get('/payment/fail', userProfile, paymentFail)
+router.get('/payment/fail', userProfile, requireActiveUser, paymentFail)
 
 // order Profile 
 
-router.get('/profile/orders', userProfile, orderListing)
+router.get('/profile/orders', userProfile, requireActiveUser, orderListing)
 
-router.put('/profile/orders/:orderId/items/:itemIndex/cancel', userProfile, cancelItem)
+router.put('/profile/orders/:orderId/items/:itemIndex/cancel', userProfile, requireActiveUser, cancelItem)
 
-router.patch('/profile/orders/:orderId/cancel', userProfile, cancelOrder)
+router.patch('/profile/orders/:orderId/cancel', userProfile, requireActiveUser, cancelOrder)
 
-router.patch('/profile/orders/:orderId/return', userProfile, returnProduct)
+router.patch('/profile/orders/:orderId/return', userProfile, requireActiveUser, returnProduct)
 
-router.patch('/profile/orders/:orderId/items/:itemIndex/return', userProfile, itemReturn)
+router.patch('/profile/orders/:orderId/items/:itemIndex/return', userProfile, requireActiveUser, itemReturn)
 
 //wishlist
 
-router.get('/profile/wishlist', userProfile, wishlist)
+router.get('/profile/wishlist', userProfile, requireActiveUser, wishlist)
 
-router.post('/profile/wishlist/add', userProfile, wishlistadd)
+router.post('/profile/wishlist/add', userProfile, requireActiveUser, wishlistadd)
 
-router.delete('/wishlist/remove', userProfile, wishlistRemove)
+router.delete('/wishlist/remove', userProfile, requireActiveUser, wishlistRemove)
 
 //Wallet
 
-router.get('/profile/wallet', userProfile, wallet)
+router.get('/profile/wallet', userProfile, requireActiveUser, wallet)
 
-router.get('/profile/wallet/add', userProfile, walletNewView)
+router.get('/profile/wallet/add', userProfile, requireActiveUser, walletNewView)
 
-router.post('/profile/wallet/add/data', userProfile, walletAddNew)
+router.post('/profile/wallet/add/data', userProfile, requireActiveUser, walletAddNew)
 
 //referral
 
-router.get('/profile/referral', userProfile, referral)
+router.get('/profile/referral', userProfile, requireActiveUser,referral)
 
 // password 
 
-router.get('/profile/newPassword', userProfile, newPassword)
+router.get('/profile/newPassword', userProfile, requireActiveUser, newPassword)
 
-router.put('/password', userProfile, setNewPass)
+router.put('/password', userProfile, requireActiveUser, setNewPass)
 
 export default router 
