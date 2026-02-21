@@ -209,8 +209,30 @@ export const cartDetails = async (userId) => {
             }
         ]);
         
-        const itemsWithOffers = await applyOffersToProducts(cartItems, activeOffers);
-        return itemsWithOffers;
+        // ✅ FIX: Normalize Decimal128 prices to Numbers before applying offers
+        const normalizedItems = cartItems.map(item => {
+            if (item.products?.variant?.price) {
+                item.products.variant.price = parseFloat(item.products.variant.price.toString());
+            }
+            if (item.products?.variant?.originalPrice) {
+                item.products.variant.originalPrice = parseFloat(item.products.variant.originalPrice.toString());
+            }
+            return item;
+        });
+        
+        const itemsWithOffers = await applyOffersToProducts(normalizedItems, activeOffers);
+        
+        // ✅ Double-check: Ensure all prices are numbers after offer application
+        return itemsWithOffers.map(item => {
+            if (item.products?.variant?.price && typeof item.products.variant.price !== 'number') {
+                item.products.variant.price = parseFloat(item.products.variant.price.toString());
+            }
+            if (item.products?.variant?.originalPrice && typeof item.products.variant.originalPrice !== 'number') {
+                item.products.variant.originalPrice = parseFloat(item.products.variant.originalPrice.toString());
+            }
+            return item;
+        });
+        
     } catch (error) {
         logger.error(`Error in cartDetails service: ${error.message}`);
         throw error;

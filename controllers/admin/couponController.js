@@ -90,7 +90,7 @@ export const editCoupon = async (req, res) => {
     const coupon = await couponModel.findOne({ couponCode });
     if (!coupon) {
       logger.warn(`Edit coupon page requested for non-existent coupon: ${couponCode}`);
-      return res.status(STATUS_CODE.NOT_FOUND).send('Coupon not found');
+      return res.status(STATUS_CODE.NOT_FOUND).redirect('/NotFound')
     }
     return res.render('editCoupon', { coupon });
   } catch (error) {

@@ -101,7 +101,9 @@ app.use("/", (req, res, next) => {
 
 
 
-app.use("/", (req, res) => res.send("Not Found"))
+app.use("/", (req, res) => res.redirect('/NotFound'))
+
+
 
 
 app.listen(PORT, () => {

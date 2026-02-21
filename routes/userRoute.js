@@ -172,4 +172,8 @@ router.get('/profile/newPassword', userProfile, requireActiveUser, newPassword)
 
 router.put('/password', userProfile, requireActiveUser, setNewPass)
 
+router.get('/NotFound', (req, res) => {
+    res.render('NotFound')
+})
+
 export default router 

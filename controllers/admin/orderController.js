@@ -51,7 +51,7 @@ export const singleOrder = async (req, res) => {
         
         if (!order || order.length === 0) {
             logger.warn(`Single order view requested for non-existent ID: ${orderId}`);
-            return res.status(STATUS_CODE.NOT_FOUND).send("Order not found");
+            return res.status(STATUS_CODE.NOT_FOUND).redirect('/NotFound')
         }
         
         return res.render("orderEdit", { order: order[0] });

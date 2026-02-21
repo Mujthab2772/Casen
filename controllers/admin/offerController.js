@@ -65,7 +65,7 @@ export const offerEdit = async (req, res) => {
     const offer = await offerModel.findById(req.params.id).lean();
     if (!offer) {
       logger.warn(`Offer edit requested for non-existent ID: ${req.params.id}`);
-      return res.status(STATUS_CODE.NOT_FOUND).send('Offer not found');
+      return res.status(STATUS_CODE.NOT_FOUND).redirect('/NotFound')
     }
 
     const result = await availableItems();
