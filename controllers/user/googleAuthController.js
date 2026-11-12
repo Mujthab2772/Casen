@@ -1,25 +1,36 @@
-import passport from "passport";
-import logger from '../../util/logger.js'; // ✅ Add logger import
+import passport, { googleAuthEnabled } from "../../config/passport.js";
+import logger from "../../util/logger.js";
 
-export const googleAuth = passport.authenticate("google", {
-  scope: ["profile", "email", "openid"],
-  prompt: "consent select_account",
-});
+export const googleAuth = (req, res, next) => {
+  if (!googleAuthEnabled) {
+    return res.status(503).send("Google sign-in is not configured for this deployment.");
+  }
+
+  return passport.authenticate("google", {
+    scope: ["profile", "email", "openid"],
+    prompt: "consent select_account",
+  })(req, res, next);
+};
 
 export const googleAuthCallback = [
-  passport.authenticate("google", {
-    failureRedirect: "/login",
-    failureMessage: true,
-  }),
-  async (req, res) => {
+  (req, res, next) => {
+    if (!googleAuthEnabled) {
+      return res.status(503).send("Google sign-in is not configured for this deployment.");
+    }
+
+    return passport.authenticate("google", {
+      failureRedirect: "/login",
+      failureMessage: true,
+    })(req, res, next);
+  },
+  async (req, res, next) => {
     try {
-      // check for blocked user message
-      if (req.session.messages && req.session.messages.includes("User is blocked")) {
-        // logout correctly for Passport v0.6+
+      if (req.session.messages?.includes("User is blocked")) {
         await new Promise((resolve, reject) => {
           req.logout((err) => {
             if (err) return reject(err);
-            req.session.destroy(() => {
+            req.session.destroy((destroyError) => {
+              if (destroyError) return reject(destroyError);
               resolve();
             });
           });
@@ -34,16 +45,14 @@ export const googleAuthCallback = [
       req.session.save((err) => {
         if (err) return next(err);
 
-        // 🔒 Prevent back-navigation to auth screen
-        res.header("Cache-Control", "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0");
-        res.header("Pragma", "no-cache");
-        res.header("Expires", "0");
-
-        res.redirect("/");
+        res.set("Cache-Control", "no-cache, private, no-store, must-revalidate");
+        res.set("Pragma", "no-cache");
+        res.set("Expires", "0");
+        return res.redirect("/");
       });
     } catch (error) {
       logger.error(`Error from googleAuthCallback: ${error.message}`);
-      res.redirect("/signUpPage");
+      return res.redirect("/signUpPage");
     }
   },
 ];
